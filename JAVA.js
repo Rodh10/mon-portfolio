@@ -1711,7 +1711,7 @@ function leaveEffectLinks2() {
     if (!spans.length) return;
 
     spans.forEach(span => {
-      span.style.color = '#808080';
+      span.style.color = '#ff0000';
       span.style.backgroundColor = 'transparent';
       span.style.opacity = '1';
     });
