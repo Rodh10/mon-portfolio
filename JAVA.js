@@ -1586,7 +1586,7 @@ function enhanceNavLinks() {
 
       // Redirection après un petit délai pour que l'effet se voie
       setTimeout(() => {
-        if (linkUrl === "#home") window.location.href = "HTML.html";
+        if (linkUrl === "#home") window.location.href = "index.html";
         else if (linkUrl === "#about") window.location.href = "Profile.html";
         else if (linkUrl === "#track") window.location.href = "Achievements.html";
         else window.location.href = linkUrl; // fallback

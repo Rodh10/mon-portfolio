@@ -344,7 +344,7 @@ function enhanceNavLinks() {
 
       // Cooldown avant redirection
       setTimeout(() => {
-        if (linkUrl === "#home") window.location.href = "HTML.html";
+        if (linkUrl === "#home") window.location.href = "index.html";
         if (linkUrl === "#about") window.location.href = "Profile.html";
         if (linkUrl === "#track") window.location.href = "Achievements.html";
       }, 300);

@@ -413,7 +413,7 @@ function initQuitAnimations() {
     runSequentialLeaveEffects();
 
     setTimeout(() => {
-      window.location.href = 'HTML.html';
+      window.location.href = 'index.html';
     }, 3000);
   });
   
