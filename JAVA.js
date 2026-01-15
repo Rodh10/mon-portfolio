@@ -226,22 +226,50 @@ function startLoaderWithRabbit(callback) {
 
 
 window.addEventListener("DOMContentLoaded", () => {
-  resetLinksState();
-  enhanceNavLinks();
-  appearClockWithRandom();
-  appearLinks(); 
-  initResumeAnimations();
-  cycleHiWords();
-  appearWelcome();
-  appearMonLien();
-  initSayHiAnimations();
-  iconWrapper.classList.remove("hidden");
-  iconWrapper.classList.add("visible");
-  mpanoratra.classList.remove("midina");
-  mpanoratra.classList.add("miakatra");
-  titreo.classList.remove("mipoitra");
-  talenta.classList.remove("mandeha");
+
+  const loaderPlayed = sessionStorage.getItem('loaderPlayed');
+
+  if (!loaderPlayed) {
+
+    startLoaderWithRabbit(() => {
+      resetLinksState();
+      enhanceNavLinks();
+      appearClockWithRandom();
+      appearLinks(); 
+      initResumeAnimations();
+      cycleHiWords();
+      appearWelcome();
+      appearMonLien();
+      initSayHiAnimations();
+      iconWrapper.classList.remove("hidden");
+      iconWrapper.classList.add("visible");
+      mpanoratra.classList.remove("midina");
+      mpanoratra.classList.add("miakatra");
+      titreo.classList.remove("mipoitra");
+      talenta.classList.remove("mandeha");
+
+    });
+
+    sessionStorage.setItem('loaderPlayed', 'true');
+
+  } else {
+
+    enhanceNavLinks();
+    appearClockWithRandom();
+    appearLinks(); 
+    initResumeAnimations();
+    cycleHiWords();
+    appearWelcome();
+    appearMonLien();
+    initSayHiAnimations();
+    iconWrapper.classList.remove("hidden");
+    iconWrapper.classList.add("visible");
+    mpanoratra.classList.remove("miakatra");
+    titreo.classList.remove("mipoitra");
+    talenta.classList.remove("mandeha");
+  }
 });
+
 
 
 
@@ -1449,90 +1477,106 @@ function leaveEffectSayHi() {
 
 
 
+
+
 /* ===========================
    NAVIGATION STYLE "CMD"
    =========================== */
+
 function enhanceNavLinks() {
   const links = document.querySelectorAll('.nav');
 
-  links.forEach(link => {
-    const text = link.textContent.trim();
-    link.textContent = '';
+  links.forEach(el => {
+    const text = el.textContent.trim();
+    el.textContent = '';
 
-    // Création des spans pour chaque lettre
+    // Création des spans lettre par lettre
     const letters = text.split('');
     letters.forEach(letter => {
       const span = document.createElement('span');
       span.textContent = letter;
       span.style.color = "#808080"; // gris par défaut
-      span.style.backgroundColor = "transparent";
-      link.appendChild(span);
+      el.appendChild(span);
     });
 
-    let hoverTimeouts = [];
+    let timeouts = [];
 
     /* ============ HOVER CMD ============ */
-    link.addEventListener('mouseenter', () => {
-      if (link.classList.contains("active-page")) return;
+    el.addEventListener('mouseenter', () => {
+      if (el.classList.contains("active-page")) return;
 
-      const spans = link.querySelectorAll('span');
-      hoverTimeouts.forEach(t => clearTimeout(t));
-      hoverTimeouts = [];
+      const spans = el.querySelectorAll("span");
+      timeouts.forEach(t => clearTimeout(t));
+      timeouts = [];
 
       spans.forEach((span, i) => {
         const t1 = setTimeout(() => {
           span.style.color = "#000000";
           span.style.backgroundColor = "white";
         }, i * 30);
-        hoverTimeouts.push(t1);
+        timeouts.push(t1);
 
         const t2 = setTimeout(() => {
           span.style.color = "#808080";
           span.style.backgroundColor = "transparent";
         }, i * 30 + 20);
-        hoverTimeouts.push(t2);
+        timeouts.push(t2);
+
+        const t3 = setTimeout(() => {
+          span.style.color = "#b8b8b8";
+          span.style.backgroundColor = "transparent";
+        }, i * 30 + 30);
+        timeouts.push(t3);
       });
     });
 
     /* ============ LEAVE CMD ============ */
-    link.addEventListener('mouseleave', () => {
-      if (link.classList.contains("active-page")) return;
+    el.addEventListener('mouseleave', () => {
+      if (el.classList.contains("active-page")) return;
 
-      const spans = link.querySelectorAll('span');
-      hoverTimeouts.forEach(t => clearTimeout(t));
-      hoverTimeouts = [];
+      const spans = el.querySelectorAll("span");
+      timeouts.forEach(t => clearTimeout(t));
+      timeouts = [];
 
       const last = spans.length - 1;
 
       spans.forEach((span, i) => {
         const delay = (last - i) * 30;
+
         const t1 = setTimeout(() => {
+          span.style.color = "#000000";
+          span.style.backgroundColor = "white";
+        }, delay);
+        timeouts.push(t1);
+
+        const t2 = setTimeout(() => {
           span.style.color = "#808080";
           span.style.backgroundColor = "transparent";
-        }, delay);
-        hoverTimeouts.push(t1);
+        }, delay + 20);
+        timeouts.push(t2);
       });
     });
 
     /* ============ CLICK ============ */
-    link.addEventListener('click', e => {
+    el.addEventListener('click', e => {
       e.preventDefault();
 
-      if (link.classList.contains("active-page")) return;
+      // 🚫 Si on clique sur le menu déjà actif → rien
+      if (el.classList.contains("active-page")) return;
 
-      const href = link.getAttribute('href');
-      const oldActive = document.querySelector('.nav.active-page');
+      const linkUrl = el.getAttribute('href');
+      const oldActive = document.querySelector(".active-page");
 
-      // leaveEffect sur ancien actif
-      if (oldActive && oldActive !== link) {
+      // Animation leave sur l'ancien actif uniquement
+      if (oldActive && oldActive !== el) {
         animateOldActiveLeave(oldActive);
-        oldActive.classList.remove('active-page');
+        oldActive.classList.remove("active-page");
       }
 
-      // marquer le nouveau lien comme actif
-      link.classList.add('active-page');
+      // Marque le lien cliqué comme actif
+      el.classList.add("active-page");
 
-      // leaveEffects globaux
+      // Appel direct des leaveEffect
       leaveEffectResume();
       leaveEffectHi();
       leaveEffectWelcome();
@@ -1540,61 +1584,72 @@ function enhanceNavLinks() {
       leaveEffectSayHi();
       leaveClock();
 
-      // redirection après 300ms
+      // Redirection après un petit délai pour que l'effet se voie
       setTimeout(() => {
-        if (href === "#home") window.location.href = "index.html";
-        else if (href === "#about") window.location.href = "Profile.html";
-        else if (href === "#track") window.location.href = "Achievements.html";
-        else window.location.href = href;
+        if (linkUrl === "#home") window.location.href = "index.html";
+        else if (linkUrl === "#about") window.location.href = "Profile.html";
+        else if (linkUrl === "#track") window.location.href = "Achievements.html";
+        else window.location.href = linkUrl; // fallback
       }, 300);
     });
   });
 
-  /* ===================================
-     Animation de disparition de l’ancien actif
-     =================================== */
+  /* ============================================================
+     Fonction : leave CMD pour l'ancien menu actif uniquement
+     ============================================================ */
   function animateOldActiveLeave(link) {
-    const spans = link.querySelectorAll('span');
+    const spans = link.querySelectorAll("span");
     const last = spans.length - 1;
 
     spans.forEach((span, i) => {
       const delay = (last - i) * 30;
 
       setTimeout(() => {
-        span.style.color = "#000000";
         span.style.backgroundColor = "white";
+        span.style.color = "#000000";
       }, delay);
 
       setTimeout(() => {
-        span.style.color = "#808080";
         span.style.backgroundColor = "transparent";
+        span.style.color = "#808080";
       }, delay + 20);
     });
   }
 
   /* ============================
-     Activation initiale selon la page
+     Activer le menu courant
      ============================ */
   function activateMenu(href) {
     const link = document.querySelector(`.nav[href="${href}"]`);
     if (!link) return;
 
     link.classList.add("active-page");
+
     const spans = link.querySelectorAll("span");
     spans.forEach((span, i) => {
       setTimeout(() => {
-        span.style.color = "#000000";
         span.style.backgroundColor = "white";
-      }, i * 20);
+        span.style.color = "#000000";
+      }, i * 35);
 
       setTimeout(() => {
-        span.style.color = "#ffffff";
         span.style.backgroundColor = "transparent";
-      }, i * 20 + 30);
+        span.style.color = "#ffffff";
+      }, i * 35 + 20);
     });
   }
 
   const page = window.location.pathname;
+
+
+  // Si on est à la racine du site ("/") ou index.html → considérer index.html comme page active
+  let currentPage = page;
+  if (page === "/" || page.endsWith("/")) {
+    currentPage = "index.html";
+  }
+
+
+
   if (page.includes("index.html")) activateMenu("#home");
   if (page.includes("Profile.html")) activateMenu("#about");
   if (page.includes("Achievements.html")) activateMenu("#track");
