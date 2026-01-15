@@ -226,50 +226,22 @@ function startLoaderWithRabbit(callback) {
 
 
 window.addEventListener("DOMContentLoaded", () => {
-
-  const loaderPlayed = sessionStorage.getItem('loaderPlayed');
-
-  if (!loaderPlayed) {
-
-    startLoaderWithRabbit(() => {
-
-      enhanceNavLinks();
-      appearClockWithRandom();
-      appearLinks(); 
-      initResumeAnimations();
-      cycleHiWords();
-      appearWelcome();
-      appearMonLien();
-      initSayHiAnimations();
-      iconWrapper.classList.remove("hidden");
-      iconWrapper.classList.add("visible");
-      mpanoratra.classList.remove("midina");
-      mpanoratra.classList.add("miakatra");
-      titreo.classList.remove("mipoitra");
-      talenta.classList.remove("mandeha");
-
-    });
-
-    sessionStorage.setItem('loaderPlayed', 'true');
-
-  } else {
-
-    enhanceNavLinks();
-    appearClockWithRandom();
-    appearLinks(); 
-    initResumeAnimations();
-    cycleHiWords();
-    appearWelcome();
-    appearMonLien();
-    initSayHiAnimations();
-    iconWrapper.classList.remove("hidden");
-    iconWrapper.classList.add("visible");
-    mpanoratra.classList.remove("miakatra");
-    titreo.classList.remove("mipoitra");
-    talenta.classList.remove("mandeha");
-  }
+  resetLinksState();
+  enhanceNavLinks();
+  appearClockWithRandom();
+  appearLinks(); 
+  initResumeAnimations();
+  cycleHiWords();
+  appearWelcome();
+  appearMonLien();
+  initSayHiAnimations();
+  iconWrapper.classList.remove("hidden");
+  iconWrapper.classList.add("visible");
+  mpanoratra.classList.remove("midina");
+  mpanoratra.classList.add("miakatra");
+  titreo.classList.remove("mipoitra");
+  talenta.classList.remove("mandeha");
 });
-
 
 
 
@@ -1443,6 +1415,7 @@ function initSayHiAnimations() {
     leaveEffectLinks();
     leaveEffectSayHi();
     leaveClock();
+    leaveEffectLinks2();
 
     setTimeout(() => window.location.href = 'Contact me.html', 1500);
   });
@@ -1470,6 +1443,8 @@ function leaveEffectSayHi() {
 
   el.isAppeared = false;
 }
+
+
 
 
 
@@ -1625,6 +1600,98 @@ function enhanceNavLinks() {
   if (page.includes("Achievements.html")) activateMenu("#track");
 }
 
+
+
+function resetLinksState() {
+  document.querySelectorAll('.nav').forEach(el => {
+    el.isAppeared = false; // permet aux animations de hover et leave de fonctionner
+    el.classList.remove('active-page'); // on réinitialise
+    el.querySelectorAll('span').forEach(span => {
+      span.style.color = '#808080';
+      span.style.backgroundColor = 'transparent';
+    });
+  });
+}
+
+
+function splitLinksText() {
+  document.querySelectorAll('.nav').forEach(el => {
+    if (el.dataset.splitted) return;
+
+    const text = el.textContent;
+    el.textContent = '';
+
+    text.split('').forEach(char => {
+      const span = document.createElement('span');
+      span.textContent = char === ' ' ? '\u00A0' : char;
+      span.style.display = 'inline-block';
+      span.style.color = '#808080';
+      span.style.backgroundColor = 'transparent';
+      span.style.opacity = '0'; // <-- invisibles par défaut
+      el.appendChild(span);
+    });
+
+    el.dataset.splitted = "true";
+    el.isAppeared = true; // on considère le lien actif
+  });
+}
+
+// Appeler une fois au démarrage
+splitLinksText();
+
+
+// --- Fonction de disparition letter-by-letter pour les liens ---
+function leaveEffectLinks2() {
+  const links = document.querySelectorAll('.nav');
+  if (!links.length) return;
+
+  links.forEach(el => {
+    if (!el.isAppeared) return; // ne pas relancer si déjà disparu
+
+    const timers = leaveEffectTimersLinks.get(el) || [];
+    timers.forEach(t => clearTimeout(t));
+    leaveEffectTimersLinks.set(el, []);
+
+    const spans = el.querySelectorAll('span');
+    if (!spans.length) return;
+
+    spans.forEach(span => {
+      span.style.color = '#808080';
+      span.style.backgroundColor = 'transparent';
+      span.style.opacity = '1';
+    });
+
+    const lastIndex = spans.length - 1;
+
+    spans.forEach((span, i) => {
+      const delay = (lastIndex - i) * 40; // un peu plus lent
+
+      // 1️⃣ Passage temporaire au blanc sur fond blanc
+      const t1 = setTimeout(() => {
+        span.style.color = '#000000';
+        span.style.backgroundColor = 'white';
+        span.style.opacity = '1';
+      }, delay);
+      leaveEffectTimersLinks.get(el).push(t1);
+
+      // 2️⃣ Disparition finale : gris transparent
+      const t2 = setTimeout(() => {
+        span.style.opacity = '0';
+        span.style.color = '#808080';
+        span.style.backgroundColor = 'transparent';
+      }, delay + 60); // 60ms après le t1 pour un effet visible
+      leaveEffectTimersLinks.get(el).push(t2);
+    });
+
+    // Désactiver les interactions après la fin de l’animation
+    const totalTime = (lastIndex + 1) * 40 + 60;
+    setTimeout(() => {
+      el.style.pointerEvents = 'none';
+    }, totalTime);
+
+    el.isAppeared = false;
+  });
+}
 
 
 
