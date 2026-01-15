@@ -1,0 +1,428 @@
+
+@font-face {
+  font-family: "MaPolice";          /* nom que tu utiliseras dans ton CSS */
+  src: url("../PORT FOLIO/IBM.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: "MaPoliceLight";          /* nom que tu utiliseras dans ton CSS */
+  src: url("../PORT FOLIO/IBM Light.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* Reset CSS basique */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+
+
+body {
+  background-color: black;
+  font-family: monospace;
+  height: 100vh;
+  overflow: hidden;
+  transition: background-color 1s ease;
+  cursor: none;
+
+}
+
+html, body {
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+
+#custom-cursor {
+  position: fixed;
+  pointer-events: none; /* pour ne pas bloquer les clics */
+  width: 10px;
+  height: 20px;
+  background: white;
+  top: 0;
+  left: 0;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  
+}
+
+
+
+
+
+.navigation {
+  position: fixed;
+  z-index: 999;
+  top: 3%;
+  left: 1.5%;
+
+}
+
+/* Tablette */
+@media (max-width: 900px) {
+  .navigation {
+    left: 1.7%;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .navigation {
+    left: 2%;
+  }
+}
+
+
+
+.navbar-container a {
+  line-height: 1.5;
+  text-decoration: none;
+  display: block;
+  font-size: 1rem;
+  color: transparent;
+  font-weight: 200;
+}
+
+
+/* Tablette */
+@media (max-width: 900px) {
+  .navbar-container a {
+    font-size: 0.9rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .navbar-container a {
+    font-size: 0.8rem;
+    left: 2%;
+
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/* Conteneur principal */
+.conteneur {
+  font-size: 0.8rem;
+  text-align: left;
+  position: fixed;
+  top: 12%;
+  left: 30%;
+  opacity: 1;
+  z-index: 4;
+  pointer-events: auto;
+  width: 50%;
+  cursor: pointer;
+}
+
+
+/* Tablette */
+@media (max-width: 1200px) {
+  .conteneur {
+    font-size: 0.8rem;
+  }
+}
+
+/* Tablette */
+@media (max-width: 900px) {
+  .conteneur {
+    font-size: 0.7rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .conteneur {
+    width: 50%;
+    font-size: 0.65rem;
+    
+  }
+}
+
+
+
+
+
+
+/* Bloc titre */
+.bloky {
+  font-family: monospace;
+  position: relative;
+  margin-bottom: 5px;
+  cursor: pointer;
+}
+
+
+
+
+/* Zone où les descriptions vont apparaître */
+.zone-descriptions {
+  position: fixed;
+  top: 1%;
+  left: 30%;
+  width: 35%;
+  font-family: monospace;
+  color: white;
+  pointer-events: none;
+  z-index: 10;
+}
+
+
+
+/* Tablette */
+@media (max-width: 1200px) {
+  .zone-descriptions {
+    font-size: 0.8rem;
+    top: 7%;
+    width: 50%;
+
+  }
+}
+
+
+
+/* Tablette */
+@media (max-width: 900px) {
+  .zone-descriptions {
+    font-size: 0.7rem;
+    top: 4.1%;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .zone-descriptions {
+    width: 60%;
+    font-size: 0.65rem;
+    top: 1.5%;
+  }
+}
+
+/* Mobile */
+@media (max-width: 500px) {
+  .zone-descriptions {
+    width: 60%;
+    font-size: 0.65rem;
+    top: 1.2%;
+  }
+}
+
+
+
+
+/* descriptions (séparées mais mêmes classes) */
+.zone-descriptions p[class^="description"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, max-height 0.3s ease, transform 0.3s ease;
+}
+
+
+
+
+/* Visible (JS ajoute cette classe) */
+.visible {
+  opacity: 1 !important;
+  max-height: 500px !important;
+  transform: translateY(0) !important;
+}
+
+/* Caché (JS ajoute cette classe) */
+.hidden {
+  opacity: 0 !important;
+  max-height: 0 !important;
+  overflow: hidden !important;
+  transform: translateY(10px) !important;
+}
+
+/* Style du texte en mode CMD */
+.zone-descriptions span {
+  color: transparent;
+}
+
+
+
+
+
+
+.year {
+  left: 16%;
+  top: 12%; /* par ex., à toi d'adapter */
+  font-family: monospace;
+  font-size: 5rem;
+  position: fixed;
+  display: flex;
+  color: #ffffff;
+  z-index: 5;
+  white-space: pre;
+  line-height: 0.7;
+
+}
+
+
+/* Tablette */
+@media (max-width: 1300px) {
+  .year {
+    font-size: 4.5rem;
+    left: 10%;
+  }
+}
+
+
+
+/* Tablette */
+@media (max-width: 900px) {
+  .year {
+    font-size: 3rem;
+    left: 14%;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .year {
+    font-size: 2.5rem;
+    left: 2%;
+
+  }
+}
+
+
+.year span {
+  display: inline-block;
+  white-space: pre;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.cmd-link {
+  font-family: "MaPolice", monospace;
+  font-size: 5rem;          /* un peu plus petit que .year */
+  position: fixed;
+  left: 16%;
+  top: 65%; /* par ex., à toi d'adapter */
+  cursor: pointer;
+  display: flex;
+  
+}
+
+
+/* Tablette */
+@media (max-width: 1300px) {
+ .cmd-link {
+    font-size: 3.5rem;
+    left: 14%;
+  }
+}
+
+/* Tablette */
+@media (max-width: 900px) {
+  .cmd-link {
+    font-size: 2.8rem;
+    left: 14%;
+    display: flex;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .cmd-link {
+    font-size: 2rem;
+    top: 75%;
+    flex-wrap: wrap;      /* autorise le passage à la ligne */
+    width: 68%;
+    display: inline-block;
+  }
+}
+
+
+.cmd-link p {
+  margin-right: 6rem;      /* espace entre les liens */  
+}
+
+
+/* Tablette */
+@media (max-width: 1300px) {
+ .cmd-link p {
+  margin-right: 4rem;
+  
+  }
+}
+
+/* Tablette */
+@media (max-width: 900px) {
+  .cmd-link p {
+    margin-right: 4rem;
+
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .cmd-link p {
+    margin-right: 3rem;
+    width: 100%;           /* pour que le texte prenne plus de place */
+
+  }
+}
+
+
+
+
+
+
+
+
+.title {
+  font-size: 2rem;
+  margin-left: 16%;
+  top: 60%;
+  line-height: 1.1;
+  z-index: 10;
+  position: fixed;
+  color: #ffffff;
+}
+
+/* Tablette */
+@media (max-width: 900px) {
+  .title {
+    font-size: 1.4rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .title {
+    font-size: 0.8rem;
+    top: 72%;
+  }
+}

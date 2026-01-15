@@ -1,0 +1,718 @@
+/* Reset CSS basique */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+
+
+@font-face {
+  font-family: "MaPolice";          /* nom que tu utiliseras dans ton CSS */
+  src: url("../PORT FOLIO/IBM.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "MaPoliceLight";          /* nom que tu utiliseras dans ton CSS */
+  src: url("../PORT FOLIO/IBM Light.ttf") format("truetype");
+}
+
+
+body {
+  background-color: black;
+  font-family: monospace;
+  height: 100vh;
+  overflow: hidden;
+  transition: background-color 1s ease;
+  cursor: none;
+
+}
+
+html, body {
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+
+#custom-cursor {
+  position: fixed;
+  pointer-events: none; /* pour ne pas bloquer les clics */
+  width: 10px;
+  height: 20px;
+  background: white;
+  top: 0;
+  left: 0;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  
+}
+
+
+
+
+
+
+.navigation {
+  position: fixed;
+  z-index: 999;
+  top: 3%;
+  left: 1.5%;
+
+}
+
+
+/* Tablette */
+@media (max-width: 900px) {
+  .navigation {
+    left: 1.7%;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .navigation {
+    left: 2%;
+  }
+}
+
+
+
+
+
+
+
+.navbar-container a {
+  line-height: 1.5;
+  text-decoration: none;
+  display: block;
+  font-size: 1rem;
+  color: transparent;
+  font-weight: 200;
+}
+
+/* Tablette */
+@media (max-width: 900px) {
+  .navbar-container a {
+    font-size: 0.9rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .navbar-container a {
+    font-size: 0.8rem;
+    left: 2%;
+
+  }
+}
+
+
+
+
+
+
+/* Menu et resume inactifs pendant le chargement 
+.navigation.loading,
+#resume.loading {
+  pointer-events: none;  /* désactive tous les événements souris 
+  opacity: 0;            /* invisible 
+}
+
+#resume.loading a {
+  pointer-events: none;
+  color: transparent !important; /* s'assure que le texte disparaisse 
+  text-decoration: none;
+}
+
+*/
+
+
+
+
+/* ===========================
+   RESUME (bouton)
+   =========================== */
+
+#resume {
+  font-size: 1.5rem;
+  z-index: 1000;
+  position: fixed;
+  top: 3%;
+  right: 3%;
+}
+
+#resume button {
+  color: transparent;          /* texte invisible par défaut */
+  text-decoration: none;
+  border: none;
+  background: none;            /* pas de fond pour que le style CMD fonctionne */
+  cursor: pointer;             /* pointeur main au survol */
+  font-family: monospace;      /* pour garder le style type "CMD" */
+  font-size: inherit;           /* hérite de #resume */
+  padding: 0;                  /* pas de padding pour aligner les spans */
+}
+
+/* Tablette */
+@media (max-width: 900px) {
+  #resume {
+    font-size: 1.2rem;
+    top: 3%;
+    left: 80%;
+    right: auto; /* enlever right pour éviter conflit */
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  #resume {
+    font-size: 1rem;
+    top: 3%;
+    left: 70%;
+    right: auto;
+  }
+}
+
+
+
+
+
+#icon {
+  position: fixed;
+  bottom: 5%;
+  right: -1%;
+  gap: 10px; /* espace entre les liens */
+}
+
+/* Tablette */
+@media (max-width: 900px) {
+  #icon {
+    bottom: 8%;
+    right: 2%;
+
+
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  #icon {
+    bottom: 10%;
+    right: 0%;
+
+  }
+}
+
+
+
+#icon a {
+  color: transparent;
+  font-family: monospace;
+  font-size: 1rem;
+  line-height: 2;
+  text-decoration: none;
+  margin-right: 15%;
+  pointer-events: none;
+
+}
+
+
+/* Tablette */
+@media (max-width: 900px) {
+  #icon a {
+    font-size: 0.9rem;
+    margin-right: 9%;
+
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  #icon a {
+    font-size: 0.8rem;
+    margin-right: 10%;
+
+  }
+}
+
+
+
+
+
+
+
+/* Section texte bas (home) */
+.welcome {
+  font-family: monospace;
+  font-size: 1rem;
+  text-align: left;
+  position: fixed;
+  top: 48%;
+  left: 20%;
+  opacity: 1;
+  z-index: 1;
+  width: 90%;
+  line-height: 1;
+  display: flex;
+  color: #000000;
+}
+
+.welcome p {
+  margin-right: 10rem;
+}
+
+/* Tablette */
+@media (max-width: 900px) {
+  .welcome p {
+    margin-right: 5rem;
+    font-size: 0.8rem;
+    width: 19%;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .welcome p {
+    margin-right: 7.6rem;
+    font-size: 0.6rem;
+    width: 25%;
+  }
+}
+
+
+
+
+.hi {
+  left: 20%;
+  top: 20%;
+  font-family: "MaPolice", monospace;
+  font-size: 5rem;
+  text-align: left;
+  position: fixed;
+  opacity: 1;
+  z-index: 5;
+  width: 90%;
+  line-height: 0.7;
+  display: flex;
+  color: #ffffff;
+}
+
+/* CSS conseillé pour rendre les transitions douces */
+.hi span {
+  display: inline-block; /* évite problèmes d'alignement */
+  white-space: pre; /* conserve les espaces */
+}
+
+
+/* Tablette */
+@media (max-width: 900px) {
+  .hi {
+    font-size: 4rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .hi {
+    font-size: 2.5rem;
+  }
+}
+
+
+
+
+
+.monlien {
+  top: 4%;
+  left: 20%;
+  font-family: monospace;
+  font-size: 0.7rem;
+  text-align: left;
+  position: fixed;
+  opacity: 1;
+  z-index: 1;
+  width: 90%;
+  line-height: 0.7;
+  display: flex;
+  color: transparent;
+}
+
+
+
+/* Tablette */
+@media (max-width: 900px) {
+  .monlien {
+    font-size: 0.5rem;
+    top: 4%;
+    left: 20%;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .monlien {
+    font-size: 0.4rem;
+    top: 4.5%;
+    left: 30%;
+
+  }
+}
+
+
+
+
+#ditebonjour {
+  position: fixed;
+  left: 20%;
+  top: 60%;
+  font-family: monospace;
+  color: transparent;
+  font-size: 2rem;
+  background-color: transparent;
+  border: none;
+  pointer-events: auto;
+  z-index: 200;
+  
+}
+
+button span {
+  display: inline-block;
+  padding: 0 1px;
+  
+}
+
+
+#clock {
+  font-family: monospace;
+  font-size: 1rem;
+  color: #808080;
+  left: 2%;
+  bottom: 5%;
+  position: fixed;
+  display: flex;          /* pour que les spans s’alignent correctement */
+  gap: 2px;               /* petit espacement entre chiffres */
+}
+
+#clock span {
+  display: inline-block;
+  width: 1ch;             /* largeur fixe pour monospace */
+  text-align: center;
+}
+
+/* Tablette */
+@media (max-width: 900px) {
+  #clock {
+    bottom: 10%;
+    font-size: 0.8rem;
+    left: 4%;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  #clock {
+    bottom: 10%;
+    font-size: 0.8rem;
+    left: 3%;
+  }
+}
+
+
+
+
+
+
+
+
+.para {
+  font-family: monospace;
+  text-align: left;
+  position: fixed;
+  top: 12%;
+  left: 20%;
+  opacity: 1;
+  z-index: 5;
+  display: flex;
+  color: transparent;
+  font-size: 0.8rem;
+  width: 70%;
+  
+  
+}
+
+.para p {
+  font-size: 0.8rem;
+  margin-right: 0%;
+  width: 100%;
+  white-space: pre-wrap;
+
+}
+
+
+
+.titled {
+  position: fixed;
+  display: flex;
+  top: 2%;
+  left: 20%;
+  font-family: monospace;
+  font-size: 4rem;
+  color: transparent;
+  background-color: transparent;
+  width: 90%;
+}
+
+.titled p {
+  margin-right: 25%;
+}
+
+
+
+
+/* Section texte bas (home) */
+.profiletitle {
+  font-family: monospace;
+  top: 55%;
+  left: 20%;
+  opacity: 1;
+  color: transparent;
+  position: fixed;  
+}
+
+.profiletitle p {
+  white-space: pre;
+  margin-right: -12%;
+}
+
+
+
+
+.another {
+  z-index: 100;
+}
+
+
+.craft {
+  font-size: 2rem;
+  margin-left: 45%;
+  margin-top: -5%;
+  line-height: 1.1;
+  width: 20%;
+  position: fixed;
+}
+
+.skills5 {
+  font-size: 2rem;
+  margin-left: 27%;
+  margin-top: -5%;
+  line-height: 1.1;
+  z-index: 2;
+  position: fixed;
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+.pablo {
+  font-family: "ThunderSemBd";
+  font-size: 2rem;
+  text-align: center;
+  position: absolute;
+  top: 16%;
+  left: 84%;
+  transform: translate(-50%, -50%) translateY(50px);
+  opacity: 0;
+  z-index: 1;
+  transition: opacity 1.5s ease, transform 1.5s ease;
+  pointer-events: none;
+}
+
+.pablo.miakatra {
+  opacity: 0;
+  transform: translate(-50%, -50%) translateY(0);
+}
+.pablo.midina {
+  opacity: 0;
+  transform: translate(-50%, -50%) translateY(100px);
+  filter: blur(1px); /* intensité du flou */
+}
+
+
+
+
+
+.block {
+  font-family: "Thunder";
+  font-size: 1.5rem;
+  position: absolute;
+  top: 42%;
+  left: 34%;
+  transform: translate(-50%, -50%) translateY(50px);
+  opacity: 0;
+  z-index: 1;
+  transition: opacity 1.5s ease, transform 1.5s ease;
+  line-height: 1;
+  width: 32%;
+}
+
+
+
+.block.mandeha {
+  opacity: 1;
+  transform: translate(-50%, -50%) translateY(0);
+}
+
+
+.block.miverina {
+  opacity: 0;
+  transform: translate(-50%, -50%) translateY(100px);
+  filter: blur(1px); /* intensité du flou */
+}
+
+.title {
+  font-family: monospace;
+  font-size: 2.5rem;
+  text-align: center;
+  position: absolute;
+  top: 76%;
+  left: 45%;
+  transform: translate(-50%, -50%) translateY(50px);
+  opacity: 0;
+  z-index: 1;
+  transition: opacity 1.5s ease, transform 1.5s ease;
+  text-align: left;
+  line-height: 0.9;
+  mix-blend-mode: difference;
+
+}
+
+.title.mipoitra {
+  opacity: 1;
+  transform: translate(-50%, -50%) translateY(0px);
+}
+
+.title.milefa {
+  opacity: 0;
+  transform: translate(-50%, -50%) translateY(100px);
+  filter: blur(1px); /* intensité du flou */
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/* Conteneur principal */
+.conteneur {
+  font-size: 0.8rem;
+  text-align: left;
+  position: fixed;
+  top: 32%;
+  left: 30%;
+  opacity: 1;
+  z-index: 4;
+  pointer-events: auto;
+  width: 35%;
+  cursor: pointer;
+}
+
+
+
+.conteneur-title {
+  display: flex;
+  gap: 1rem;
+  white-space: nowrap;
+  transition: gap 2s ease, color 0.7s ease;
+  position: relative;
+  justify-content: space-between;
+}
+
+/* Bloc titre */
+.bloky {
+  font-family: monospace;
+  position: relative;
+  margin-bottom: 5px;
+  cursor: pointer;
+}
+
+/* Zone où les descriptions vont apparaître */
+.zone-descriptions {
+  position: fixed;
+  top: 21%;
+  left: 30%;
+  width: 35%;
+  font-family: monospace;
+  color: white;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* descriptions (séparées mais mêmes classes) */
+.zone-descriptions p[class^="description"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, max-height 0.3s ease, transform 0.3s ease;
+}
+
+/* Visible (JS ajoute cette classe) */
+.visible {
+  opacity: 1 !important;
+  max-height: 500px !important;
+  transform: translateY(0) !important;
+}
+
+/* Caché (JS ajoute cette classe) */
+.hidden {
+  opacity: 0 !important;
+  max-height: 0 !important;
+  overflow: hidden !important;
+  transform: translateY(10px) !important;
+}
+
+/* Style du texte en mode CMD */
+.zone-descriptions span {
+  color: transparent;
+}
+
+
+
+
+
+
+.year {
+  left: 20%;
+  top: 32%; /* par ex., à toi d'adapter */
+  font-family: monospace;
+  font-size: 3rem;
+  position: fixed;
+  display: flex;
+  color: #ffffff;
+  z-index: 5;
+  white-space: pre;
+  line-height: 0.7;
+
+}
+
+.year span {
+  display: inline-block;
+  white-space: pre;
+}
+

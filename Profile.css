@@ -1,0 +1,327 @@
+/* Reset CSS basique */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+
+
+body {
+  background-color: black;
+  font-family: monospace;
+  height: 100vh;
+  overflow: hidden;
+  transition: background-color 1s ease;
+  cursor: none;
+
+}
+
+html, body {
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+
+
+
+
+@font-face {
+  font-family: "MaPolice";          /* nom que tu utiliseras dans ton CSS */
+  src: url("../PORT FOLIO/IBM.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "MaPoliceLight";          /* nom que tu utiliseras dans ton CSS */
+  src: url("../PORT FOLIO/IBM Light.ttf") format("truetype");
+}
+
+
+
+
+
+
+#custom-cursor {
+  position: fixed;
+  pointer-events: none; /* pour ne pas bloquer les clics */
+  width: 10px;
+  height: 20px;
+  background: white;
+  top: 0;
+  left: 0;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  
+}
+
+
+
+
+
+.navigation {
+  position: fixed;
+  z-index: 999;
+  top: 3%;
+  left: 1.5%;
+
+}
+
+
+/* Tablette */
+@media (max-width: 900px) {
+  .navigation {
+    left: 1.7%;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .navigation {
+    left: 2%;
+  }
+}
+
+
+
+
+.navbar-container a {
+  line-height: 1.5;
+  text-decoration: none;
+  display: block;
+  font-size: 1rem;
+  color: transparent;
+  font-weight: 200;
+}
+
+/* Tablette */
+@media (max-width: 900px) {
+  .navbar-container a {
+    font-size: 0.9rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .navbar-container a {
+    font-size: 0.8rem;
+    left: 2%;
+
+  }
+}
+
+
+
+
+
+
+.para {
+  font-family: monospace;
+  text-align: left;
+  position: fixed;
+  top: 12%;
+  left: 20%;
+  opacity: 1;
+  z-index: 5;
+  display: flex;
+  color: transparent;
+  font-size: 0.8rem;
+  width: 70%;
+}
+
+/* Tablette */
+@media (max-width: 900px) {
+  .para {
+    font-size: 0.7rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .para {
+    font-size: 0.6rem;
+    width: 92%;
+    display: block;
+    padding: 5%;
+    top: 14%;
+    
+  }
+}
+
+
+
+.para p {
+  font-size: 0.8rem;
+  margin-right: 0%;
+  width: 100%;
+  white-space: pre-wrap;
+
+}
+
+/* Tablette */
+@media (max-width: 900px) {
+  .para p {
+    font-size: 0.7rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .para p {
+    font-size: 0.6rem;
+    left: 2%;
+    margin-bottom: 40%;
+
+  }
+}
+
+
+
+
+
+
+
+
+.titled {
+  position: fixed;
+  display: flex;
+  top: 2%;
+  left: 20%;
+  font-family: "MaPolice", monospace;
+  font-size: 4rem;
+  color: transparent;
+  background-color: transparent;
+  width: 90%;
+}
+
+/* Tablette */
+@media (max-width: 900px) {
+  .titled {
+    font-size: 3rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .titled {
+    font-size: 1.9rem;
+    width: 100%;
+    display: block;
+    top: 12%;
+    left: 25%;
+
+  }
+}
+
+
+
+.titled p {
+  margin-right: 25%;
+  font-family: "MaPolice", monospace;
+}
+/* Tablette */
+@media (max-width: 900px) {
+  .titled p {
+    font-size: 2rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .titled p {
+    margin-right: 8%;
+    margin-bottom: 42%;
+
+  }
+}
+
+
+
+
+/* Section texte bas (home) */
+.profiletitle {
+  font-family: monospace;
+  top: 55%;
+  left: 25%;
+  opacity: 1;
+  color: transparent;
+  position: fixed;  
+}
+
+/* Tablette */
+@media (max-width: 900px) {
+  .profiletitle {
+    top: 57%;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .profiletitle {
+    top: 32%;
+    
+  }
+}
+
+
+
+
+.profiletitle p {
+  white-space: pre;
+  margin-right: -12%;
+}
+
+
+
+
+
+
+
+.other {
+  z-index: 10;
+}
+
+/* Tablette */
+@media (max-width: 900px) {
+  .other {
+    font-size: 0.6rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .other {
+    font-size: 0.5rem;
+
+  }
+}
+
+
+
+
+
+.skills5 {
+  font-size: 2rem;
+  margin-left: 27%;
+  margin-top: -5%;
+  line-height: 1.1;
+  z-index: 2;
+  position: fixed;
+
+}
+
+/* Tablette */
+@media (max-width: 900px) {
+  .skills5 {
+    font-size: 1.7rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .skills5 {
+    font-size: 1.2rem;
+    margin-top: 60%;
+    
+  }
+}
+
+

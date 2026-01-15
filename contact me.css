@@ -1,0 +1,566 @@
+
+
+body {
+  background-color: black;
+  font-family: monospace;
+  height: 100vh;
+  overflow: hidden;
+  transition: background-color 1s ease;
+  color: #ffffff;
+  cursor: none;
+
+}
+
+html, body {
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+
+#custom-cursor {
+  position: fixed;
+  pointer-events: none; /* pour ne pas bloquer les clics */
+  width: 10px;
+  height: 20px;
+  background: white;
+  top: 0;
+  left: 0;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  
+}
+
+
+
+
+
+
+
+
+.ensemble {
+  z-index: 10;
+  position: fixed;
+  top: 5%;
+  left: 20%;
+  color: #e60d0d;
+  opacity: 1;
+  width: 700px;
+}
+
+
+
+
+
+.object {
+  margin-bottom: 5%;
+}
+
+
+
+
+/* Style de l'input */
+.object input {
+  background-color: transparent;
+  height: 60px;
+  font-family: monospace;
+  font-size: 2rem;
+  color: #ffffff;
+  border: none; /* on enlève la vraie bordure */
+  padding: 4px 15px;
+  caret-color: transparent;
+  pointer-events: none;
+  width: 700px;
+}
+
+
+
+/* Tablette */
+@media (max-width: 700px) {
+  .object input {
+    width: 200px;
+
+  }
+}
+/* Tablette */
+@media (max-width: 1000px) {
+  .ensemble {
+    font-size: 1.5rem;
+    width: 600px;
+    height: 50px;
+
+  }
+}
+/* Tablette */
+@media (max-width: 900px) {
+  .ensemble {
+    font-size: 1.5rem;
+    width: 500px;
+    height: 50px;
+
+  }
+}
+
+/* Mobile */
+@media (max-width: 700px) {
+  .ensemble {
+    font-size: 0.5rem;
+    width: 300px;
+    height: 40px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 500px) {
+  .ensemble {
+    font-size: 0.8rem;
+    left: 10%;
+    width: 250px;
+  }
+}
+
+
+
+
+
+
+.object input:focus {
+  border: none;
+  outline: none; /* aussi pour enlever le contour bleu au focus */
+  border-radius: 0px;      /* arrondir les angles */
+}
+
+/* Tablette */
+@media (max-width: 1000px) {
+  .object input:focus {
+    font-size: 1.5rem;
+
+  }
+}
+/* Tablette */
+@media (max-width: 900px) {
+  .object input:focus {
+    font-size: 1.5rem;
+
+
+  }
+}
+
+/* Mobile */
+@media (max-width: 700px) {
+  .object input:focus {
+    font-size: 1.4rem;
+
+  }
+}
+
+/* Mobile */
+@media (max-width: 500px) {
+  .object input:focus {
+    font-size: 0.8rem;
+
+  }
+}
+
+
+
+
+
+.messagerie textarea {
+  background-color: transparent; /* ou une couleur personnalisée */
+  font-family: monospace;
+  left: 20%;
+  width: 700px;
+  height: 400px;
+  font-size: 1rem;
+  color: #ffffff;
+  resize: none;
+  margin-top: 1%;
+  caret-color: transparent;
+  padding-left: 15px; /* espace à gauche */
+  padding-right: 12px; /* espace à gauche */
+  padding-top: 10px;  /* espace en haut */
+  border-radius: 0px;      /* arrondir les angles */
+  border: none;
+  outline: none; /* aussi pour enlever le contour bleu au focus */
+  pointer-events: none;
+}
+
+/* Tablette */
+@media (max-width: 1100px) {
+  .messagerie textarea {
+    font-size: 1.5rem;
+    width: 700px;
+    height: 400px;
+  }
+}
+/* Tablette */
+@media (max-width: 900px) {
+  .messagerie textarea {
+    font-size: 1.5rem;
+    width: 500px;
+    height: 400px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 700px) {
+  .messagerie textarea {
+    font-size: 1rem;
+    width: 350px;
+    height: 400px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 500px) {
+  .messagerie textarea {
+    left: 10%;
+    width: 275px;
+    height: 400px;
+
+  }
+}
+
+
+
+.quit {
+  background-color: transparent; /* ou une couleur personnalisée */
+  font-family: monospace;
+  left: 19.7%;
+  color: transparent;
+  border: none; /* si tu veux aussi enlever la bordure */
+  outline: none; /* pour enlever le contour lors du focus, si tu veux */
+  font-size: 2rem;
+  margin-top: 2%;
+  position: fixed;
+}
+
+/* Tablette */
+@media (max-width: 1100px) {
+  .quit {
+    font-size: 2rem;
+    margin-top: 0rem;
+  }
+}
+/* Tablette */
+@media (max-width: 1000px) {
+  .quit {
+    font-size: 2rem;
+  }
+}
+/* Tablette */
+@media (max-width: 900px) {
+  .quit {
+    font-size: 2rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 700px) {
+  .quit {
+    font-size: 1.5rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 500px) {
+  .quit {
+    font-size: 1.4rem;
+    left: 9%;
+  }
+}
+
+
+
+
+
+
+#back span {
+  display: inline-block;
+  padding: 0 1px;
+}
+
+
+.envoi button {
+  background-color: transparent; /* ou une couleur personnalisée */
+  font-family: monospace;
+  left: 30%;
+  font-size: 2rem;
+  color: #000000;
+  border: none; /* si tu veux aussi enlever la bordure */
+  outline: none; /* pour enlever le contour lors du focus, si tu veux */
+  position: absolute;
+  margin-top: 4%;
+  margin-left: 50%;
+}
+
+
+/* Tablette */
+@media (max-width: 1100px) {
+  .envoi button {
+    font-size: 2rem;
+    margin-top: -1%;
+
+  }
+}
+/* Tablette */
+@media (max-width: 900px) {
+  .envoi button {
+    font-size: 2rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 700px) {
+  .envoi button {
+    font-size: 1.5rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 500px) {
+  .envoi button {
+    font-size: 1.4rem;
+    left: 20%;
+  }
+}
+
+
+
+
+
+
+#placeholder-objet {
+  color: transparent;
+  margin-top: 1.5%;
+  margin-left: 2.4%;
+  position: absolute;
+  font-size: 2rem;
+  pointer-events: none;
+}
+
+/* Tablette */
+@media (max-width: 1000px) {
+  #placeholder-objet {
+    font-size: 1.5rem;
+    margin-left: 5%;
+    margin-top: 7%;
+
+  }
+}
+/* Tablette */
+@media (max-width: 950px) {
+  #placeholder-objet {
+    font-size: 1.5rem;
+    margin-left: 4%;
+    margin-top: 4%;
+  }
+}
+
+/* Mobile */
+@media (max-width: 700px) {
+  #placeholder-objet {
+    font-size: 1.2rem;
+    margin-left: 4%;
+    margin-top: 7%;
+  }
+}
+
+/* Mobile */
+@media (max-width: 500px) {
+  #placeholder-objet {
+    font-size: 1.2rem;
+    margin-left: 4%;
+    margin-top: 7%;
+  }
+}
+
+
+
+
+
+
+
+#placeholder-message {
+  color: transparent;
+  font-size: 1rem;
+  margin-top: 3%;
+  margin-left: 2%;
+  position: absolute;
+  pointer-events: none;
+}
+
+/* Tablette */
+@media (max-width: 1000px) {
+  #placeholder-message {
+    font-size: 1rem;
+    margin-left: 5%;
+    margin-top: 7%;
+
+  }
+}
+/* Tablette */
+@media (max-width: 950px) {
+  #placeholder-message {
+    font-size: 1.2rem;
+    margin-left: 4%;
+    margin-top: 4%;
+  }
+}
+
+/* Mobile */
+@media (max-width: 700px) {
+  #placeholder-message {
+    font-size: 1rem;
+    margin-left: 4%;
+    margin-top: 7%;
+  }
+}
+
+/* Mobile */
+@media (max-width: 500px) {
+  #placeholder-message {
+    font-size: 1rem;
+    margin-left: 4%;
+    margin-top: 7%;
+  }
+}
+
+
+
+
+
+.custom-caret-objet {
+  position: absolute;
+  margin-top: 2%;
+  margin-left: 0.7%;
+  width: 15px;
+  height: 25px;
+  background-color: rgb(255, 255, 255); /* exemple couleur différente */
+  animation: blink 1s step-start infinite;
+  pointer-events: none;
+}
+
+/* Tablette */
+@media (max-width: 1100px) {
+  .custom-caret-objet {
+    margin-top: 2%;
+    width: 15px;
+    height: 26px;
+    margin-left: 1%;
+
+  }
+}
+/* Tablette */
+@media (max-width: 950px) {
+  .custom-caret-objet {
+    margin-top: 4%;
+    width: 10px;
+    height: 18px;
+    margin-left: 1.3%;
+  }
+}
+
+/* Mobile */
+@media (max-width: 700px) {
+  .custom-caret-objet {
+    margin-top: 7%;
+    width: 10px;
+    height: 18px;
+    margin-left: 1.3%;
+  }
+}
+
+/* Mobile */
+@media (max-width: 500px) {
+  .custom-caret-objet {
+    margin-top: 9%;
+    width: 6px;
+    height: 15px;
+    margin-left: 1%;
+  }
+}
+
+
+
+
+
+
+
+.custom-caret-message {
+  position: absolute;
+  margin-top: 1.1%;
+  margin-left: 0.7%;
+  left: 5px;
+  width: 8px;
+  height: 13px;
+  background-color: rgb(255, 255, 255); /* autre couleur */
+  animation: blink 1s step-start infinite;
+  pointer-events: none;
+}
+
+/* Tablette */
+@media (max-width: 1100px) {
+  .custom-caret-message {
+    margin-top: 1%;
+    width: 15px;
+    height: 26px;
+    margin-left: 1%;
+
+  }
+}
+/* Tablette */
+@media (max-width: 950px) {
+  .custom-caret-message {
+    margin-top: 2%;
+    width: 10px;
+    height: 18px;
+    margin-left: 1.3%;
+  }
+}
+
+/* Mobile */
+@media (max-width: 700px) {
+  .custom-caret-message {
+    margin-top: 1%;
+    width: 10px;
+    height: 18px;
+    margin-left: 1%;
+  }
+}
+
+/* Mobile */
+@media (max-width: 500px) {
+  .custom-caret-message {
+    margin-top: 1%;
+    width: 7px;
+    height: 15px;
+    margin-left: 1%;
+  }
+}
+
+
+
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  50.01%, 100% { opacity: 0; }
+}
+
+
+
+/* Pour le champ .object */
+.object::selection {
+  background-color: #ffffff; /* couleur de fond de sélection */
+  color: #000000;            /* couleur du texte sélectionné */
+}
+
+/* Pour le textarea dans .messagerie */
+.messagerie textarea::selection {
+  background-color: #ffffff; /* couleur de fond de sélection */
+  color: #000000;            /* couleur du texte sélectionné */
+}
+
+
+
+
+
