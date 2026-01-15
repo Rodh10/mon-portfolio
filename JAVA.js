@@ -233,6 +233,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
     startLoaderWithRabbit(() => {
 
+      resetLinksState();
       enhanceNavLinks();
       appearClockWithRandom();
       appearLinks(); 
@@ -1475,108 +1476,90 @@ function leaveEffectSayHi() {
 
 
 
-
-
-
-
 /* ===========================
    NAVIGATION STYLE "CMD"
    =========================== */
-
 function enhanceNavLinks() {
   const links = document.querySelectorAll('.nav');
 
-  links.forEach(el => {
-    const text = el.textContent.trim();
-    el.textContent = '';
+  links.forEach(link => {
+    const text = link.textContent.trim();
+    link.textContent = '';
 
-    // Création des spans lettre par lettre
+    // Création des spans pour chaque lettre
     const letters = text.split('');
     letters.forEach(letter => {
       const span = document.createElement('span');
       span.textContent = letter;
       span.style.color = "#808080"; // gris par défaut
-      el.appendChild(span);
+      span.style.backgroundColor = "transparent";
+      link.appendChild(span);
     });
 
-    let timeouts = [];
+    let hoverTimeouts = [];
 
     /* ============ HOVER CMD ============ */
-    el.addEventListener('mouseenter', () => {
-      if (el.classList.contains("active-page")) return;
+    link.addEventListener('mouseenter', () => {
+      if (link.classList.contains("active-page")) return;
 
-      const spans = el.querySelectorAll("span");
-      timeouts.forEach(t => clearTimeout(t));
-      timeouts = [];
+      const spans = link.querySelectorAll('span');
+      hoverTimeouts.forEach(t => clearTimeout(t));
+      hoverTimeouts = [];
 
       spans.forEach((span, i) => {
         const t1 = setTimeout(() => {
           span.style.color = "#000000";
           span.style.backgroundColor = "white";
         }, i * 30);
-        timeouts.push(t1);
+        hoverTimeouts.push(t1);
 
         const t2 = setTimeout(() => {
           span.style.color = "#808080";
           span.style.backgroundColor = "transparent";
         }, i * 30 + 20);
-        timeouts.push(t2);
-
-        const t3 = setTimeout(() => {
-          span.style.color = "#b8b8b8";
-          span.style.backgroundColor = "transparent";
-        }, i * 30 + 30);
-        timeouts.push(t3);
+        hoverTimeouts.push(t2);
       });
     });
 
     /* ============ LEAVE CMD ============ */
-    el.addEventListener('mouseleave', () => {
-      if (el.classList.contains("active-page")) return;
+    link.addEventListener('mouseleave', () => {
+      if (link.classList.contains("active-page")) return;
 
-      const spans = el.querySelectorAll("span");
-      timeouts.forEach(t => clearTimeout(t));
-      timeouts = [];
+      const spans = link.querySelectorAll('span');
+      hoverTimeouts.forEach(t => clearTimeout(t));
+      hoverTimeouts = [];
 
       const last = spans.length - 1;
 
       spans.forEach((span, i) => {
         const delay = (last - i) * 30;
-
         const t1 = setTimeout(() => {
-          span.style.color = "#000000";
-          span.style.backgroundColor = "white";
-        }, delay);
-        timeouts.push(t1);
-
-        const t2 = setTimeout(() => {
           span.style.color = "#808080";
           span.style.backgroundColor = "transparent";
-        }, delay + 20);
-        timeouts.push(t2);
+        }, delay);
+        hoverTimeouts.push(t1);
       });
     });
 
     /* ============ CLICK ============ */
-    el.addEventListener('click', e => {
+    link.addEventListener('click', e => {
       e.preventDefault();
 
-      // 🚫 Si on clique sur le menu déjà actif → rien
-      if (el.classList.contains("active-page")) return;
+      if (link.classList.contains("active-page")) return;
 
-      const linkUrl = el.getAttribute('href');
-      const oldActive = document.querySelector(".active-page");
+      const href = link.getAttribute('href');
+      const oldActive = document.querySelector('.nav.active-page');
 
-      // Animation leave sur l'ancien actif uniquement
-      if (oldActive && oldActive !== el) {
+      // leaveEffect sur ancien actif
+      if (oldActive && oldActive !== link) {
         animateOldActiveLeave(oldActive);
-        oldActive.classList.remove("active-page");
+        oldActive.classList.remove('active-page');
       }
 
-      // Marque le lien cliqué comme actif
-      el.classList.add("active-page");
+      // marquer le nouveau lien comme actif
+      link.classList.add('active-page');
 
-      // Appel direct des leaveEffect
+      // leaveEffects globaux
       leaveEffectResume();
       leaveEffectHi();
       leaveEffectWelcome();
@@ -1584,63 +1567,61 @@ function enhanceNavLinks() {
       leaveEffectSayHi();
       leaveClock();
 
-      // Redirection après un petit délai pour que l'effet se voie
+      // redirection après 300ms
       setTimeout(() => {
-        if (linkUrl === "#home") window.location.href = "index.html";
-        else if (linkUrl === "#about") window.location.href = "Profile.html";
-        else if (linkUrl === "#track") window.location.href = "Achievements.html";
-        else window.location.href = linkUrl; // fallback
+        if (href === "#home") window.location.href = "index.html";
+        else if (href === "#about") window.location.href = "Profile.html";
+        else if (href === "#track") window.location.href = "Achievements.html";
+        else window.location.href = href;
       }, 300);
     });
   });
 
-  /* ============================================================
-     Fonction : leave CMD pour l'ancien menu actif uniquement
-     ============================================================ */
+  /* ===================================
+     Animation de disparition de l’ancien actif
+     =================================== */
   function animateOldActiveLeave(link) {
-    const spans = link.querySelectorAll("span");
+    const spans = link.querySelectorAll('span');
     const last = spans.length - 1;
 
     spans.forEach((span, i) => {
       const delay = (last - i) * 30;
 
       setTimeout(() => {
-        span.style.backgroundColor = "white";
         span.style.color = "#000000";
+        span.style.backgroundColor = "white";
       }, delay);
 
       setTimeout(() => {
-        span.style.backgroundColor = "transparent";
         span.style.color = "#808080";
+        span.style.backgroundColor = "transparent";
       }, delay + 20);
     });
   }
 
   /* ============================
-     Activer le menu courant
+     Activation initiale selon la page
      ============================ */
   function activateMenu(href) {
     const link = document.querySelector(`.nav[href="${href}"]`);
     if (!link) return;
 
     link.classList.add("active-page");
-
     const spans = link.querySelectorAll("span");
     spans.forEach((span, i) => {
       setTimeout(() => {
-        span.style.backgroundColor = "white";
         span.style.color = "#000000";
-      }, i * 35);
+        span.style.backgroundColor = "white";
+      }, i * 20);
 
       setTimeout(() => {
-        span.style.backgroundColor = "transparent";
         span.style.color = "#ffffff";
-      }, i * 35 + 20);
+        span.style.backgroundColor = "transparent";
+      }, i * 20 + 30);
     });
   }
 
   const page = window.location.pathname;
-
   if (page.includes("index.html")) activateMenu("#home");
   if (page.includes("Profile.html")) activateMenu("#about");
   if (page.includes("Achievements.html")) activateMenu("#track");
@@ -1648,6 +1629,18 @@ function enhanceNavLinks() {
 
 
 
+
+
+function resetLinksState() {
+  document.querySelectorAll('.nav').forEach(el => {
+    el.isAppeared = false; // permet aux animations de hover et leave de fonctionner
+    el.classList.remove('active-page'); // on réinitialise
+    el.querySelectorAll('span').forEach(span => {
+      span.style.color = '#808080';
+      span.style.backgroundColor = 'transparent';
+    });
+  });
+}
 
 
 function splitLinksText() {
@@ -1728,6 +1721,7 @@ function leaveEffectLinks2() {
     el.isAppeared = false;
   });
 }
+
 
 
 
