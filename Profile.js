@@ -334,7 +334,7 @@ function enhanceNavLinks() {
       await leaveAllEffects();
 
       // Redirection après animations
-      if (linkUrl === "#home") window.location.href = "HTML.html";
+      if (linkUrl === "#home") window.location.href = "index.html";
       if (linkUrl === "#about") window.location.href = "Profile.html";
       if (linkUrl === "#track") window.location.href = "Achievements.html";
     });
@@ -458,7 +458,7 @@ window.addEventListener("DOMContentLoaded", () => {
     if (e.deltaY > 0) {
       window.location.href = "Achievements.html"; // scroll vers le bas
     } else {
-      window.location.href = "HTML.html"; // scroll vers le haut
+      window.location.href = "index.html"; // scroll vers le haut
     }
   });
 

@@ -398,7 +398,7 @@ function enhanceNavLinks() {
 
   const page = window.location.pathname;
 
-  if (page.includes("HTML.html")) activateMenu("#home");
+  if (page.includes("index.html")) activateMenu("#home");
   if (page.includes("Profile.html")) activateMenu("#about");
   if (page.includes("Achievements.html")) activateMenu("#track");
 }
