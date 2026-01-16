@@ -3,39 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Send-me-message</title>
     <link rel="stylesheet" href="contact me.css">
 
 </head>
 <body>
     
 
+
+
+
+
     <div class="ensemble">
 
-        <div class="object" style="position: relative;">
-            <div id="placeholder-objet" class="fake-placeholder">The object here</div>
-            <input type="text" id="objet" name="objet" maxlength="37" />
-            <div class="custom-caret-objet"></div>
+        <!-- Champ Email -->
+        <div class="input-field">
+            <input type="email" id="email" name="email"  required/>
         </div>
 
-        <div class="messagerie" style="position: relative;">
-            <div id="placeholder-message" class="fake-placeholder">Your message here</div>
-            <textarea id="message" name="message" rows="8" maxlength="1500"></textarea>
-            <div class="custom-caret-message"></div>
+        <!-- Champ Objet -->
+        <div class="input-field">
+            <input type="text" id="objet" name="objet"  maxlength="100" />
         </div>
 
+        <!-- Champ Message -->
+        <div class="input-field">
+            <textarea id="message" name="message" rows="8" maxlength="1500" ></textarea>
+        </div>
 
         <!-- Bouton SayHi -->
-        <button class="quit" id="quit" type="button"><_Back</button>
-
-
-        <div class="envoi">
-            <button type="submit" id="send">>_Submit</button>
-        </div>
-        
-        
+        <div class="boutons"><button class="quit" id="quit" type="button"><_Back</button> <button type="submit" id="send">>_Submit</button></div>
+            
 
     </div>
+
+
 
 
 

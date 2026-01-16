@@ -25,16 +25,16 @@ html, body {
 
 
 
+
 @font-face {
   font-family: "MaPolice";          /* nom que tu utiliseras dans ton CSS */
-  src: url("../PORT FOLIO/IBM.ttf") format("truetype");
+  src: url("../IBM.ttf") format("truetype");
 }
 
 @font-face {
   font-family: "MaPoliceLight";          /* nom que tu utiliseras dans ton CSS */
-  src: url("../PORT FOLIO/IBM Light.ttf") format("truetype");
+  src: url("../IBM Light.ttf") format("truetype");
 }
-
 
 
 
@@ -52,6 +52,7 @@ html, body {
   z-index: 9999;
   
 }
+
 
 
 

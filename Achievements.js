@@ -62,6 +62,7 @@ function delayedShowCursor() {
 
 // --------- ÉLÉMENTS QUI DÉSACTIVENT LE CURSEUR ---------
 const nav = document.querySelector('.navigation');
+const cmdlinks = document.querySelectorAll('.cmd-link p');
 const resume = document.getElementById('resume');
 const socialLinks = document.querySelectorAll('#icon .icon-link');
 const diteBonjour = document.getElementById('ditebonjour');
@@ -72,12 +73,10 @@ if (nav) {
 }
 
 
-
-
-
-
-
-
+cmdlinks.forEach(el => {
+  el.addEventListener('mouseenter', hideCursor);
+  el.addEventListener('mouseleave', delayedShowCursor);
+});
 
 
 

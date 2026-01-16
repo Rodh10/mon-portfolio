@@ -253,7 +253,6 @@ window.addEventListener("DOMContentLoaded", () => {
     sessionStorage.setItem('loaderPlayed', 'true');
 
   } else {
-
     enhanceNavLinks();
     appearClockWithRandom();
     appearLinks(); 
@@ -1485,23 +1484,63 @@ function leaveEffectSayHi() {
 
 function enhanceNavLinks() {
   const links = document.querySelectorAll('.nav');
+  let maxAppearTime = 0;
+
+  // --- Vérifier si apparition déjà jouée dans cet onglet
+  const hasAppeared = sessionStorage.getItem('navAppeared') === 'true';
 
   links.forEach(el => {
     const text = el.textContent.trim();
     el.textContent = '';
 
-    // Création des spans lettre par lettre
     const letters = text.split('');
     letters.forEach(letter => {
       const span = document.createElement('span');
       span.textContent = letter;
       span.style.color = "#808080"; // gris par défaut
+      span.style.opacity = '0'; // invisible par défaut
       el.appendChild(span);
     });
 
     let timeouts = [];
 
-    /* ============ HOVER CMD ============ */
+    // --- Animation d'apparition automatique (inverse de leaveEffectLinks2)
+    if (!hasAppeared) {
+      const spans = el.querySelectorAll('span');
+      spans.forEach((span, i) => {
+        const delay = i * 40;
+        const t1 = setTimeout(() => {
+          span.style.opacity = '1';
+          span.style.color = '#000000';
+          span.style.backgroundColor = '#808080';
+        }, delay);
+        const t2 = setTimeout(() => {
+          span.style.color = '#808080';
+          span.style.backgroundColor = 'transparent';
+        }, delay + 60);
+        timeouts.push(t1, t2);
+      });
+
+      const totalTime = spans.length * 40 + 60;
+      if (totalTime > maxAppearTime) maxAppearTime = totalTime;
+
+      setTimeout(() => {
+        el.style.pointerEvents = 'auto';
+        el.dataset.appeared = "true";
+      }, totalTime);
+    } else {
+      // Si apparition déjà jouée, rendre visible directement
+      const spans = el.querySelectorAll('span');
+      spans.forEach(span => {
+        span.style.opacity = '1';
+        span.style.color = '#808080';
+        span.style.backgroundColor = 'transparent';
+      });
+      el.style.pointerEvents = 'auto';
+      el.dataset.appeared = "true";
+    }
+
+    // --- HOVER CMD ---
     el.addEventListener('mouseenter', () => {
       if (el.classList.contains("active-page")) return;
 
@@ -1514,23 +1553,18 @@ function enhanceNavLinks() {
           span.style.color = "#000000";
           span.style.backgroundColor = "white";
         }, i * 30);
-        timeouts.push(t1);
-
         const t2 = setTimeout(() => {
           span.style.color = "#808080";
           span.style.backgroundColor = "transparent";
         }, i * 30 + 20);
-        timeouts.push(t2);
-
         const t3 = setTimeout(() => {
           span.style.color = "#b8b8b8";
-          span.style.backgroundColor = "transparent";
         }, i * 30 + 30);
-        timeouts.push(t3);
+        timeouts.push(t1, t2, t3);
       });
     });
 
-    /* ============ LEAVE CMD ============ */
+    // --- LEAVE CMD ---
     el.addEventListener('mouseleave', () => {
       if (el.classList.contains("active-page")) return;
 
@@ -1539,44 +1573,35 @@ function enhanceNavLinks() {
       timeouts = [];
 
       const last = spans.length - 1;
-
       spans.forEach((span, i) => {
         const delay = (last - i) * 30;
-
         const t1 = setTimeout(() => {
           span.style.color = "#000000";
           span.style.backgroundColor = "white";
         }, delay);
-        timeouts.push(t1);
-
         const t2 = setTimeout(() => {
           span.style.color = "#808080";
           span.style.backgroundColor = "transparent";
         }, delay + 20);
-        timeouts.push(t2);
+        timeouts.push(t1, t2);
       });
     });
 
-    /* ============ CLICK ============ */
+    // --- CLICK ---
     el.addEventListener('click', e => {
       e.preventDefault();
-
-      // 🚫 Si on clique sur le menu déjà actif → rien
       if (el.classList.contains("active-page")) return;
 
       const linkUrl = el.getAttribute('href');
       const oldActive = document.querySelector(".active-page");
 
-      // Animation leave sur l'ancien actif uniquement
       if (oldActive && oldActive !== el) {
         animateOldActiveLeave(oldActive);
         oldActive.classList.remove("active-page");
       }
 
-      // Marque le lien cliqué comme actif
       el.classList.add("active-page");
 
-      // Appel direct des leaveEffect
       leaveEffectResume();
       leaveEffectHi();
       leaveEffectWelcome();
@@ -1584,54 +1609,41 @@ function enhanceNavLinks() {
       leaveEffectSayHi();
       leaveClock();
 
-      // Redirection après un petit délai pour que l'effet se voie
       setTimeout(() => {
         if (linkUrl === "#home") window.location.href = "index.html";
         else if (linkUrl === "#about") window.location.href = "Profile.html";
         else if (linkUrl === "#track") window.location.href = "Achievements.html";
-        else window.location.href = linkUrl; // fallback
+        else window.location.href = linkUrl;
       }, 300);
     });
   });
 
-  /* ============================================================
-     Fonction : leave CMD pour l'ancien menu actif uniquement
-     ============================================================ */
-  function animateOldActiveLeave(link) {
-    const spans = link.querySelectorAll("span");
-    const last = spans.length - 1;
+  // --- Après fin de l'animation (ou immédiatement si déjà jouée) ---
+  setTimeout(() => {
+    // --- Détection de la page actuelle et recoloration du menu actif ---
+    let page = window.location.pathname;
+    if (page === "/" || page.endsWith("/")) page = "index.html";
 
-    spans.forEach((span, i) => {
-      const delay = (last - i) * 30;
+    if (page.includes("index.html")) activateMenu("#home");
+    if (page.includes("Profile.html")) activateMenu("#about");
+    if (page.includes("Achievements.html")) activateMenu("#track");
 
-      setTimeout(() => {
-        span.style.backgroundColor = "white";
-        span.style.color = "#000000";
-      }, delay);
+    // --- Marquer que l'apparition a été jouée pour cet onglet ---
+    if (!hasAppeared) sessionStorage.setItem('navAppeared', 'true');
+  }, maxAppearTime + 100);
 
-      setTimeout(() => {
-        span.style.backgroundColor = "transparent";
-        span.style.color = "#808080";
-      }, delay + 20);
-    });
-  }
-
-  /* ============================
-     Activer le menu courant
-     ============================ */
+  // --- Fonctions auxiliaires ---
   function activateMenu(href) {
     const link = document.querySelector(`.nav[href="${href}"]`);
     if (!link) return;
 
     link.classList.add("active-page");
-
     const spans = link.querySelectorAll("span");
     spans.forEach((span, i) => {
       setTimeout(() => {
         span.style.backgroundColor = "white";
         span.style.color = "#000000";
       }, i * 35);
-
       setTimeout(() => {
         span.style.backgroundColor = "transparent";
         span.style.color = "#ffffff";
@@ -1639,20 +1651,21 @@ function enhanceNavLinks() {
     });
   }
 
-  const page = window.location.pathname;
-
-
-  // Si on est à la racine du site ("/") ou index.html → considérer index.html comme page active
-  let currentPage = page;
-  if (page === "/" || page.endsWith("/")) {
-    currentPage = "index.html";
+  function animateOldActiveLeave(link) {
+    const spans = link.querySelectorAll("span");
+    const last = spans.length - 1;
+    spans.forEach((span, i) => {
+      const delay = (last - i) * 30;
+      setTimeout(() => {
+        span.style.backgroundColor = "white";
+        span.style.color = "#000000";
+      }, delay);
+      setTimeout(() => {
+        span.style.backgroundColor = "transparent";
+        span.style.color = "#808080";
+      }, delay + 20);
+    });
   }
-
-
-
-  if (page.includes("index.html")) activateMenu("#home");
-  if (page.includes("Profile.html")) activateMenu("#about");
-  if (page.includes("Achievements.html")) activateMenu("#track");
 }
 
 
@@ -1695,6 +1708,57 @@ function splitLinksText() {
 splitLinksText();
 
 
+function appearEffectLinks2() {
+  const links = document.querySelectorAll('.nav');
+  if (!links.length) return;
+
+  links.forEach(el => {
+    if (el.isAppeared) return; // ne pas relancer si déjà visible
+
+    const timers = leaveEffectTimersLinks.get(el) || [];
+    timers.forEach(t => clearTimeout(t));
+    leaveEffectTimersLinks.set(el, []);
+
+    const spans = el.querySelectorAll('span');
+    if (!spans.length) return;
+
+    // Initial : gris transparent
+    spans.forEach(span => {
+      span.style.color = '#808080';
+      span.style.backgroundColor = 'transparent';
+      span.style.opacity = '0';
+    });
+
+    // Animation apparition : lettre par lettre, ordre normal
+    spans.forEach((span, i) => {
+      const delay = i * 40; // ordre inverse de leaveEffect
+      // 1️⃣ Passage temporaire au blanc sur fond blanc
+      const t1 = setTimeout(() => {
+        span.style.opacity = '1';
+        span.style.color = '#000000';
+        span.style.backgroundColor = '#808080';
+      }, delay);
+      leaveEffectTimersLinks.get(el).push(t1);
+
+      // 2️⃣ Passage finale : couleur normale sur fond transparent
+      const t2 = setTimeout(() => {
+        span.style.color = '#808080'; // couleur finale ou #000 selon ton style
+        span.style.backgroundColor = 'transparent';
+      }, delay + 60);
+      leaveEffectTimersLinks.get(el).push(t2);
+    });
+
+    // Réactiver les interactions après la fin
+    const totalTime = spans.length * 40 + 60;
+    setTimeout(() => {
+      el.style.pointerEvents = 'auto';
+      el.isAppeared = true;
+    }, totalTime);
+  });
+}
+
+
+
 // --- Fonction de disparition letter-by-letter pour les liens ---
 function leaveEffectLinks2() {
   const links = document.querySelectorAll('.nav');
@@ -1711,7 +1775,7 @@ function leaveEffectLinks2() {
     if (!spans.length) return;
 
     spans.forEach(span => {
-      span.style.color = '#ff0000';
+      span.style.color = '#808080';
       span.style.backgroundColor = 'transparent';
       span.style.opacity = '1';
     });

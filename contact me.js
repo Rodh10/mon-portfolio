@@ -1,335 +1,117 @@
-const cursor = document.createElement('div');
-cursor.id = 'custom-cursor';
-document.body.appendChild(cursor);
+const textarea = document.querySelector('#message');
+const maxLength = 1500; // même valeur que ton maxlength
 
-let idleTimeout;
-let blinkInterval;
-let isBlinking = false;
-
-const textFields = [
-  document.querySelector('#message'),
-  document.querySelector('#objet')
-];
-
-// On ajoute les boutons à surveiller
-const buttons = [
-  document.querySelector('#quit'),
-  document.querySelector('#send')
-];
-
-let fieldFocused = null;           // champ actuellement focus
-let mouseOverFocusedField = false; // souris sur champ focus ou bouton
-let lastMouseX = 0;
-let lastMouseY = 0;
-
-function isMouseOverElement(el) {
-  if (!el) return false;
-  const rect = el.getBoundingClientRect();
-  const x = lastMouseX;
-  const y = lastMouseY;
-  return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
-}
-
-window.addEventListener('mousemove', e => {
-  lastMouseX = e.clientX;
-  lastMouseY = e.clientY;
-  cursor.style.top = e.clientY + 'px';
-  cursor.style.left = e.clientX + 'px';
-
-  // Arrêt ou reprise du blink selon focus + hover
-  clearTimeout(idleTimeout);
-  idleTimeout = setTimeout(() => {
-    if (!fieldFocused || !mouseOverFocusedField) startBlinking();
-  }, 1000);
+textarea.addEventListener('keydown', (e) => {
+    // Si la longueur du texte est >= maxLength et que ce n'est pas une touche "effacer"
+    if (textarea.value.length >= maxLength &&
+        !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+        e.preventDefault(); // bloque la saisie
+    }
 });
 
-function hideCursor() {
-  cursor.style.opacity = '0';
-  cursor.style.display = 'none';
-  clearInterval(blinkInterval);
-  isBlinking = false;
+
+
+
+/* ===========================
+   FORM ANIMATIONS (PLACEHOLDERS ONLY)
+   =========================== */
+
+function initFormAnimations() {
+    const elements = [
+        { el: document.querySelector('#email'), text: 'your_adress' },
+        { el: document.querySelector('#objet'), text: 'subject' },
+        { el: document.querySelector('#message'), text: 'message' }
+    ];
+
+    elements.forEach((item, index) => {
+        if (!item.el) return;
+
+        // Container visuel
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('animated-text');
+        wrapper.style.position = 'absolute';
+        wrapper.style.pointerEvents = 'none';
+
+        // Positionnement par-dessus input/textarea
+        const parent = item.el.parentElement;
+        parent.style.position = 'relative';
+        parent.appendChild(wrapper);
+
+        // Création spans lettres
+        item.text.split('').forEach(letter => {
+            const span = document.createElement('span');
+            span.textContent = letter;
+            span.style.opacity = '0';
+            span.style.color = '#808080';
+            wrapper.appendChild(span);
+        });
+
+        wrapper.spans = wrapper.querySelectorAll('span');
+        wrapper.isVisible = false;
+        item.wrapper = wrapper;
+
+        // Apparition différée
+        setTimeout(() => appear(wrapper), 200 + index * 150);
+
+        // --- NOUVEAU : faire disparaître le placeholder au focus ---
+        item.el.addEventListener('focus', () => {
+            disappear(wrapper);
+        });
+
+        // Optionnel : réapparition si champ vide au blur
+        item.el.addEventListener('blur', () => {
+            if (!item.el.value) {
+                appear(wrapper);
+            }
+        });
+    });
 }
 
-function showCursor() {
-  cursor.style.display = 'block';
-  cursor.style.opacity = '1';
-}
 
-function startBlinking() {
-  if (isBlinking || fieldFocused) return;
-  isBlinking = true;
-  blinkInterval = setInterval(() => {
-    cursor.style.opacity = cursor.style.opacity === '0' ? '1' : '0';
-  }, 500);
-}
+function appear(wrapper) {
+    if (wrapper.isVisible) return;
+    wrapper.isVisible = true;
 
-// Fonction commune pour gérer focus/hover
-function setupHoverDisappearance(el) {
-  if (!el) return;
+    wrapper.spans.forEach((span, i) => {
+        const delay = i * 40;
 
-  // Focus (uniquement pour inputs/textarea)
-  el.addEventListener && el.addEventListener('focus', () => {
-    fieldFocused = el;
-    if (isMouseOverElement(el)) {
-      mouseOverFocusedField = true;
-      hideCursor();
-    }
-  });
-
-  el.addEventListener && el.addEventListener('blur', () => {
-    if (fieldFocused === el) fieldFocused = null;
-    mouseOverFocusedField = false;
-    showCursor();
-  });
-
-  // Survol souris (pour inputs, textarea, boutons)
-  el.addEventListener('mouseenter', () => {
-    if (fieldFocused === el || buttons.includes(el)) {
-      mouseOverFocusedField = true;
-      hideCursor();
-    }
-  });
-
-  el.addEventListener('mouseleave', () => {
-    if (fieldFocused === el || buttons.includes(el)) {
-      mouseOverFocusedField = false;
-      showCursor();
-    }
-  });
-}
-
-// Appliquer sur tous les champs
-textFields.forEach(f => setupHoverDisappearance(f));
-buttons.forEach(b => setupHoverDisappearance(b));
-
-
-
-
-
-
-
-
-const leaveEffectTimersFakePlaceholder = new WeakMap();
-
-function toggleFakePlaceholder(selector, show = true, delayStart = 0) {
-  return new Promise((resolve) => {
-    const el = document.querySelector(selector);
-    if (!el) { resolve(); return; }
-
-    // Annule timers précédents
-    const oldTimers = leaveEffectTimersFakePlaceholder.get(el);
-    if (oldTimers) {
-      oldTimers.forEach(t => clearTimeout(t));
-      leaveEffectTimersFakePlaceholder.delete(el);
-    }
-
-    if (!el.querySelector('span')) {
-      const text = el.textContent;
-      el.textContent = '';
-      for (const ch of text) {
-        const span = document.createElement('span');
-        span.textContent = ch;
-        el.appendChild(span);
-      }
-    }
-
-    const spans = el.querySelectorAll('span');
-
-    if (show && !el.isAppeared) {
-      el.timeouts = el.timeouts || [];
-      spans.forEach(s => {
-        s.style.color = 'transparent';
-        s.style.backgroundColor = 'transparent';
-        s.style.border = 'none';
-        s.style.opacity = '1';
-      });
-
-      spans.forEach((span, i) => {
-        const t1 = setTimeout(() => {
-          span.style.color = '#808080';
-          span.style.backgroundColor = '#808080';
-        }, delayStart + i * 20);
-        el.timeouts.push(t1);
-
-        const t2 = setTimeout(() => {
-          span.style.color = '#808080';
-          span.style.backgroundColor = 'transparent';
-          // À la fin de la dernière animation on résout la promesse
-          if(i === spans.length -1) resolve();
-        }, delayStart + i * 20 + 10);
-        el.timeouts.push(t2);
-      });
-
-      el.isAppeared = true;
-
-    } else if (!show && el.isAppeared) {
-      const timers = [];
-      spans.forEach(span => {
-        // Préparer chaque span pour animation inverse
-        span.style.color = '#808080';
-        span.style.backgroundColor = 'transparent';
-        span.style.border = 'none';
-        span.style.opacity = '1';
-      });
-
-      const lastIndex = spans.length - 1;
-
-      spans.forEach((span, i) => {
-        const delay = (lastIndex - i) * 10;
-
-        // Animation inverse : rétrécir / disparaître progressivement
-        const t1 = setTimeout(() => {
-          span.style.color = 'transparent';         // disparition couleur
-          span.style.backgroundColor = 'transparent';
-          span.style.border = 'none';
-          span.style.opacity = '0';                // disparaît
+        // t1 → couleur texte noire, background blanc
+        setTimeout(() => {
+            span.style.opacity = '1';
+            span.style.color = 'black';
+            span.style.backgroundColor = '#808080';
         }, delay);
-        timers.push(t1);
 
-        const t2 = setTimeout(() => {
-          // Nettoyage final à la fin de l'animation
-          if(i === lastIndex) resolve(); 
-        }, delay + 20);
-        timers.push(t2);
-      });
-
-      leaveEffectTimersFakePlaceholder.set(el, timers);
-      el.isAppeared = false;
-    }
-  });
-}
-
-// Appelle toggleFakePlaceholder et ensuite démarre caret après délai garanti
-function setupFakePlaceholderInteraction(inputSelector, placeholderSelector, caretDiv) {
-  const input = document.querySelector(inputSelector);
-  const placeholder = document.querySelector(placeholderSelector);
-  // Rendre le placeholder cliquable
-  placeholder.style.cursor = 'text';
-  placeholder.addEventListener('click', () => {
-      input.focus();
-  });
-  const sendButton = document.querySelector('#send');
-  if (!input || !placeholder || !caretDiv || !sendButton) return;
-
-  caretDiv.style.visibility = 'hidden';
-  let caretBlinkTimeout;
-
-  // Fonction pour lancer le caret après délai
-  function delayedCaretStart(delay = 300) {
-    clearTimeout(caretBlinkTimeout);
-    caretBlinkTimeout = setTimeout(() => {
-      caretDiv.style.visibility = 'visible';
-      initCaretBlink(caretDiv);
-    }, delay);
-  }
-
-  input.addEventListener('focus', () => {
-    // Faire disparaître placeholder puis lancer caret avec délai
-    leaveFakePlaceholder(placeholderSelector);
-    delayedCaretStart(350);
-
-    if (!sendButton.isAppeared) {
-      initSendAnimations();
-    }
-  });
-
-  input.addEventListener('input', () => {
-    if (input.value.length === 0) {
-      // NE PAS ré-afficher placeholder si focus (garder caret)
-      if (!input.matches(':focus')) {
-        appearFakePlaceholder(placeholderSelector);
-        caretDiv.style.visibility = 'hidden';
-      } else {
-        // Champ vide mais focus => placeholder invisible, caret visible
-        caretDiv.style.visibility = 'visible';
-        initCaretBlink(caretDiv);
-      }
-
-      // Vérifier les deux champs pour bouton envoyer
-      const otherInputSelector = inputSelector === '#objet' ? '#message' : '#objet';
-      const otherInput = document.querySelector(otherInputSelector);
-      if (otherInput && otherInput.value.length === 0 && sendButton.isAppeared) {
-        leaveEffectSend();
-      }
-    } else {
-      // Texte présent : placeholder invisible, caret visible
-      placeholder.isAppeared = false;
-      const spans = placeholder.querySelectorAll('span');
-      spans.forEach(s => s.style.opacity = '0');
-
-      caretDiv.style.visibility = 'visible';
-      initCaretBlink(caretDiv);
-
-      if (!sendButton.isAppeared) {
-        initSendAnimations();
-      }
-    }
-  });
-
-  input.addEventListener('blur', () => {
-    if (input.value.length === 0) {
-      appearFakePlaceholder(placeholderSelector);
-      caretDiv.style.visibility = 'hidden';
-
-      const otherInputSelector = inputSelector === '#objet' ? '#message' : '#objet';
-      const otherInput = document.querySelector(otherInputSelector);
-      if (otherInput && otherInput.value.length === 0 && sendButton.isAppeared) {
-        leaveEffectSend();
-      }
-    } else {
-      // Champ non vide au blur, cacher caret
-      caretDiv.style.visibility = 'hidden';
-    }
-    clearTimeout(caretBlinkTimeout);
-  });
-}
-
-// Fonctions simplifiées pour appeler toggleFakePlaceholder avec promesse
-function appearFakePlaceholder(selector){
-  return toggleFakePlaceholder(selector, true);
-}
-function leaveFakePlaceholder(selector){
-  return toggleFakePlaceholder(selector, false);
-}
-
-// Appels corrigés selon ton HTML
-setupFakePlaceholderInteraction('#objet', '#placeholder-objet');
-setupFakePlaceholderInteraction('#message', '#placeholder-message');
-
-
-// Animation caret blink CSS déjà en place : ici tu peux réinitialiser l'animation au besoin
-function initCaretBlink(caretDiv){
-  caretDiv.style.animation = 'none'; // reset animation
-  // relancer l’animation en forçant reflow
-  void caretDiv.offsetWidth;
-  caretDiv.style.animation = 'blink 1s step-start infinite';
-}
-
-// --- Appliquer sur tes deux champs et leurs caret ---
-setupFakePlaceholderInteraction('#objet', '#placeholder-objet', document.querySelector('.custom-caret-objet'));
-setupFakePlaceholderInteraction('#message', '#placeholder-message', document.querySelector('.custom-caret-message'));
-
-// Gestion des événements pour déclencher leaveEffectQuit
-
-// Durées à ajuster selon ton timing dans leaveEffectFakePlaceholder
-const DUREE_PAR_PLACEHOLDER = 500; // approximatif (temps total animation par placeholder)
-const DELAI_ENTRE_PLACEHOLDERS = 300;
-
-function leavePlaceholdersWithDelay(callbackAfter) {
-  toggleFakePlaceholder('#objet');
-
-  setTimeout(() => {
-    toggleFakePlaceholder('#message');
-  }, DELAI_ENTRE_PLACEHOLDERS);
-
-  // Appeler le callback après la durée totale
-  const totalDuration = DUREE_PAR_PLACEHOLDER + DELAI_ENTRE_PLACEHOLDERS;
-  if (typeof callbackAfter === 'function') {
-    setTimeout(callbackAfter, totalDuration);
-  }
+        // t2 → couleur texte blanche, background transparent
+        setTimeout(() => {
+            span.style.color = '#808080';
+            span.style.backgroundColor = 'transparent';
+        }, delay + 50); // 50ms après t1
+    });
 }
 
 
+function disappear(wrapper) {
+    if (!wrapper.isVisible) return;
+    wrapper.isVisible = false;
+
+    const last = wrapper.spans.length - 1;
+
+    wrapper.spans.forEach((span, i) => {
+        const delay = (last - i) * 40;
+        setTimeout(() => {
+            span.style.opacity = '0';
+        }, delay);
+    });
+}
+
+function leaveFormAnimations() {
+    document.querySelectorAll('.animated-text').forEach(wrapper => {
+        disappear(wrapper);
+    });
+}
+
+initFormAnimations();
 
 
 
@@ -337,55 +119,52 @@ function leavePlaceholdersWithDelay(callbackAfter) {
 
 
 
-
-
-
-// Liste des timers pour Quit
 let leaveEffectTimersQuit = [];
-
-// Fonction de disparition du texte Quit
 
 function initQuitAnimations() {
   const el = document.querySelector('#quit');
   if (!el) return;
 
-  const text = el.textContent;
+  const text = el.textContent.trim();
   el.textContent = '';
 
-  const letters = text.split('');
-  letters.forEach(letter => {
+  // Création des spans
+  text.split('').forEach((letter) => {
     const span = document.createElement('span');
     span.textContent = letter === ' ' ? '\u00A0' : letter;
     span.style.display = 'inline-block';
     span.style.whiteSpace = 'pre';
-    span.style.opacity = '0'; // commence invisible
+    span.style.opacity = '0';
     el.appendChild(span);
   });
 
+  el.isAppeared = true;
   const spans = el.querySelectorAll('span');
-  el.isAppeared = true; // ✅ Indispensable pour que leave fonctionne
 
   // --- Apparition initiale ---
   setTimeout(() => {
     spans.forEach((span, i) => {
       setTimeout(() => {
         span.style.color = '#000000';
-        span.style.backgroundColor = i < 2 ? '#ff0000' : '#ffffff';
+        if (i < 2) {
+          span.style.backgroundColor = '#ff0000';
+        } else {
+          span.style.backgroundColor = '#ffffff';
+        }
         span.style.opacity = '1';
       }, i * 100);
     });
-  }, 600);
+  }, 2000);
 
   // --- Hover effect ---
   let timeouts = [];
 
   el.addEventListener('mouseenter', () => {
-    timeouts.forEach(t => clearTimeout(t));
+    timeouts.forEach((t) => clearTimeout(t));
     timeouts = [];
-
     spans.forEach((span, i) => {
       const t = setTimeout(() => {
-        span.style.color = '#000000';
+        span.style.color = '#000';
         span.style.backgroundColor = '#ff0000';
       }, i * 30);
       timeouts.push(t);
@@ -393,38 +172,65 @@ function initQuitAnimations() {
   });
 
   el.addEventListener('mouseleave', () => {
-    timeouts.forEach(t => clearTimeout(t));
+    timeouts.forEach((t) => clearTimeout(t));
     timeouts = [];
-
     const total = spans.length;
     spans.forEach((span, i) => {
       const t = setTimeout(() => {
-        span.style.color = '#000000';
+        span.style.color = '#000';
         span.style.backgroundColor = i < 2 ? '#ff0000' : '#ffffff';
       }, (total - 1 - i) * 30);
       timeouts.push(t);
     });
   });
 
-  // --- Click effect et redirection ---
+  // --- Click ---
   el.addEventListener('click', () => {
-    timeouts.forEach(t => clearTimeout(t)); // stop hover effects
-    leaveEffectQuit();
-    runSequentialLeaveEffects();
+      leaveEffectQuit();
+      leaveFormAnimations();
+      collapseBorderField('#email');
+      collapseBorderField('#objet');
+      collapseBorderField('#message');
 
-    setTimeout(() => {
-      window.location.href = 'index.html';
-    }, 3000);
+      const sendButton = document.querySelector('#send');
+      if (sendButton && sendButton.isAppeared) {
+          leaveEffectSend();
+      }
+
+      // LeaveEffect des textes des champs
+      leaveEffectFields();
+
+      // 🔹 Redirection après que toutes les animations soient terminées
+      // On estime le délai max des leaveEffects
+      const leaveEffectDelays = [];
+
+      // leaveEffectQuit
+      if (typeof leaveEffectQuit === 'function') leaveEffectDelays.push(500); // approximatif
+      // leaveFormAnimations
+      if (typeof leaveFormAnimations === 'function') leaveEffectDelays.push(500); // approximatif
+      // collapseBorderField
+      leaveEffectDelays.push(600); // pour les 3 champs
+      // leaveEffectSend
+      if (sendButton && sendButton.isAppeared) leaveEffectDelays.push(500);
+      // leaveEffectFields
+      leaveEffectDelays.push(500);
+
+      const totalDelay = Math.max(...leaveEffectDelays);
+
+      setTimeout(() => {
+          window.location.href = 'index.html';
+      }, totalDelay);
   });
-  
+
 }
 
-// Fonction de disparition du texte Quit
+
+// --- Leave effect pour Quit ---
 function leaveEffectQuit() {
   const el = document.querySelector('#quit');
   if (!el || !el.isAppeared) return;
 
-  leaveEffectTimersQuit.forEach(t => clearTimeout(t));
+  leaveEffectTimersQuit.forEach((t) => clearTimeout(t));
   leaveEffectTimersQuit = [];
 
   const spans = el.querySelectorAll('span');
@@ -432,235 +238,66 @@ function leaveEffectQuit() {
 
   spans.forEach((span, i) => {
     const delay = (lastIndex - i) * 30;
-
     const t1 = setTimeout(() => {
-      span.style.opacity = '0';
-      span.style.visibility = 'hidden';
       span.style.color = 'transparent';
-      span.style.backgroundColor = 'transparent';
+      span.style.visibility = 'hidden';
     }, delay);
-
     leaveEffectTimersQuit.push(t1);
-
-    const t2 = setTimeout(() => {
-      if (i === lastIndex) el.isAppeared = false;
-    }, delay + 20);
-
-    leaveEffectTimersQuit.push(t2);
-  });
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function initSendAnimations() {
-  const animatedTexts = document.querySelectorAll('#send');
-
-  animatedTexts.forEach((el, index) => {
-    const text = el.textContent;
-    el.textContent = '';
-
-    // Création des spans
-    const letters = text.split('');
-    letters.forEach(letter => {
-      const span = document.createElement('span');
-      span.textContent = letter;
-      el.appendChild(span);
-    });
-
-    let timeouts = [];
-
-    // Marque que l'apparition est active
-    el.isAppeared = true;
-
-    // Animation type "cmd" (utilisable pour entrée et hover)
-    function playCmdEffect(delayStart = 0, colorNormal = '#000000', colorAfter = '#808080') {
-      timeouts.forEach(t => clearTimeout(t));
-      timeouts = [];
-
-      const spans = el.querySelectorAll('span');
-      spans.forEach((span, i) => {
-        const timeout1 = setTimeout(() => {
-          span.style.color = colorNormal; // couleur normale
-          span.style.backgroundColor = 'white';
-          span.style.border = 'none';
-        }, delayStart + i * 30);
-        timeouts.push(timeout1);
-
-        const timeout2 = setTimeout(() => {
-          span.style.color = colorAfter;
-          span.style.backgroundColor = 'transparent';
-          span.style.border = 'none';
-        }, delayStart + i * 30 + 10);
-        timeouts.push(timeout2);
-      });
-    }
-
-    // Apparition initiale uniquement sur le premier élément
-    if (index === 0) {
-      playCmdEffect(300);
-    }
-
-    // --- Hover (rejoue l'effet) ---
-    el.addEventListener('mouseenter', () => {
-      playCmdEffect(0, '#000000', '#b8b8b8ff');
-    });
-
-    // --- Leave ---
-    el.addEventListener('mouseleave', () => {
-      timeouts.forEach(t => clearTimeout(t));
-      timeouts = [];
-
-      const spans = el.querySelectorAll('span');
-      const lastIndex = spans.length - 1;
-
-      spans.forEach((span, i) => {
-        const delay = (lastIndex - i) * 30;
-
-        const timeout1 = setTimeout(() => {
-          span.style.color = 'black';
-          span.style.backgroundColor = 'white';
-          span.style.border = 'none';
-        }, delay);
-        timeouts.push(timeout1);
-
-        const timeout2 = setTimeout(() => {
-          span.style.color = '#808080';
-          span.style.backgroundColor = 'transparent';
-          span.style.border = 'none';
-        }, delay + 20);
-        timeouts.push(timeout2);
-      });
-    });
-  });
-}
-
-// Map pour stocker les timeouts par élément
-const leaveEffectTimersSend = [];
-
-/**
- * Applique l'effet "fond blanc qui recule" sur #send,
- * sans recréer les spans, juste avec styles et timers propres.
- */
-function leaveEffectSend() {
-  const el = document.querySelector('#send');
-  if (!el) return;
-
-  // Ne fait rien si l'apparition n'est pas active
-  if (!el.isAppeared) return;
-
-  // Annule timers précédents
-  leaveEffectTimersSend.forEach(t => clearTimeout(t));
-  leaveEffectTimersSend.length = 0;
-
-  const spans = el.querySelectorAll('span');
-  if (!spans.length) return; // si pas de spans, rien à faire
-
-  // Mets tout en gris clair transparent au départ
-  spans.forEach(span => {
-    span.style.color = '#808080';
-    span.style.backgroundColor = 'transparent';
-    span.style.border = 'none';
-    span.style.opacity = '1';
   });
 
-  const lastIndex = spans.length - 1;
-
-  spans.forEach((span, i) => {
-    const delay = (lastIndex - i) * 30;
-
-    // Passage au noir sur fond blanc
-    const t1 = setTimeout(() => {
-      span.style.color = 'black';
-      span.style.backgroundColor = 'white';
-      span.style.border = 'none';
-      span.style.opacity = '1';
-    }, delay);
-    leaveEffectTimersSend.push(t1);
-
-    // Puis disparition (opacity 0) + fond transparent
-    const t2 = setTimeout(() => {
-      span.style.opacity = '0';
-      span.style.color = '#000000';
-      span.style.backgroundColor = 'transparent';
-      span.style.border = 'none';
-    }, delay + 20);
-    leaveEffectTimersSend.push(t2);
-  });
-
-  // Reset le flag apparition, puisque l'élément disparaît
   el.isAppeared = false;
 }
 
+// --- Initialisation ---
+initQuitAnimations();
 
 
 
 
 
-function clearInputAnimated(id) {
-    const input = document.getElementById(id);
-    if (!input) return;
 
-    if (input.value.length === 0) return; // ne rien faire si vide
 
-    let text = input.value;
-    let index = text.length;
 
-    function deleteChar() {
-        if (index <= 0) {
-            input.value = ''; // fin
-            return;
-        }
 
-        index--;
-        input.value = text.slice(0, index);
 
-        setTimeout(deleteChar, 20); // vitesse de disparition
-    }
 
-    deleteChar();
-}
 
-function clearTextareaAnimated(id) {
-    const textarea = document.getElementById(id);
-    if (!textarea) return;
+let currentIndex = 0; // index par défaut
 
-    if (textarea.value.length === 0) return;
 
-    let lines = textarea.value.split("\n");
 
-    // On calcule le nombre maximum de caractères parmi toutes les lignes
-    let maxLength = Math.max(...lines.map(line => line.length));
 
-    let step = 0;
+let idleTimeout;
+let blinkInterval;
+let isBlinking = false;
 
-    function deleteStep() {
-        if (step >= maxLength) {
-            textarea.value = ''; // fin
-            return;
-        }
 
-        // Supprime le dernier caractère de chaque ligne si possible
-        lines = lines.map(line => line.length > 0 ? line.slice(0, -1) : line);
 
-        textarea.value = lines.join("\n");
+window.addEventListener('mousemove', e => {
+  cursor.style.top = e.clientY + 'px';
+  cursor.style.left = e.clientX + 'px';
 
-        step++;
-        setTimeout(deleteStep, 20); // vitesse
-    }
+  // Arrêter le clignotement si on bouge la souris
+  if (isBlinking) {
+    clearInterval(blinkInterval);
+    cursor.style.opacity = '1'; // visible quand on bouge
+    isBlinking = false;
+  }
 
-    deleteStep();
+  // Réinitialiser le timer de repos
+  clearTimeout(idleTimeout);
+  idleTimeout = setTimeout(() => {
+    startBlinking();
+  }, 1000); // 1 seconde sans mouvement avant clignotement
+});
+
+function startBlinking() {
+  if (isBlinking) return;
+  isBlinking = true;
+
+  blinkInterval = setInterval(() => {
+    cursor.style.opacity = cursor.style.opacity === '0' ? '1' : '0';
+  }, 500); // clignote toutes les 500 ms
 }
 
 
@@ -669,125 +306,176 @@ function clearTextareaAnimated(id) {
 
 
 
-function updateCustomCaretPosition(input, caretDiv) {
-  const text = input.value;
-  const caretPos = input.selectionStart;
-  const style = window.getComputedStyle(input);
 
-  const div = document.createElement('div');
-  ['font-family', 'font-size', 'font-weight', 'letter-spacing', 'white-space',
-   'padding', 'border', 'box-sizing', 'line-height',
-   'word-wrap', 'overflow-wrap'].forEach(prop => {
-    div.style[prop] = style[prop];
+
+
+
+
+const cursor = document.createElement('div');
+cursor.id = 'custom-cursor';
+document.body.appendChild(cursor);
+
+let showCursorTimeout;
+
+// Fonction pour cacher le curseur
+function hideCursor() {
+  clearTimeout(showCursorTimeout);
+  cursor.style.display = 'none';
+}
+
+// Fonction pour montrer le curseur après un délai
+function delayedShowCursor() {
+  showCursorTimeout = setTimeout(() => {
+    cursor.style.display = 'block';
+  }, 500); // délai avant affichage
+}
+
+// Sélecteur de tous les champs de formulaire
+const champs = document.querySelectorAll('.input-field input, .input-field textarea');
+
+// Effet blink pour les champs
+champs.forEach(champ => {
+  champ.addEventListener('mouseenter', () => {
+    hideCursor();
   });
 
-  div.style.position = 'absolute';
-  div.style.visibility = 'hidden';
-  div.style.whiteSpace = 'pre-wrap';
-  div.style.width = style.width;
-  div.style.height = style.height;
-  div.style.overflow = 'auto';
+  champ.addEventListener('mouseleave', () => {
+    delayedShowCursor();
+  });
+});
 
-  div.textContent = text.substring(0, caretPos);
+// Sélecteur de tous les boutons
+const boutons = document.querySelectorAll('#quit, #send');
 
-  const span = document.createElement('span');
-  span.textContent = '|';
-  div.appendChild(span);
+boutons.forEach(bouton => {
+  bouton.addEventListener('mouseenter', () => {
+    // Pour le bouton Submit, vérifier s'il est activé/apparu
+    if (bouton.id === 'send' && (!bouton.isAppeared)) return;
+    hideCursor();
+  });
 
-  document.body.appendChild(div);
+  bouton.addEventListener('mouseleave', () => {
+    if (bouton.id === 'send' && (!bouton.isAppeared)) return;
+    delayedShowCursor();
+  });
+});
 
-  // 🔥 LA LIGNE CRUCIALE
-  div.scrollTop = input.scrollTop;
-  div.scrollLeft = input.scrollLeft;
-
-  const spanRect = span.getBoundingClientRect();
-  const divRect = div.getBoundingClientRect();
-
-  const left = spanRect.left - divRect.left;
-  const top = spanRect.top - divRect.top;
-
-  caretDiv.style.left = left + 'px';
-  caretDiv.style.top = top + 'px';
-
-
-
-  document.body.removeChild(div);
-
-
-  // 👉 Si le champ n'est pas focus → on ne montre jamais le caret
-  if (document.activeElement !== input) {
-    caretDiv.style.visibility = 'hidden';
-    return;
-  }
-
-  // 👉 Si du texte est sélectionné → pas de caret
-  if (input.selectionStart !== input.selectionEnd) {
-    caretDiv.style.visibility = 'hidden';
-    return;
-  }
-
-  // Sinon : caret normal
-  caretDiv.style.visibility = 'visible';
+// Navigation générale du curseur sur la page
+document.body.addEventListener('mousemove', (e) => {
+  cursor.style.left = e.pageX + 'px';
+  cursor.style.top = e.pageY + 'px';
+});
 
 
 
 
-}
 
 
 
 
-// Pour .object avec caret custom-caret-objet
-const containerObjet = document.querySelector('.object');
-if (containerObjet) {
-  const input = containerObjet.querySelector('input');
-  const caretDiv = containerObjet.querySelector('.custom-caret-objet');
-  if (input && caretDiv) {
-    ['input', 'click', 'keyup', 'keydown'].forEach(eventName => {
-      input.addEventListener(eventName, () => {
-        setTimeout(() => updateCustomCaretPosition(input, caretDiv), 0);
+
+
+const leaveEffectTimersFields = [];
+
+function leaveEffectFields() {
+  const fields = document.querySelectorAll('#email, #objet, #message');
+
+  fields.forEach(field => {
+    if (!field.value.trim()) return;
+
+    const rect = field.getBoundingClientRect();
+    const style = window.getComputedStyle(field);
+
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.left = rect.left + 'px';
+    overlay.style.top = rect.top + 'px';
+    overlay.style.width = rect.width + 'px';
+    overlay.style.height = rect.height + 'px';
+    overlay.style.font = style.font;
+    overlay.style.lineHeight = style.lineHeight;
+    overlay.style.padding = style.padding;
+    overlay.style.color = '#000';
+    overlay.style.whiteSpace = 'pre-wrap';
+    overlay.style.pointerEvents = 'none';
+    overlay.style.zIndex = '9999';
+    document.body.appendChild(overlay);
+
+    // Découpe par lignes
+    const lines = field.value.split('\n');
+    const lineSpans = [];
+
+    lines.forEach((line, lineIndex) => {
+      const lineDiv = document.createElement('div');
+      overlay.appendChild(lineDiv);
+
+      const spans = [];
+
+      [...line].forEach(char => {
+        const span = document.createElement('span');
+        span.textContent = char === ' ' ? '\u00A0' : char;
+        span.style.display = 'inline-block';
+        span.style.color = '#808080';
+        span.style.backgroundColor = 'transparent';
+        span.style.opacity = '1';
+        lineDiv.appendChild(span);
+        spans.push(span);
+      });
+
+      lineSpans.push(spans);
+    });
+
+    field.style.opacity = '0';
+
+    // Animation par ligne (toutes démarrent ensemble)
+    lineSpans.forEach(spans => {
+      const last = spans.length - 1;
+
+      spans.forEach((span, i) => {
+        const delay = (last - i) * 30;
+
+        const t1 = setTimeout(() => {
+          span.style.color = '#000';
+          span.style.backgroundColor = '#ffffff';
+        }, delay);
+        leaveEffectTimersFields.push(t1);
+
+        const t2 = setTimeout(() => {
+          span.style.opacity = '0';
+          span.style.backgroundColor = 'transparent';
+        }, delay + 20);
+        leaveEffectTimersFields.push(t2);
       });
     });
-    updateCustomCaretPosition(input, caretDiv);
-  }
-}
 
-// Pour .messagerie avec caret custom-caret-message
-const containerMessage = document.querySelector('.messagerie');
-if (containerMessage) {
-  const textarea = containerMessage.querySelector('textarea');
-  const caretDiv = containerMessage.querySelector('.custom-caret-message');
-  if (textarea && caretDiv) {
-    ['input', 'click', 'keyup', 'keydown'].forEach(eventName => {
-      textarea.addEventListener(eventName, () => {
-        setTimeout(() => updateCustomCaretPosition(textarea, caretDiv), 0);
-      });
-    });
-    updateCustomCaretPosition(textarea, caretDiv);
-  }
-}
+    // Cleanup
+    const maxLineLength = Math.max(...lineSpans.map(l => l.length));
+    const totalTime = maxLineLength * 30 + 100;
 
+    setTimeout(() => {
+      overlay.remove();
+    }, totalTime);
+  });
+}
 
 
 
 
 // -----------------------------
-// Border rectangle pour .object (responsive)
+// BORDERS RECTANGLES GENERIQUES
 // -----------------------------
-let borderRectangle = null;
-let targetRectangle = null; // stocker le champ .object
-let resizeObserver = null;
+const borders = {}; // stocke border, target et resizeObserver pour chaque champ
 
-function animateBorderRectangle() {
-    const target = document.querySelector('.object');
+function animateBorderRectangleField(fieldSelector) {
+    const target = document.querySelector(fieldSelector);
     if (!target) return;
 
-    targetRectangle = target; // stocker pour collapse
-    const input = target.querySelector('input');
-    input.style.pointerEvents = 'none';
-    target.style.caretColor = 'transparent';
+    // Si déjà animé pour ce champ, ne rien faire
+    if (borders[fieldSelector]?.border) return;
 
-    // Création du border
+    target.style.pointerEvents = 'none';
+    target.style.caretColor = 'white';
+
     const border = document.createElement('div');
     Object.assign(border.style, {
         position: 'absolute',
@@ -795,138 +483,31 @@ function animateBorderRectangle() {
         left: '0',
         width: '1px',
         height: '1px',
-        border: `1px solid #808080`,
+        border: '1px solid #808080',
         pointerEvents: 'none',
         boxSizing: 'border-box',
         background: 'transparent',
-        transition: `border-color 0.2s ease`,
-    });
-
-    target.style.position = target.style.position || 'relative';
-    target.appendChild(border);
-
-    border.isAnimated = false;
-
-    // Fonction pour mettre à jour la taille du border
-    const updateBorderSize = () => {
-        if (!border) return;
-        const fullWidth = target.offsetWidth;
-        const fullHeight = target.offsetHeight;
-
-        // Animation progressive si ce n'est pas encore animée
-        if (!border.isAnimated) {
-            border.style.transition = `height 300ms linear, border-color 0.2s ease`;
-            border.style.height = fullHeight + 'px';
-            setTimeout(() => {
-                border.style.transition = `width 300ms linear, border-color 0.2s ease`;
-                border.style.width = fullWidth + 'px';
-                setTimeout(() => {
-                    border.isAnimated = true;
-                    input.style.pointerEvents = 'auto';
-                }, 300);
-            }, 300);
-        } else {
-            // Mise à jour instantanée pour resize
-            border.style.width = fullWidth + 'px';
-            border.style.height = fullHeight + 'px';
-        }
-    };
-
-    // Initialisation de la taille
-    updateBorderSize();
-
-    // Observateur pour détecter changement de taille responsive
-    if (resizeObserver) resizeObserver.disconnect(); // Déconnecter l'ancien si existant
-    resizeObserver = new ResizeObserver(updateBorderSize);
-    resizeObserver.observe(target);
-
-    // Focus styling
-    target.addEventListener('focusin', () => border.style.borderColor = '#ffffff');
-    target.addEventListener('focusout', () => border.style.borderColor = '#808080');
-
-    borderRectangle = border;
-    return border;
-}
-
-function collapseBorderRectangle() {
-    if (!borderRectangle || !borderRectangle.isAnimated) return;
-
-    const border = borderRectangle;
-    const duration = 300;
-
-    targetRectangle.querySelector('input').style.pointerEvents = 'none'; // désactiver clic dès le début
-
-    border.style.transition = `width ${duration}ms linear, border-color 0.2s ease`;
-    border.style.width = '1px';
-    setTimeout(() => {
-        border.style.transition = `height ${duration}ms linear, border-color 0.2s ease`;
-        border.style.height = '1px';
-        setTimeout(() => {
-            if (border.parentElement) border.parentElement.removeChild(border);
-            borderRectangle = null;
-            if (resizeObserver) {
-                resizeObserver.disconnect();
-                resizeObserver = null;
-            }
-        }, duration);
-    }, duration);
-
-    border.isAnimated = false;
-}
-
-
-
-
-
-
-// -----------------------------
-// Border rectangle pour textarea (responsive)
-// -----------------------------
-let borderTextarea = null;
-let targetTextarea = null; // stocker le champ textarea
-let resizeObserverTextarea = null;
-
-function animateBorderRectangleTextarea() {
-    const target = document.querySelector('.messagerie textarea');
-    if (!target) return;
-
-    targetTextarea = target;
-    target.style.pointerEvents = 'none';
-    target.style.caretColor = 'transparent';
-
-    const border = document.createElement('div');
-    Object.assign(border.style, {
-        position: 'absolute',
-        top: '0', // aligné en haut du parent
-        left: '0',
-        width: '1px',
-        height: '1px',
-        border: `1px solid #808080`,
-        pointerEvents: 'none',
-        boxSizing: 'border-box',
-        background: 'transparent',
-        transition: `border-color 0.2s ease`,
+        transition: 'border-color 0.2s ease',
+        zIndex: '10',
     });
 
     const parent = target.parentElement;
-    parent.style.position = parent.style.position || 'relative';
+    parent.style.position = 'relative';
+    parent.style.overflow = 'visible';
     parent.appendChild(border);
 
     border.isAnimated = false;
 
-    // Fonction pour mettre à jour la taille du border
     const updateBorderSize = () => {
-        if (!border) return;
-
-        // On prend la largeur et hauteur réelles du textarea
-        const fullWidth = target.offsetWidth;
-        const fullHeight = target.offsetHeight;
+        const rect = target.getBoundingClientRect();
+        const fullWidth = rect.width;
+        const fullHeight = rect.height;
 
         if (!border.isAnimated) {
-            border.style.transition = `height 300ms linear, border-color 0.2s ease`;
+            border.style.transition = 'height 300ms linear, border-color 0.2s ease';
             border.style.height = fullHeight + 'px';
             setTimeout(() => {
-                border.style.transition = `width 300ms linear, border-color 0.2s ease`;
+                border.style.transition = 'width 300ms linear, border-color 0.2s ease';
                 border.style.width = fullWidth + 'px';
                 setTimeout(() => {
                     border.isAnimated = true;
@@ -934,34 +515,37 @@ function animateBorderRectangleTextarea() {
                 }, 300);
             }, 300);
         } else {
-            // Mise à jour instantanée pour responsive
             border.style.width = fullWidth + 'px';
             border.style.height = fullHeight + 'px';
         }
     };
 
-    // Initialisation
     updateBorderSize();
 
-    // Observer pour responsive
-    if (resizeObserverTextarea) resizeObserverTextarea.disconnect();
-    resizeObserverTextarea = new ResizeObserver(updateBorderSize);
-    resizeObserverTextarea.observe(target);
+    // ResizeObserver
+    if (borders[fieldSelector]?.resizeObserver) {
+        borders[fieldSelector].resizeObserver.disconnect();
+    }
+    const resizeObserver = new ResizeObserver(updateBorderSize);
+    resizeObserver.observe(target);
 
-    // Focus styling
+    // Focus / Blur
     target.addEventListener('focus', () => border.style.borderColor = '#ffffff');
     target.addEventListener('blur', () => border.style.borderColor = '#808080');
 
-    borderTextarea = border;
+    // Stockage dans l'objet global
+    borders[fieldSelector] = { border, target, resizeObserver };
     return border;
 }
 
-function collapseBorderTextarea() {
-    if (!borderTextarea || !borderTextarea.isAnimated) return;
-    const border = borderTextarea;
+function collapseBorderField(fieldSelector) {
+    const data = borders[fieldSelector];
+    if (!data || !data.border || !data.border.isAnimated) return;
+
+    const { border, target, resizeObserver } = data;
     const duration = 300;
 
-    targetTextarea.style.pointerEvents = 'none';
+    target.style.pointerEvents = 'none';
 
     border.style.transition = `width ${duration}ms linear, border-color 0.2s ease`;
     border.style.width = '1px';
@@ -970,11 +554,8 @@ function collapseBorderTextarea() {
         border.style.height = '1px';
         setTimeout(() => {
             if (border.parentElement) border.parentElement.removeChild(border);
-            borderTextarea = null;
-            if (resizeObserverTextarea) {
-                resizeObserverTextarea.disconnect();
-                resizeObserverTextarea = null;
-            }
+            delete borders[fieldSelector];
+            if (resizeObserver) resizeObserver.disconnect();
         }, duration);
     }, duration);
 
@@ -983,63 +564,288 @@ function collapseBorderTextarea() {
 
 
 
+animateBorderRectangleField('#email');
+animateBorderRectangleField('#objet');
+animateBorderRectangleField('#message');
 
 
 
-function runSequentialLeaveEffects() {
-  const delayBetween = 200; // délai entre chaque fonction
-  let totalDelay = 0;
 
-  const leaveFunctions = [
-    () => leaveEffectQuit(),
-    () => leaveFakePlaceholder('#placeholder-message'),
-    () => clearTextareaAnimated('message'), // ← ajout ici
-    () => collapseBorderTextarea(),
-    () => leaveFakePlaceholder('#placeholder-objet'),
-    () => clearInputAnimated('objet'),        // input
-    () => collapseBorderRectangle()
-  ];
 
-  leaveFunctions.forEach(fn => {
-    setTimeout(() => {
-      fn();
-    }, totalDelay);
 
-    // Ajuste le délai si besoin
-    if (fn === leaveFakePlaceholder) {
-      totalDelay += 200; 
-    } else {
-      totalDelay += delayBetween;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ===========================
+   BOUTON SEND ANIMATIONS + FORMSPREE
+   =========================== */
+
+function initSendAnimations() {
+    const el = document.querySelector('#send');
+    if (!el) return;
+
+    const text = el.textContent.trim();
+    el.textContent = '';
+
+    // Crée les spans pour chaque lettre
+    text.split('').forEach(letter => {
+        const span = document.createElement('span');
+        span.textContent = letter;
+        span.style.display = 'inline-block';
+        span.style.opacity = '0';
+        el.appendChild(span);
+    });
+
+    const spans = el.querySelectorAll('span');
+    el.isActive = false; // état visible du bouton
+
+    function appearSend() {
+        if (el.isActive) return;
+        el.isActive = true;
+        el.style.pointerEvents = 'auto';
+
+        spans.forEach((span, i) => {
+            const delay = i * 30;
+            setTimeout(() => {
+                span.style.opacity = '1';
+                span.style.color = 'black';
+                span.style.backgroundColor = '#808080';
+            }, delay);
+            setTimeout(() => {
+                span.style.color = '#808080';
+                span.style.backgroundColor = 'transparent';
+            }, delay + 50);
+        });
     }
-  });
+
+    function disappearSend() {
+        if (!el.isActive) return;
+        el.isActive = false;
+
+        const last = spans.length - 1;
+        spans.forEach((span, i) => {
+            const delay = (last - i) * 30;
+            setTimeout(() => {
+                span.style.opacity = '0';
+            }, delay);
+        });
+
+        setTimeout(() => {
+            el.style.pointerEvents = 'none';
+        }, (last + 1) * 30 + 50);
+    }
+
+    // Hover effects
+    el.addEventListener('mouseenter', () => {
+        if (!el.isActive) return;
+        spans.forEach((span, i) => {
+            setTimeout(() => {
+                span.style.color = 'black';
+                span.style.backgroundColor = '#e0e0e0';
+            }, i * 30);
+        });
+    });
+
+    el.addEventListener('mouseleave', () => {
+        if (!el.isActive) return;
+        const last = spans.length - 1;
+        spans.forEach((span, i) => {
+            const delay = (last - i) * 30;
+            setTimeout(() => {
+                span.style.color = '#808080';
+                span.style.backgroundColor = 'transparent';
+            }, delay);
+        });
+    });
+
+    // Récupération des champs
+    const emailInput = document.querySelector('#email');
+    const objetInput = document.querySelector('#objet');
+    const messageInput = document.querySelector('#message');
+    const inputs = [emailInput, objetInput, messageInput];
+
+    // Surveille les champs pour afficher/disparaitre le bouton
+    inputs.forEach(input => {
+        if (!input) return;
+        input.addEventListener('input', () => {
+            if (inputs.some(i => i.value.trim() !== '')) {
+                appearSend();
+            } else {
+                disappearSend();
+            }
+        });
+    });
+
+    // ========== FORMSPREE SEND ==========
+    el.addEventListener('click', async (e) => {
+        e.preventDefault();
+
+        const email = emailInput.value.trim();
+        const objet = objetInput.value.trim();
+        const message = messageInput.value.trim();
+
+        if (!email || !objet || !message) {
+            alert("Merci de remplir tous les champs !");
+            return;
+        }
+
+        el.style.pointerEvents = 'none';
+
+        try {
+            const response = await fetch("https://formspree.io/f/xqeeeava", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({
+                    email: email,
+                    subject: objet,
+                    message: message
+                })
+            });
+
+            if (response.ok) {
+                showCustomAlert("Message envoyé !");
+                emailInput.value = "";
+                objetInput.value = "";
+                messageInput.value = "";
+                disappearSend();
+            } else {
+                showCustomAlert("Erreur lors de l'envoi.");
+            }
+            
+        } catch (err) {
+            console.error(err);
+            alert("Erreur réseau.");
+        } finally {
+            if (inputs.some(i => i.value.trim() !== '')) {
+                el.style.pointerEvents = 'auto';
+            }
+        }
+    });
 }
 
+// Gestion de l’effet "leave" du bouton
+let leaveEffectSendTimers = [];
 
+function leaveEffectSend() {
+    const el = document.querySelector('#send');
+    if (!el || !el.isActive) return;
 
+    leaveEffectSendTimers.forEach(t => clearTimeout(t));
+    leaveEffectSendTimers = [];
 
-function runSequentialAnimations() {
-  const delayBetween = 300; // délai entre chaque fonction en ms (ici 0.5 s)
-  let totalDelay = 0;
+    const spans = el.querySelectorAll('span');
+    if (!spans.length) return;
 
-  // Liste des fonctions à exécuter
-  const functionsToRun = [
-    () => animateBorderRectangle(),
-    () => toggleFakePlaceholder('#placeholder-objet'),
-    () => animateBorderRectangleTextarea(),
-    () => toggleFakePlaceholder('#placeholder-message'),
-    () => initQuitAnimations()
-  ];
+    const lastIndex = spans.length - 1;
 
-  functionsToRun.forEach(fn => {
+    spans.forEach((span, i) => {
+        const delay = (lastIndex - i) * 30;
+
+        const t1 = setTimeout(() => {
+            span.style.color = 'black';
+            span.style.backgroundColor = 'white';
+        }, delay);
+
+        const t2 = setTimeout(() => {
+            span.style.opacity = '0';
+        }, delay + 20);
+
+        leaveEffectSendTimers.push(t1, t2);
+    });
+
     setTimeout(() => {
-      fn();
-    }, totalDelay);
-    totalDelay += delayBetween;
-  });
+        el.style.pointerEvents = 'none';
+    }, (lastIndex + 1) * 30 + 20);
+
+    el.isActive = false;
 }
 
+// Initialisation
+initSendAnimations();
 
 
-runSequentialAnimations();
 
+
+function showCustomAlert(message) {
+    // Crée le conteneur si pas déjà présent
+    let alertBox = document.getElementById('custom-alert');
+    if (!alertBox) {
+        alertBox = document.createElement('div');
+        alertBox.id = 'custom-alert';
+        alertBox.classList.add('custom-alert'); // <-- classe CSS à personnaliser
+        document.body.appendChild(alertBox);
+    }
+
+    // Vide le contenu existant
+    alertBox.innerHTML = '';
+
+    // Texte
+    const alertText = document.createElement('div');
+    alertText.classList.add('custom-alert-text'); // span letters styling
+    alertBox.appendChild(alertText);
+
+    message.split('').forEach(letter => {
+        const span = document.createElement('span');
+        span.textContent = letter;
+        span.classList.add('custom-alert-letter'); // <-- animation cmd
+        alertText.appendChild(span);
+    });
+
+    // Bouton OK
+    const okButton = document.createElement('button');
+    okButton.textContent = 'OK';
+    okButton.classList.add('custom-alert-ok'); // <-- style bouton via CSS
+    alertBox.appendChild(okButton);
+
+    const spans = alertText.querySelectorAll('span');
+    alertBox.style.display = 'block';
+    alertBox.style.pointerEvents = 'none';
+
+    // Animation type "cmd" (apparition)
+    spans.forEach((span, i) => {
+        setTimeout(() => {
+            span.classList.add('appear'); // <-- gère apparition via CSS
+        }, i * 30);
+        setTimeout(() => {
+            span.classList.add('after'); // <-- gère couleur après apparition
+        }, i * 30 + 50);
+    });
+
+    setTimeout(() => {
+        alertBox.style.pointerEvents = 'auto';
+    }, spans.length * 30 + 50);
+
+    // Clique sur OK → disparition
+    okButton.onclick = () => {
+        const lastIndex = spans.length - 1;
+        spans.forEach((span, i) => {
+            const delay = (lastIndex - i) * 30;
+            setTimeout(() => {
+                span.classList.remove('appear', 'after');
+                span.classList.add('disappear'); // <-- disparition via CSS
+            }, delay);
+        });
+
+        setTimeout(() => {
+            alertBox.style.display = 'none';
+            spans.forEach(s => s.classList.remove('disappear'));
+        }, lastIndex * 30 + 50);
+    };
+}
 
