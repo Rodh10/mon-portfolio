@@ -118,7 +118,7 @@ html, body {
   font-family: monospace;
   text-align: left;
   position: fixed;
-  top: 12%;
+  top: 15%;
   left: 20%;
   opacity: 1;
   z-index: 5;
@@ -241,7 +241,7 @@ html, body {
 .profiletitle {
   font-family: monospace;
   top: 55%;
-  left: 25%;
+  left: 20%;
   opacity: 1;
   color: transparent;
   position: fixed;  
@@ -291,6 +291,7 @@ html, body {
 @media (max-width: 600px) {
   .other {
     font-size: 0.5rem;
+    margin-left: 20%;
 
   }
 }
@@ -301,7 +302,7 @@ html, body {
 
 .skills5 {
   font-size: 2rem;
-  margin-left: 27%;
+  margin-left: 25%;
   margin-top: -5%;
   line-height: 1.1;
   z-index: 2;

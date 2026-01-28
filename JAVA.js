@@ -1,6 +1,5 @@
 
 
-const mpanoratra = document.querySelector(".pablo");
 const logoWrapper = document.querySelector(".logo");
 const tongasoa = document.querySelector(".welcome");
 const lien = document.querySelector("monlien");
@@ -243,8 +242,7 @@ window.addEventListener("DOMContentLoaded", () => {
       initSayHiAnimations();
       iconWrapper.classList.remove("hidden");
       iconWrapper.classList.add("visible");
-      mpanoratra.classList.remove("midina");
-      mpanoratra.classList.add("miakatra");
+
       titreo.classList.remove("mipoitra");
       talenta.classList.remove("mandeha");
 
@@ -263,7 +261,6 @@ window.addEventListener("DOMContentLoaded", () => {
     initSayHiAnimations();
     iconWrapper.classList.remove("hidden");
     iconWrapper.classList.add("visible");
-    mpanoratra.classList.remove("miakatra");
     titreo.classList.remove("mipoitra");
     talenta.classList.remove("mandeha");
   }
@@ -1816,15 +1813,13 @@ function leaveEffectLinks2() {
 
 
 let scrollCooldown = false;
+let startY = 0;
 
-window.addEventListener('wheel', (e) => {
-  // Ignorer tout scroll vers le haut
-  if (e.deltaY <= 0) return;
-
+function handleScroll() {
   if (scrollCooldown) return;
   scrollCooldown = true;
 
-  // Lancer toutes les leave effects
+  // Tes animations avant changement de page
   leaveEffectResume();
   leaveEffectHi();
   leaveEffectWelcome();
@@ -1834,11 +1829,32 @@ window.addEventListener('wheel', (e) => {
   leaveClock();
   animateOldActiveLeaveWheel();
 
-  // Redirection après 1,5 s pour laisser le temps aux animations
   setTimeout(() => {
-    window.location.href = "Profile.html"; // page suivante
+    window.location.href = "Profile.html";
   }, 1500);
+}
+
+// === Desktop ===
+window.addEventListener('wheel', e => {
+  if (e.deltaY <= 0) return; // scroll vers le haut → ignorer
+  handleScroll();
 });
+
+// === Mobile ===
+window.addEventListener('touchstart', e => {
+  startY = e.touches[0].clientY; // position de départ du doigt
+});
+
+window.addEventListener('touchend', e => {
+  const endY = e.changedTouches[0].clientY; // position finale du doigt
+  const diff = startY - endY;
+
+  if (diff > 50) { // swipe vers le haut → scroll vers le bas
+    handleScroll();
+  }
+  // swipe vers le bas → ne rien faire
+});
+
 
 
 

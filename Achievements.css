@@ -170,22 +170,22 @@ html, body {
 /* Zone où les descriptions vont apparaître */
 .zone-descriptions {
   position: fixed;
-  top: 1%;
-  left: 30%;
-  width: 35%;
+  top: 1.5%;
+  left: 0%;
   font-family: monospace;
   color: white;
   pointer-events: none;
   z-index: 10;
+  font-size: 1rem;
 }
 
 
 
 /* Tablette */
-@media (max-width: 1200px) {
+@media (max-width: 1800px) {
   .zone-descriptions {
     font-size: 0.8rem;
-    top: 7%;
+    top: 1.5%;
     width: 50%;
 
   }
@@ -197,7 +197,7 @@ html, body {
 @media (max-width: 900px) {
   .zone-descriptions {
     font-size: 0.7rem;
-    top: 4.1%;
+    top: 1.5%;
   }
 }
 

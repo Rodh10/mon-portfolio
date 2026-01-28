@@ -443,22 +443,46 @@ function animateOldActiveLeaveWheel() {
 
 
 
+
+
 window.addEventListener("DOMContentLoaded", () => {
 
   let scrollCooldown = false;
+  let startY = 0; // position initiale du doigt sur mobile
 
-  window.addEventListener('wheel', async (e) => {
+  async function handleScroll(direction) {
     if (scrollCooldown) return;
     scrollCooldown = true;
 
     // Lancer toutes les animations de leave
     await leaveAllEffects();
 
-    // Redirection selon la direction du scroll
-    if (e.deltaY > 0) {
+    // Redirection selon la direction
+    if (direction === "down") {
       window.location.href = "Achievements.html"; // scroll vers le bas
-    } else {
+    } else if (direction === "up") {
       window.location.href = "index.html"; // scroll vers le haut
+    }
+  }
+
+  // === Desktop : molette ===
+  window.addEventListener('wheel', e => {
+    const direction = e.deltaY > 0 ? "down" : "up";
+    handleScroll(direction);
+  });
+
+  // === Mobile : swipe ===
+  window.addEventListener('touchstart', e => {
+    startY = e.touches[0].clientY;
+  });
+
+  window.addEventListener('touchend', e => {
+    const endY = e.changedTouches[0].clientY;
+    const diff = startY - endY;
+
+    if (Math.abs(diff) > 50) { // seuil pour éviter les petits gestes accidentels
+      const direction = diff > 0 ? "down" : "up"; // swipe vers le haut = down, vers le bas = up
+      handleScroll(direction);
     }
   });
 
@@ -631,7 +655,7 @@ function appearProfileTitleFirstTwo() {
       container.timeouts.push(t1);
 
       const t2 = setTimeout(() => {
-        span.style.color = '#535353';
+        span.style.color = '#ff0000';
         span.style.backgroundColor = '#000000ff';
       }, i * 20 + 10);
       container.timeouts.push(t2);
