@@ -765,7 +765,7 @@ function initResumeAnimations() {
 
         // --- CLICK → téléchargement ---
         el.addEventListener('click', () => {
-            const filePath = 'CV_Felicien.pdf'; // chemin vers ton CV dans le projet
+            const filePath = 'CV-Félicien.pdf'; // chemin vers ton CV dans le projet
             const fileName = 'CV_Félicien_Creative_Developer.pdf';
 
             const link = document.createElement('a');
