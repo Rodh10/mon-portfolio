@@ -1089,13 +1089,12 @@ function leaveEffectMonLien() {
 
 
 
-
 const leaveEffectTimersLinks = new WeakMap();
 
 function appearLinks() {
   const links = document.querySelectorAll('.icon-link');
 
-  links.forEach((el, index) => {
+  links.forEach((el) => {
     const text = el.textContent;
     el.textContent = '';
 
@@ -1107,30 +1106,60 @@ function appearLinks() {
       el.appendChild(span);
     });
 
-    let timeouts = [];
+    // Timeouts séparés pour contrôle indépendant
+    let timeoutsColor1 = [];
+    let timeoutsColor2 = [];
     el.isAppeared = true;
 
+    // Effet CMD normal
     function playCmdEffect(delayStart = 0, colorNormal = '#000000', colorAfter = '#808080') {
-      timeouts.forEach(t => clearTimeout(t));
-      timeouts = [];
+      // clear previous timeouts
+      timeoutsColor1.forEach(t => clearTimeout(t));
+      timeoutsColor2.forEach(t => clearTimeout(t));
+      timeoutsColor1 = [];
+      timeoutsColor2 = [];
 
       const spans = el.querySelectorAll('span');
       spans.forEach((span, i) => {
-        const timeout1 = setTimeout(() => {
+        const t1 = setTimeout(() => {
           span.style.color = colorNormal;
           span.style.backgroundColor = 'white';
         }, delayStart + i * 30);
-        timeouts.push(timeout1);
+        timeoutsColor1.push(t1);
 
-        const timeout2 = setTimeout(() => {
+        const t2 = setTimeout(() => {
           span.style.color = colorAfter;
           span.style.backgroundColor = 'transparent';
         }, delayStart + i * 30 + 10);
-        timeouts.push(timeout2);
+        timeoutsColor2.push(t2);
       });
     }
 
-    // Apparition initiale pour tous les liens
+    // Effet CMD inversé pour mouseleave
+    function playCmdEffectReverse(delayStart = 0, colorHover = '#808080', colorNormal = '#000000') {
+      // clear previous timeouts
+      timeoutsColor1.forEach(t => clearTimeout(t));
+      timeoutsColor2.forEach(t => clearTimeout(t));
+      timeoutsColor1 = [];
+      timeoutsColor2 = [];
+
+      const spans = Array.from(el.querySelectorAll('span')).reverse();
+      spans.forEach((span, i) => {
+        const t1 = setTimeout(() => {
+          span.style.color = colorHover;
+          span.style.backgroundColor = 'white';
+        }, delayStart + i * 30);
+        timeoutsColor1.push(t1);
+
+        const t2 = setTimeout(() => {
+          span.style.color = '#808080';
+          span.style.backgroundColor = 'transparent';
+        }, delayStart + i * 30 + 10);
+        timeoutsColor2.push(t2);
+      });
+    }
+
+    // Apparition initiale
     playCmdEffect(300);
     el.style.pointerEvents = 'auto';
 
@@ -1139,6 +1168,10 @@ function appearLinks() {
       playCmdEffect(0, '#000000', '#b8b8b8');
     });
 
+    // Leave
+    el.addEventListener('mouseleave', () => {
+      playCmdEffectReverse(0, '#b8b8b8', '#000000');
+    });
   });
 }
 
