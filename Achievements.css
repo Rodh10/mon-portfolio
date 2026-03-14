@@ -30,6 +30,12 @@ body {
 
 }
 
+body::selection {
+    background: white; /* pas de surlignage */
+    color: black;           /* texte blanc */
+}
+
+
 html, body {
   overflow-x: hidden;
   overflow-y: hidden;
@@ -325,7 +331,7 @@ html, body {
 
 .cmd-link {
   font-family: "MaPolice", monospace;
-  font-size: 5rem;          /* un peu plus petit que .year */
+  font-size: 4rem;          /* un peu plus petit que .year */
   position: fixed;
   left: 16%;
   top: 65%; /* par ex., à toi d'adapter */

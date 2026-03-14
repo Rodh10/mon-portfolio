@@ -18,8 +18,8 @@ textarea.addEventListener('keydown', (e) => {
 
 function initFormAnimations() {
     const elements = [
-        { el: document.querySelector('#email'), text: 'your_adress' },
-        { el: document.querySelector('#objet'), text: 'subject' },
+        { el: document.querySelector('#email'), text: 'votre-adresse-email' },
+        { el: document.querySelector('#objet'), text: 'objet' },
         { el: document.querySelector('#message'), text: 'message' }
     ];
 

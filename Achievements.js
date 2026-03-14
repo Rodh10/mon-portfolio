@@ -852,7 +852,6 @@ function hideActiveDescriptionCMD(speed = 5) {
   });
 }
 
-
 /* hideAllBlokCMD : disparition inverse (de la fin vers le début), attend d'abord hideActiveDescriptionCMD */
 /* hideAllBlokCMD : disparition inverse CMD pour tous les blocs, background exact selon actif ou non */
 async function hideAllBlokCMD(speed = 10) {
@@ -929,10 +928,6 @@ function phaseRepos(delay = 1000) {
     setTimeout(resolve, delay);
   });
 }
-
-
-
-
 
 let offsetY = 0; // position verticale cumulée des descriptions
 
@@ -1133,8 +1128,6 @@ function suivreDescenteTitres(activeIndex, spacing = 10) {
   }, interval);
 }
 
-
-
 // === Remontée ===
 function remonterTitres(activeIndex) {
   return new Promise(resolve => {
@@ -1200,10 +1193,6 @@ function descendreTitres(activeIndex) {
     if (titres.length === 0) resolve();
   });
 }
-
-
-
-
 
 
 // === Fonction qui lie Titre ↔ Description avec phases de repos ===
