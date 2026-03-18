@@ -371,7 +371,7 @@ function startLoadingAnimation(callback) {
         span.textContent = value[i];
       });
       index++;
-    }, 40); // vitesse de l'animation
+    }, 20); // vitesse de l'animation
   }, 500); // délai avant de lancer le compte
 }
 
