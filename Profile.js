@@ -650,7 +650,7 @@ function appearProfileTitleFirstTwo() {
     spans.forEach((span, i) => {
       const t1 = setTimeout(() => {
         span.style.color = '#535353';
-        span.style.backgroundColor = '#535353';
+        span.style.backgroundColor = '#ff0000';
       }, i * 20);
       container.timeouts.push(t1);
 
@@ -681,7 +681,7 @@ function leaveProfileTitleFirstTwo() {
       const delay = (spans.length - 1 - i) * 20;
       setTimeout(() => {
         span.style.color = '#535353';
-        span.style.backgroundColor = '#535353';
+        span.style.backgroundColor = '#ff0000';
       }, delay);
       setTimeout(() => {
         span.style.color = 'transparent';
