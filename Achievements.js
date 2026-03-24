@@ -492,6 +492,7 @@ window.addEventListener("DOMContentLoaded", () => {
 /* ============================================================
    PROMISE POUR LES ANIMATIONS DE DISPARITION
    ============================================================ */
+
 function leaveAllEffects() {
   return new Promise(resolve => {
     // Ici tu peux appeler toutes tes fonctions leaveEffect :
@@ -530,7 +531,7 @@ const yearDelays = {
 
 // --- Fonction pour passer à l'année suivante dans la boucle ---
 
-function nextYear() {
+function nextYear(index) {
   if (!yearElement) return;
 
   const oldSpans = Array.from(yearElement.querySelectorAll("span"));
@@ -584,7 +585,7 @@ function nextYear() {
     }
     yearElement.timeouts = [];
 
-    const word = yearWords[yearIndex];
+    const word = yearWords[index];
     yearElement.innerHTML = '';
 
     for (const ch of word) {
@@ -633,7 +634,6 @@ function nextYear() {
     }, spans.length * yearDelays.appearDelay + yearDelays.passedDelay);
     yearElement.timeouts.push(tBlinkStart);
 
-    yearIndex = (yearIndex + 1) % yearWords.length;
 
   }, waitTime);
 }
@@ -1196,83 +1196,142 @@ function descendreTitres(activeIndex) {
 
 
 // === Fonction qui lie Titre ↔ Description avec phases de repos ===
-// === Fonction qui lie Titre ↔ Description avec phases de repos ===
-async function lierTitreEtDescription(i) {
+async function lierTitreEtDescription(i, token) {
   const blok = blokys[i];
   const spans = Array.from(blok.querySelectorAll("span"));
   const speed = 30;
 
-  nextYear();
+  nextYear(i);
+
+  // 🛑 STOP si annulé
+  if (token !== animationToken) return;
+
   await phaseRepos();
 
-  // === PHASE 1 : État initial exact comme showBlokCMD ===
+  if (token !== animationToken) return;
+
   spans.forEach(span => {
     span.style.transition = '';
     span.style.color = '#808080';
     span.style.backgroundColor = 'transparent';
-    span.style.opacity = '1';  // EXACT comme showBlokCMD
+    span.style.opacity = '1';
   });
 
-  // === PHASE 2 : Effet CMD identique à showBlokCMD ===
   spans.forEach((span, index) => {
 
-    // 1) barre CMD : fond actif + texte sombre
     setTimeout(() => {
-      span.style.color = '#ff0000ff';          // comme showBlokCMD
-      span.style.backgroundColor = '#ff0000ff'; // ACTIVE COLOR avant passage en rouge
+      if (token !== animationToken) return;
+      span.style.color = '#ff0000ff';
+      span.style.backgroundColor = '#ff0000ff';
       span.style.opacity = '1';
     }, index * speed);
 
-    // 2) couleur finale (grise) comme showBlokCMD
     setTimeout(() => {
-      span.style.color = '#ff0000ff';   // rouge
+      if (token !== animationToken) return;
+      span.style.color = '#ff0000ff';
       span.style.backgroundColor = 'transparent';
-      span.style.opacity = '1';
     }, index * speed + Math.max(Math.floor(speed * 0.8), 20));
   });
 
-  // === PHASE 3 : Passage au ROUGE après la fin complète du CMD ===
   const totalCMD = spans.length * speed + 80;
 
-  setTimeout(() => {
-    spans.forEach(span => {
-      span.style.color = '#ff0000ff';   // rouge
-      span.style.backgroundColor = 'transparent';
-    });
-  }, totalCMD);
+  await new Promise(resolve => setTimeout(resolve, totalCMD));
 
-  // === Déroulé normal ===
+  if (token !== animationToken) return;
+
   await montrerDescription(i);
+
+  if (token !== animationToken) return;
+
   await cacherDescription(i);
 
-  // disparition rouge façon CMD
+  if (token !== animationToken) return;
+
+  // 🔥 LA PARTIE QUI POSAIT PROBLÈME
   removeActiveColor(blok, 20, "#ff0000ff");
+
+  if (token !== animationToken) return;
 
   await remonterTitres(i);
 }
+
+function getActiveIndex() {
+  return descriptions.findIndex(d => d.classList.contains('visible'));
+}
+
+
 
 
 // === Animation principale en boucle ===
 let boucleCase3 = true;  // mettre à false pour arrêter la boucle
 
+let currentIndex = 0;
+let isManuallyTriggered = false;
+
+
+let animationToken = 0;
+
+
 async function startAnimationSequence() {
-  while (boucleCase3) {
-    for (let i = 0; i < blokys.length; i++) {
-      if (!boucleCase3) break;  // permet d’interrompre la boucle
-      await lierTitreEtDescription(i);
+  const myToken = ++animationToken; // 👈 nouveau cycle
+
+  while (boucleCase3 && myToken === animationToken) {
+
+    for (let i = currentIndex; i < blokys.length; i++) {
+
+      if (!boucleCase3 || myToken !== animationToken) return;
+
+      currentIndex = i;
+      await lierTitreEtDescription(i, myToken);
+
+      // 🔴 check après chaque étape importante
+      if (myToken !== animationToken) return;
     }
 
-    // attente 3 secondes avant de recommencer
+    currentIndex = 0;
+
     await new Promise(resolve => setTimeout(resolve, 3000));
 
+    if (myToken !== animationToken) return;
   }
 }
 
 
+blokys.forEach((blok, i) => {
+  blok.style.cursor = "pointer";
 
+  blok.addEventListener("click", async () => {
 
+    const activeIndex = getActiveIndex();
 
+    // ✅ 1. IGNORER complètement si déjà actif
+    if (i === activeIndex) return;
 
+    // 🔥 2. kill instant tous les cycles
+    boucleCase3 = false;
+    animationToken++;
+
+    // 3. disparition description active
+    await hideActiveDescriptionCMD();
+
+    // 4. reset couleur ancien actif
+    if (activeIndex !== -1) {
+      removeActiveColor(blokys[activeIndex], 20, "#ff0000ff");
+    }
+
+    // 5. remontée
+    if (activeIndex !== -1) {
+      await remonterTitres(activeIndex);
+    }
+
+    // 6. nouveau point de départ
+    currentIndex = i;
+
+    // 7. relancer proprement
+    boucleCase3 = true;
+    startAnimationSequence();
+  });
+});
 
 
 
