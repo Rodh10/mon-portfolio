@@ -81,7 +81,6 @@ cmdlinks.forEach(el => {
 
 
 
-
 const leaveEffectTimersLinks = new WeakMap();
 
 function appearLinks() {
@@ -708,6 +707,7 @@ const descriptions = [
 
 const blokys = document.querySelectorAll('.conteneur .bloky');
 
+
 /* transforme un blok en spans si nécessaire */
 function prepareCMDEffect(blok) {
   if (!blok.querySelector('span')) {
@@ -1333,7 +1333,18 @@ blokys.forEach((blok, i) => {
   });
 });
 
+// === Anti-blink sur titres ===
+blokys.forEach(blok => {
+  // sur le blok principal
+  blok.addEventListener('mouseenter', hideCursor);
+  blok.addEventListener('mouseleave', delayedShowCursor);
 
+  // sur tous les spans enfants pour être sûr que le hover fonctionne
+  blok.querySelectorAll('span').forEach(span => {
+    span.addEventListener('mouseenter', hideCursor);
+    span.addEventListener('mouseleave', delayedShowCursor);
+  });
+});
 
 
 
