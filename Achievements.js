@@ -788,6 +788,57 @@ function showAllBlokCMD(speed = 25) {
 }
 
 
+// === Effets Hover / Leave sur titres (.bloky)
+blokys.forEach(blok => {
+  // --- hover (mouseenter) ---
+  blok.addEventListener('mouseenter', () => {
+    prepareCMDEffect(blok);
+    const spans = Array.from(blok.querySelectorAll('span'));
+    let timeouts = [];
+
+    spans.forEach((span, i) => {
+      const t1 = setTimeout(() => {
+        span.style.color = '#ff0000ff';         // couleur temporaire
+        span.style.backgroundColor = '#ff0000ff';
+        span.style.opacity = '1';
+      }, i * 15);
+      const t2 = setTimeout(() => {
+        span.style.color = '#000000';           // couleur finale
+        span.style.backgroundColor = '#ff0000ff';
+      }, i * 15 + 10);
+      const t3 = setTimeout(() => {
+        span.style.color = '#000000';           // couleur post-hover
+      }, i * 15 + 20);
+      timeouts.push(t1, t2, t3);
+    });
+
+    blok.hoverTimeouts = timeouts; // stocker les timers pour pouvoir les clear
+  });
+
+  // --- leave (mouseleave) ---
+  blok.addEventListener('mouseleave', () => {
+    const spans = Array.from(blok.querySelectorAll('span'));
+    if (blok.hoverTimeouts) {
+      blok.hoverTimeouts.forEach(t => clearTimeout(t));
+      blok.hoverTimeouts = [];
+    }
+
+    const last = spans.length - 1;
+    spans.forEach((span, i) => {
+      const delay = (last - i) * 15;
+      const t1 = setTimeout(() => {
+        span.style.color = '#ff0000ff';
+        span.style.backgroundColor = '#ff0000ff';
+      }, delay);
+      const t2 = setTimeout(() => {
+        span.style.color = '#808080';
+        span.style.backgroundColor = 'transparent';
+      }, delay + 10);
+    });
+  });
+});
+
+
 /* hideActiveDescriptionCMD : annule toutes les animations et fait disparaître la description actuelle en inversé */
 function hideActiveDescriptionCMD(speed = 5) {
   return new Promise(resolve => { // on retourne une promesse pour attendre la fin
