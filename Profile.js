@@ -772,42 +772,91 @@ function appearPara() {
   const paragraphs = container.querySelectorAll('p');
 
   paragraphs.forEach(p => {
-    // Séparer le contenu par <br> pour créer une ligne par span-container
-    if (!p.querySelector('span')) {
-      const lines = p.innerHTML.split('<br>');
+
+    // Préparation du texte une seule fois
+    if (!p.querySelector('.line-container')) {
+
+      const nodes = Array.from(p.childNodes);
       p.textContent = '';
-      lines.forEach(lineText => {
-        const lineContainer = document.createElement('span');
-        lineContainer.style.display = 'block';
-        lineText.split('').forEach(ch => {
-          const span = document.createElement('span');
-          span.textContent = ch;
-          span.style.color = 'transparent';
-          span.style.backgroundColor = 'transparent';
-          span.style.display = 'inline-block';
-          lineContainer.appendChild(span);
-        });
-        p.appendChild(lineContainer);
+
+      let lineContainer = document.createElement('span');
+      lineContainer.className = 'line-container';
+      lineContainer.style.display = 'block';
+      lineContainer.style.minHeight = '1em';
+
+      nodes.forEach(node => {
+
+        // Texte
+        if (node.nodeType === Node.TEXT_NODE) {
+
+          node.textContent.split('').forEach(ch => {
+
+            const span = document.createElement('span');
+            span.textContent = ch;
+            span.style.color = 'transparent';
+            span.style.backgroundColor = 'transparent';
+            span.style.display = 'inline-block';
+
+            lineContainer.appendChild(span);
+          });
+
+        }
+
+        // <br>
+        else if (
+          node.nodeType === Node.ELEMENT_NODE &&
+          node.tagName === 'BR'
+        ) {
+
+          // On termine la ligne actuelle
+          p.appendChild(lineContainer);
+
+          // Nouvelle ligne
+          lineContainer = document.createElement('span');
+          lineContainer.className = 'line-container';
+          lineContainer.style.display = 'block';
+          lineContainer.style.minHeight = '1em';
+        }
       });
+
+      // Ajouter la dernière ligne
+      p.appendChild(lineContainer);
     }
 
-    // Animation : toutes les lignes en même temps, de gauche à droite
-    const lineContainers = Array.from(p.children);
-    lineContainers.forEach(line => {
-      const spans = Array.from(line.children);
-      spans.forEach(span => span.style.color = 'transparent');
 
+    // =========================
+    // ANIMATION
+    // =========================
+
+    const lineContainers = Array.from(
+      p.querySelectorAll('.line-container')
+    );
+
+    lineContainers.forEach(line => {
+
+      const spans = Array.from(line.querySelectorAll(':scope > span'));
+
+      spans.forEach(span => {
+        span.style.color = 'transparent';
+        span.style.backgroundColor = 'transparent';
+      });
+
+      // Chaque ligne commence son animation indépendamment
       spans.forEach((span, i) => {
+
         const t1 = setTimeout(() => {
           span.style.color = '#ffffff';
           span.style.backgroundColor = '#ffffff';
         }, i * 20);
+
         container.timeouts.push(t1);
+
 
         const t2 = setTimeout(() => {
           span.style.color = '#ffffffff';
           span.style.backgroundColor = '#000000ff';
         }, i * 20 + 10);
+
         container.timeouts.push(t2);
       });
     });
