@@ -281,21 +281,21 @@ if (particleContainer) {
 
 
                     const scale =
-                        0.85;
+                        0.78;
 
 
                     const px =
                         (
                             x /
                             (columns - 1)
-                        ) * 2 - 1.2;
+                        ) * 2 - 1.24;
 
 
                     const py =
                         (
                             y /
                             (rows - 1)
-                        ) * 2 - 0.8;
+                        ) * 2 - 0.88;
 
 
                     particles.push(
@@ -1020,7 +1020,7 @@ function insertProfileText() {
 
 
     const persoLines = [
-        "Artiste,photographe et designer malgache,",
+        "Développeur,designer et photographe malgache,",
         "originaire du sud-est de Madagascar.",
         "Mon parcours se construit à la croisée",
         "de la création visuelle, du numérique",
