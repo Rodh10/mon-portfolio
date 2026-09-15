@@ -1,4 +1,945 @@
 
+
+
+/* =========================================================
+   THREE.JS — PARTICLE PORTRAIT
+   ========================================================= */
+
+import * as THREE from
+    'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
+
+
+/* =========================================================
+   CONTENEUR
+   ========================================================= */
+
+const particleContainer =
+    document.getElementById("particle-container");
+
+
+/*
+   Si le conteneur n'existe pas,
+   on arrête Three.js.
+*/
+
+if (particleContainer) {
+
+
+    /* =====================================================
+       SCENE
+       ===================================================== */
+
+    const scene =
+        new THREE.Scene();
+
+
+    /* =====================================================
+       CAMERA
+       ===================================================== */
+
+    const camera =
+        new THREE.OrthographicCamera(
+
+            -1,
+            1,
+            1,
+            -1,
+
+            0.1,
+            10
+
+        );
+
+
+    camera.position.z = 1;
+
+
+    /* =====================================================
+       RENDERER
+       ===================================================== */
+
+    const renderer =
+        new THREE.WebGLRenderer({
+
+            antialias: true,
+
+            alpha: true
+
+        });
+
+
+    renderer.setPixelRatio(
+
+        Math.min(
+            window.devicePixelRatio,
+            2
+        )
+
+    );
+
+
+    renderer.setSize(
+
+        particleContainer.clientWidth,
+        particleContainer.clientHeight
+
+    );
+
+
+    /*
+       On donne une classe au canvas
+       pour pouvoir le contrôler en CSS.
+    */
+
+    renderer.domElement.className =
+        "particle-canvas";
+
+
+    /*
+       IMPORTANT :
+
+       Le canvas est placé dans
+       #particle-container
+       et non dans le body.
+    */
+
+    particleContainer.appendChild(
+        renderer.domElement
+    );
+
+
+    /* =====================================================
+       IMAGE
+       ===================================================== */
+
+    const image =
+        new Image();
+
+
+    image.src =
+        "portrait.jpg";
+
+
+    image.onload = () => {
+
+
+        /* =================================================
+           PARTICULES
+           ================================================= */
+
+        const particles = [];
+
+
+        const columns = 300;
+
+        const rows = 130;
+
+
+        /* =================================================
+           CANVAS INVISIBLE
+           ================================================= */
+
+        const canvas =
+            document.createElement("canvas");
+
+
+        const ctx =
+            canvas.getContext("2d");
+
+
+        canvas.width =
+            columns;
+
+
+        canvas.height =
+            rows;
+
+
+        /* =================================================
+           REDIMENSIONNER L'IMAGE
+           ================================================= */
+
+        const imageRatio =
+            image.width /
+            image.height;
+
+
+        const imageWidth =
+            rows *
+            imageRatio;
+
+
+        /*
+           On garde ici ton comportement original :
+           l'image commence à gauche.
+        */
+
+        ctx.drawImage(
+
+            image,
+
+            0,
+            0,
+
+            imageWidth,
+            rows
+
+        );
+
+
+        /* =================================================
+           LIRE LES PIXELS
+           ================================================= */
+
+        const imageData =
+            ctx.getImageData(
+
+                0,
+                0,
+
+                columns,
+                rows
+
+            );
+
+
+        /* =================================================
+           CRÉER LES POINTS
+           ================================================= */
+
+        for (
+            let y = 0;
+            y < rows;
+            y++
+        ) {
+
+
+            for (
+                let x = 0;
+                x < columns;
+                x++
+            ) {
+
+
+                const index =
+                    (
+                        y *
+                        columns +
+                        x
+                    ) * 4;
+
+
+                const red =
+                    imageData.data[index];
+
+
+                const green =
+                    imageData.data[index + 1];
+
+
+                const blue =
+                    imageData.data[index + 2];
+
+
+                const alpha =
+                    imageData.data[index + 3];
+
+
+                /* =========================================
+                   LUMINOSITÉ
+                   ========================================= */
+
+                const brightness =
+                    (
+                        red +
+                        green +
+                        blue
+                    ) / 3;
+
+
+                /* =========================================
+                   TRANSPARENCE
+                   ========================================= */
+
+                if (
+                    alpha > 20
+                ) {
+
+
+                    /*
+                       Les pixels sombres
+                       deviennent moins présents.
+                    */
+
+                    if (
+                        brightness < 80
+                    ) {
+
+                        continue;
+
+                    }
+
+
+                    const scale =
+                        0.85;
+
+
+                    const px =
+                        (
+                            x /
+                            (columns - 1)
+                        ) * 2 - 1.2;
+
+
+                    const py =
+                        (
+                            y /
+                            (rows - 1)
+                        ) * 2 - 0.8;
+
+
+                    particles.push(
+
+                        px * scale,
+
+                        -py * scale,
+
+                        0
+
+                    );
+
+                }
+
+            }
+
+        }
+
+
+        /* =================================================
+           NOMBRE DE PARTICULES
+           ================================================= */
+
+        const particleCount =
+            particles.length / 3;
+
+
+        /* =================================================
+           ORDRE GAUCHE → DROITE
+           ================================================= */
+
+        const order =
+            Array.from(
+
+                {
+                    length:
+                        particleCount
+                },
+
+                (_, i) => i
+
+            );
+
+
+        const priorities =
+            new Array(
+                particleCount
+            );
+
+
+        for (
+            let i = 0;
+            i < particleCount;
+            i++
+        ) {
+
+
+            const x =
+                particles[i * 3];
+
+
+            const horizontal =
+                (
+                    x + 1.3
+                ) / 2.6;
+
+
+            const base =
+                horizontal * 100;
+
+
+            const delay =
+                Math.random() * 10;
+
+
+            priorities[i] =
+                base + delay;
+
+        }
+
+
+        /* =================================================
+           TRIER
+           ================================================= */
+
+        order.sort(
+
+            (a, b) => {
+
+                return (
+                    priorities[a] -
+                    priorities[b]
+                );
+
+            }
+
+        );
+
+
+        /* =================================================
+           NOUVEL ORDRE
+           ================================================= */
+
+        const randomParticles = [];
+
+
+        for (
+            let i = 0;
+            i < order.length;
+            i++
+        ) {
+
+
+            const index =
+                order[i] * 3;
+
+
+            randomParticles.push(
+
+                particles[index],
+
+                particles[index + 1],
+
+                particles[index + 2]
+
+            );
+
+        }
+
+
+        /* =================================================
+           GEOMETRY
+           ================================================= */
+
+        const geometry =
+            new THREE.BufferGeometry();
+
+
+        geometry.setAttribute(
+
+            "position",
+
+            new THREE.Float32BufferAttribute(
+
+                randomParticles,
+
+                3
+
+            )
+
+        );
+
+
+        /*
+           On commence avec zéro particule.
+        */
+
+        geometry.setDrawRange(
+
+            0,
+            0
+
+        );
+
+        /* =================================================
+           CURSEUR
+           ================================================= */
+
+        const mouse =
+            new THREE.Vector2(
+                -10,
+                -10
+            );
+
+
+        window.addEventListener(
+
+            "mousemove",
+
+            (event) => {
+
+                const rect =
+                    particleContainer.getBoundingClientRect();
+
+
+                /*
+                   Vérifier si le curseur est
+                   réellement dans le portrait.
+                */
+
+                const inside =
+
+                    event.clientX >= rect.left &&
+                    event.clientX <= rect.right &&
+                    event.clientY >= rect.top &&
+                    event.clientY <= rect.bottom;
+
+
+                if (!inside) {
+
+                    mouse.set(
+                        -10,
+                        -10
+                    );
+
+                    return;
+
+                }
+
+
+                /*
+                   Position du curseur
+                   dans le conteneur.
+                */
+
+                const x =
+                    event.clientX -
+                    rect.left;
+
+
+                const y =
+                    event.clientY -
+                    rect.top;
+
+
+                /*
+                   Conversion en coordonnées
+                   Three.js.
+                */
+
+                mouse.x =
+                    (
+                        x /
+                        rect.width
+                    ) * 2 - 1;
+
+
+                mouse.y =
+                    1 -
+                    (
+                        y /
+                        rect.height
+                    ) * 2;
+
+            }
+
+        );
+
+
+        /* =================================================
+           MATERIAL
+           ================================================= */
+
+        const material =
+            new THREE.ShaderMaterial({
+
+                transparent: true,
+
+                depthWrite: false,
+
+                uniforms: {
+
+                    uMouse: {
+                        value: mouse
+                    },
+
+                    uRadiusX: {
+                        value: 0.9
+                    },
+
+                    uRadiusY: {
+                        value: 1.2
+                    }
+
+                },
+
+                vertexShader: `
+
+                    uniform vec2 uMouse;
+
+                    uniform float uRadiusX;
+                    uniform float uRadiusY;
+
+                    varying float vInfluence;
+
+
+                    void main() {
+
+                        /*
+                           Distance entre le point
+                           et le curseur.
+                        */
+
+                        vec2 difference =
+                            position.xy - uMouse;
+
+                        difference.x /= uRadiusX;
+                        difference.y /= uRadiusY;
+
+                        float distanceToMouse =
+                            length(difference);
+
+
+                        /*
+                           Influence du curseur.
+
+                           Proche = 1
+                           Loin = 0
+                        */
+
+                        vInfluence =
+                            1.0 -
+                            smoothstep(
+                                0.0,
+                                uRadiusX,
+                                distanceToMouse
+                            );
+
+
+                        /*
+                           Les points proches
+                           deviennent légèrement plus gros.
+                        */
+
+                        gl_PointSize =
+                            3.0 +
+                            vInfluence * 4.0;
+
+
+                        gl_Position =
+                            projectionMatrix *
+                            modelViewMatrix *
+                            vec4(
+                                position,
+                                1.0
+                            );
+
+                    }
+
+                `,
+
+                fragmentShader: `
+
+                    varying float vInfluence;
+
+
+                    void main() {
+
+                        /*
+                           Couleur normale :
+                           blanc.
+
+                           Couleur au survol :
+                           rouge #BA3A23.
+                        */
+
+                        vec3 white =
+                            vec3(
+                                1.0,
+                                1.0,
+                                1.0
+                            );
+
+
+                        vec3 red =
+                            vec3(
+                                0.729,
+                                0.227,
+                                0.137
+                            );
+
+
+                        /*
+                           Mélange progressif
+                           blanc → rouge.
+                        */
+
+                        vec3 color =
+                            mix(
+                                white,
+                                red,
+                                vInfluence
+                            );
+
+
+                        /*
+                           Les points éloignés
+                           deviennent légèrement
+                           moins visibles.
+                        */
+
+                        float opacity =
+                            0.50 +
+                            vInfluence * 0.80;
+
+
+                        gl_FragColor =
+                            vec4(
+                                color,
+                                opacity
+                            );
+
+                    }
+
+                `
+
+            });
+
+
+        /* =================================================
+           POINT CLOUD
+           ================================================= */
+
+        const points =
+            new THREE.Points(
+
+                geometry,
+
+                material
+
+            );
+
+
+        scene.add(points);
+
+        /* =================================================
+          ANIMATION
+          ================================================= */
+
+        let visibleParticles = 0;
+
+        let isLeaving = false;
+
+
+        const revealSpeed =
+            70;
+
+
+        function animate() {
+
+            requestAnimationFrame(
+                animate
+            );
+
+
+            /*
+              Apparition normale :
+              0 → toutes les particules
+            */
+
+            if (
+                !isLeaving &&
+                visibleParticles <
+                particleCount
+            ) {
+
+                visibleParticles +=
+                    revealSpeed;
+
+
+                geometry.setDrawRange(
+
+                    0,
+
+                    Math.min(
+
+                        Math.floor(
+                            visibleParticles
+                        ),
+
+                        particleCount
+
+                    )
+
+                );
+
+            }
+
+
+            material.uniforms.uMouse.value =
+                mouse;
+
+
+            renderer.render(
+
+                scene,
+
+                camera
+
+            );
+
+        }
+
+
+        animate();
+
+
+        function leaveParticlePortrait() {
+
+            return new Promise(resolve => {
+
+                isLeaving = true;
+
+
+                function disappear() {
+
+                    visibleParticles -=
+                        revealSpeed;
+
+
+                    if (
+                        visibleParticles <= 0
+                    ) {
+
+                        visibleParticles = 0;
+
+                        geometry.setDrawRange(
+                            0,
+                            0
+                        );
+
+                        resolve();
+
+                        return;
+
+                    }
+
+
+                    geometry.setDrawRange(
+
+                        0,
+
+                        Math.floor(
+                            visibleParticles
+                        )
+
+                    );
+
+
+                    requestAnimationFrame(
+                        disappear
+                    );
+
+                }
+
+
+                disappear();
+
+            });
+
+        }
+
+        window.leaveParticlePortrait =
+            leaveParticlePortrait;
+
+
+    };
+
+
+    /* =====================================================
+       IMAGE ERROR
+       ===================================================== */
+
+    image.onerror = () => {
+
+
+        console.error(
+
+            "ERREUR : portrait.jpg introuvable"
+
+        );
+
+    };
+
+
+    /* =====================================================
+       RESIZE
+       ===================================================== */
+
+    window.addEventListener(
+
+        "resize",
+
+        () => {
+
+
+            const width =
+                particleContainer.clientWidth;
+
+
+            const height =
+                particleContainer.clientHeight;
+
+
+            renderer.setSize(
+
+                width,
+                height
+
+            );
+
+        }
+
+    );
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* ==========================
       CURSEUR + ANTI-BLINK
    ========================== */
@@ -70,10 +1011,85 @@ if (nav) {
 
 
 
+function insertProfileText() {
+
+    const perso = document.querySelector('.perso');
+    const focus = document.querySelector('.focus');
+
+    if (!perso || !focus) return;
+
+
+    const persoLines = [
+        "Artiste,photographe et designer malgache,",
+        "originaire du sud-est de Madagascar.",
+        "Mon parcours se construit à la croisée",
+        "de la création visuelle, du numérique",
+        "et d’une réflexion personnelle sur",
+        "la société et les identités.",
+
+        "",
+        "",
+        "",
+
+        "Bénéficiaire du Programme SESAME,",
+        "j’ai pu poursuivre mes études grâce",
+        "à cette bourse. SESAME a renforcé",
+        "ma vision du monde et mon engagement",
+        "pour l’environnement, les droits humains",
+        "et les minorités.",
+        "Ces valeurs guident aujourd’hui",
+        "mon parcours de jeune créateur.",
+
+        "",
+        "",
+        "",
+
+        "Après avoir grandi à Farafangana,",
+        "je poursuis des études en informatique,",
+        "notamment en développement logiciel.",
+        "Cette formation nourrit mon approche",
+        "à la fois technique et créative,",
+        "que je transpose dans le design graphique,",
+        "le web design et la direction artistique.",
+        "Autodidacte, je m’intéresse particulièrement",
+        "aux compositions minimalistes,",
+        "à la typographie, à l’image",
+        "et aux expériences visuelles numériques."
+    ];
 
 
 
+    const focusLines = [
+        "Je me concentre principalement sur",
+        "la conception de maquettes, le UI/UX design",
+        "et la création d'interfaces intuitives,",
+        "pensées pour offrir une expérience",
+        "interactive, fluide et cohérente.",
+        "",
+        "Je développe le front-end d'applications",
+        "et de sites web, en transformant",
+        "les maquettes et concepts visuels",
+        "en interfaces fonctionnelles, interactives",
+        "et adaptées aux différents besoins du projet.",
+        "",
+        "Je personnalise également chaque site",
+        "selon sa charte graphique, en y intégrant",
+        "des éléments graphiques ultra-personnalisés.",
+        "Mon approche englobe le brand design,",
+        "le graphic design et l'illustration,",
+        "afin de créer des univers visuels",
+        "uniques et cohérents."
+    ];
 
+
+
+    perso.innerHTML =
+        persoLines.join("<br>");
+
+
+    focus.innerHTML =
+        focusLines.join("<br>");
+}
 
 
 
@@ -273,19 +1289,19 @@ function enhanceNavLinks() {
       spans.forEach((span, i) => {
         const t1 = setTimeout(() => {
           span.style.color = "#000000";
-          span.style.backgroundColor = "white";
+          span.style.backgroundColor = "#FF0000";
         }, i * 30);
         timeouts.push(t1);
 
         const t2 = setTimeout(() => {
           span.style.color = "#808080";
-          span.style.backgroundColor = "transparent";
+          span.style.backgroundColor = "#FF0000";
         }, i * 30 + 20);
         timeouts.push(t2);
 
         const t3 = setTimeout(() => {
-          span.style.color = "#b8b8b8";
-          span.style.backgroundColor = "transparent";
+          span.style.color = "#000000";
+          span.style.backgroundColor = "#FF0000";
         }, i * 30 + 30);
         timeouts.push(t3);
       });
@@ -306,7 +1322,7 @@ function enhanceNavLinks() {
 
         const t1 = setTimeout(() => {
           span.style.color = "#000000";
-          span.style.backgroundColor = "white";
+          span.style.backgroundColor = "#FF0000";
         }, delay);
         timeouts.push(t1);
 
@@ -374,13 +1390,13 @@ function enhanceNavLinks() {
     const spans = link.querySelectorAll("span");
     spans.forEach((span, i) => {
       setTimeout(() => {
-        span.style.backgroundColor = "white";
+        span.style.backgroundColor = "#FF0000";
         span.style.color = "#000000";
       }, i * 35);
 
       setTimeout(() => {
         span.style.backgroundColor = "transparent";
-        span.style.color = "#ffffff";
+        span.style.color = "#FF0000";
       }, i * 35 + 20);
     });
   }
@@ -394,15 +1410,18 @@ function enhanceNavLinks() {
 /* ============================================================
    PROMISE POUR LES ANIMATIONS DE DISPARITION
    ============================================================ */
-function leaveAllEffects() {
-  return new Promise(resolve => {
+async function leaveAllEffects() {
+
     leaveEffectPara();
     leaveProfileTitleFirstTwo();
     leaveProfileTitleLastTwo();
     leaveEffectTitled();
     animateOldActiveLeaveWheel();
-    setTimeout(resolve, 1000); // délai = durée totale de toutes les animations
-  });
+
+    if (window.leaveParticlePortrait) {
+        await window.leaveParticlePortrait();
+    }
+
 }
 
 window.addEventListener("DOMContentLoaded", enhanceNavLinks);
@@ -425,7 +1444,7 @@ function animateOldActiveLeaveWheel() {
     const delay = (last - i) * 30;
 
     setTimeout(() => {
-      span.style.backgroundColor = "white";
+      span.style.backgroundColor = "#FF0000";
       span.style.color = "#000000";
     }, delay);
 
@@ -440,6 +1459,12 @@ function animateOldActiveLeaveWheel() {
     oldActive.classList.remove("active-page");
   }, (last + 1) * 30 + 20);
 }
+
+
+
+
+
+
 
 
 
@@ -789,7 +1814,11 @@ function appearPara() {
         // Texte
         if (node.nodeType === Node.TEXT_NODE) {
 
-          node.textContent.split('').forEach(ch => {
+            if (node.textContent.trim() === '') {
+                return;
+            }
+
+            node.textContent.split('').forEach(ch => {
 
             const span = document.createElement('span');
             span.textContent = ch;
@@ -1055,6 +2084,7 @@ function leaveEffectTitled() {
 appearTitled();
 appearProfileTitleFirstTwo();
 appearProfileTitleLastTwo();
+insertProfileText();
 appearPara();
 appearLinks();
 

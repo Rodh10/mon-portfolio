@@ -1506,8 +1506,6 @@ function leaveEffectSayHi() {
 
 
 
-
-
 /* ===========================
    NAVIGATION STYLE "CMD"
    =========================== */
@@ -1539,15 +1537,18 @@ function enhanceNavLinks() {
       const spans = el.querySelectorAll('span');
       spans.forEach((span, i) => {
         const delay = i * 40;
+
         const t1 = setTimeout(() => {
           span.style.opacity = '1';
           span.style.color = '#000000';
           span.style.backgroundColor = '#808080';
         }, delay);
+
         const t2 = setTimeout(() => {
           span.style.color = '#808080';
           span.style.backgroundColor = 'transparent';
         }, delay + 60);
+
         timeouts.push(t1, t2);
       });
 
@@ -1558,14 +1559,17 @@ function enhanceNavLinks() {
         el.style.pointerEvents = 'auto';
         el.dataset.appeared = "true";
       }, totalTime);
+
     } else {
       // Si apparition déjà jouée, rendre visible directement
       const spans = el.querySelectorAll('span');
+
       spans.forEach(span => {
         span.style.opacity = '1';
         span.style.color = '#808080';
         span.style.backgroundColor = 'transparent';
       });
+
       el.style.pointerEvents = 'auto';
       el.dataset.appeared = "true";
     }
@@ -1579,17 +1583,22 @@ function enhanceNavLinks() {
       timeouts = [];
 
       spans.forEach((span, i) => {
+
         const t1 = setTimeout(() => {
           span.style.color = "#000000";
-          span.style.backgroundColor = "white";
+          span.style.backgroundColor = "#FF0000";
         }, i * 30);
+
         const t2 = setTimeout(() => {
           span.style.color = "#808080";
-          span.style.backgroundColor = "transparent";
+          span.style.backgroundColor = "#FF0000";
         }, i * 30 + 20);
+
         const t3 = setTimeout(() => {
-          span.style.color = "#b8b8b8";
+          span.style.color = "#000000";
+          span.style.backgroundColor = "#FF0000";
         }, i * 30 + 30);
+
         timeouts.push(t1, t2, t3);
       });
     });
@@ -1603,16 +1612,20 @@ function enhanceNavLinks() {
       timeouts = [];
 
       const last = spans.length - 1;
+
       spans.forEach((span, i) => {
         const delay = (last - i) * 30;
+
         const t1 = setTimeout(() => {
           span.style.color = "#000000";
-          span.style.backgroundColor = "white";
+          span.style.backgroundColor = "#FF0000";
         }, delay);
+
         const t2 = setTimeout(() => {
           span.style.color = "#808080";
           span.style.backgroundColor = "transparent";
         }, delay + 20);
+
         timeouts.push(t1, t2);
       });
     });
@@ -1620,6 +1633,7 @@ function enhanceNavLinks() {
     // --- CLICK ---
     el.addEventListener('click', e => {
       e.preventDefault();
+
       if (el.classList.contains("active-page")) return;
 
       const linkUrl = el.getAttribute('href');
@@ -1650,8 +1664,10 @@ function enhanceNavLinks() {
 
   // --- Après fin de l'animation (ou immédiatement si déjà jouée) ---
   setTimeout(() => {
+
     // --- Détection de la page actuelle et recoloration du menu actif ---
     let page = window.location.pathname;
+
     if (page === "/" || page.endsWith("/")) page = "index.html";
 
     if (page.includes("index.html")) activateMenu("#home");
@@ -1660,36 +1676,46 @@ function enhanceNavLinks() {
 
     // --- Marquer que l'apparition a été jouée pour cet onglet ---
     if (!hasAppeared) sessionStorage.setItem('navAppeared', 'true');
+
   }, maxAppearTime + 100);
 
   // --- Fonctions auxiliaires ---
   function activateMenu(href) {
     const link = document.querySelector(`.nav[href="${href}"]`);
+
     if (!link) return;
 
     link.classList.add("active-page");
+
     const spans = link.querySelectorAll("span");
+
     spans.forEach((span, i) => {
+
       setTimeout(() => {
-        span.style.backgroundColor = "white";
+        span.style.backgroundColor = "#FF0000";
         span.style.color = "#000000";
       }, i * 35);
+
       setTimeout(() => {
         span.style.backgroundColor = "transparent";
-        span.style.color = "#ffffff";
+        span.style.color = "#FF0000";
       }, i * 35 + 20);
+
     });
   }
 
   function animateOldActiveLeave(link) {
     const spans = link.querySelectorAll("span");
     const last = spans.length - 1;
+
     spans.forEach((span, i) => {
       const delay = (last - i) * 30;
+
       setTimeout(() => {
-        span.style.backgroundColor = "white";
+        span.style.backgroundColor = "#FF0000";
         span.style.color = "#000000";
       }, delay);
+
       setTimeout(() => {
         span.style.backgroundColor = "transparent";
         span.style.color = "#808080";
@@ -1704,12 +1730,14 @@ function resetLinksState() {
   document.querySelectorAll('.nav').forEach(el => {
     el.isAppeared = false; // permet aux animations de hover et leave de fonctionner
     el.classList.remove('active-page'); // on réinitialise
+
     el.querySelectorAll('span').forEach(span => {
       span.style.color = '#808080';
       span.style.backgroundColor = 'transparent';
     });
   });
 }
+
 
 
 function splitLinksText() {
@@ -1721,35 +1749,43 @@ function splitLinksText() {
 
     text.split('').forEach(char => {
       const span = document.createElement('span');
+
       span.textContent = char === ' ' ? '\u00A0' : char;
       span.style.display = 'inline-block';
       span.style.color = '#808080';
       span.style.backgroundColor = 'transparent';
-      span.style.opacity = '0'; // <-- invisibles par défaut
+      span.style.opacity = '0';
+
       el.appendChild(span);
     });
 
     el.dataset.splitted = "true";
-    el.isAppeared = true; // on considère le lien actif
+    el.isAppeared = true;
   });
 }
+
 
 // Appeler une fois au démarrage
 splitLinksText();
 
 
+
 function appearEffectLinks2() {
   const links = document.querySelectorAll('.nav');
+
   if (!links.length) return;
 
   links.forEach(el => {
-    if (el.isAppeared) return; // ne pas relancer si déjà visible
+
+    if (el.isAppeared) return;
 
     const timers = leaveEffectTimersLinks.get(el) || [];
+
     timers.forEach(t => clearTimeout(t));
     leaveEffectTimersLinks.set(el, []);
 
     const spans = el.querySelectorAll('span');
+
     if (!spans.length) return;
 
     // Initial : gris transparent
@@ -1761,25 +1797,30 @@ function appearEffectLinks2() {
 
     // Animation apparition : lettre par lettre, ordre normal
     spans.forEach((span, i) => {
-      const delay = i * 40; // ordre inverse de leaveEffect
-      // 1️⃣ Passage temporaire au blanc sur fond blanc
+
+      const delay = i * 40;
+
+      // 1️⃣ Passage temporaire au rouge sur fond rouge
       const t1 = setTimeout(() => {
         span.style.opacity = '1';
         span.style.color = '#000000';
-        span.style.backgroundColor = '#808080';
+        span.style.backgroundColor = '#FF0000';
       }, delay);
+
       leaveEffectTimersLinks.get(el).push(t1);
 
       // 2️⃣ Passage finale : couleur normale sur fond transparent
       const t2 = setTimeout(() => {
-        span.style.color = '#808080'; // couleur finale ou #000 selon ton style
+        span.style.color = '#808080';
         span.style.backgroundColor = 'transparent';
       }, delay + 60);
+
       leaveEffectTimersLinks.get(el).push(t2);
     });
 
     // Réactiver les interactions après la fin
     const totalTime = spans.length * 40 + 60;
+
     setTimeout(() => {
       el.style.pointerEvents = 'auto';
       el.isAppeared = true;
@@ -1792,16 +1833,20 @@ function appearEffectLinks2() {
 // --- Fonction de disparition letter-by-letter pour les liens ---
 function leaveEffectLinks2() {
   const links = document.querySelectorAll('.nav');
+
   if (!links.length) return;
 
   links.forEach(el => {
-    if (!el.isAppeared) return; // ne pas relancer si déjà disparu
+
+    if (!el.isAppeared) return;
 
     const timers = leaveEffectTimersLinks.get(el) || [];
+
     timers.forEach(t => clearTimeout(t));
     leaveEffectTimersLinks.set(el, []);
 
     const spans = el.querySelectorAll('span');
+
     if (!spans.length) return;
 
     spans.forEach(span => {
@@ -1813,14 +1858,16 @@ function leaveEffectLinks2() {
     const lastIndex = spans.length - 1;
 
     spans.forEach((span, i) => {
-      const delay = (lastIndex - i) * 40; // un peu plus lent
 
-      // 1️⃣ Passage temporaire au blanc sur fond blanc
+      const delay = (lastIndex - i) * 40;
+
+      // 1️⃣ Passage temporaire au rouge
       const t1 = setTimeout(() => {
         span.style.color = '#000000';
-        span.style.backgroundColor = 'white';
+        span.style.backgroundColor = '#FF0000';
         span.style.opacity = '1';
       }, delay);
+
       leaveEffectTimersLinks.get(el).push(t1);
 
       // 2️⃣ Disparition finale : gris transparent
@@ -1828,12 +1875,14 @@ function leaveEffectLinks2() {
         span.style.opacity = '0';
         span.style.color = '#808080';
         span.style.backgroundColor = 'transparent';
-      }, delay + 60); // 60ms après le t1 pour un effet visible
+      }, delay + 60);
+
       leaveEffectTimersLinks.get(el).push(t2);
     });
 
     // Désactiver les interactions après la fin de l’animation
     const totalTime = (lastIndex + 1) * 40 + 60;
+
     setTimeout(() => {
       el.style.pointerEvents = 'none';
     }, totalTime);
@@ -1841,6 +1890,7 @@ function leaveEffectLinks2() {
     el.isAppeared = false;
   });
 }
+
 
 
 
@@ -1906,7 +1956,7 @@ function animateOldActiveLeaveWheel() {
     const delay = (last - i) * 30;
 
     setTimeout(() => {
-      span.style.backgroundColor = "white";
+      span.style.backgroundColor = "#FF0000";
       span.style.color = "#000000";
     }, delay);
 

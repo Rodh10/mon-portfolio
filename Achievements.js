@@ -240,8 +240,6 @@ function leaveEffectLinks() {
 
 
 
-
-
 /* ===========================
    NAVIGATION STYLE "CMD"
    =========================== */
@@ -275,19 +273,19 @@ function enhanceNavLinks() {
       spans.forEach((span, i) => {
         const t1 = setTimeout(() => {
           span.style.color = "#000000";
-          span.style.backgroundColor = "white";
+          span.style.backgroundColor = "#FF0000";
         }, i * 30);
         timeouts.push(t1);
 
         const t2 = setTimeout(() => {
           span.style.color = "#808080";
-          span.style.backgroundColor = "transparent";
+          span.style.backgroundColor = "#FF0000";
         }, i * 30 + 20);
         timeouts.push(t2);
 
         const t3 = setTimeout(() => {
-          span.style.color = "#b8b8b8";
-          span.style.backgroundColor = "transparent";
+          span.style.color = "#000000";
+          span.style.backgroundColor = "#FF0000";
         }, i * 30 + 30);
         timeouts.push(t3);
       });
@@ -308,7 +306,7 @@ function enhanceNavLinks() {
 
         const t1 = setTimeout(() => {
           span.style.color = "#000000";
-          span.style.backgroundColor = "white";
+          span.style.backgroundColor = "#FF0000";
         }, delay);
         timeouts.push(t1);
 
@@ -338,7 +336,7 @@ function enhanceNavLinks() {
       if (oldActive) oldActive.classList.remove("active-page");
 
       // === NOUVEAU : appeler toutes les fonctions leaveEffect ===
-      await leaveAllEffects(); // <-- ici, ajouter tes leaveEffect
+      await leaveAllEffects();
 
       // Cooldown avant redirection
       setTimeout(() => {
@@ -360,7 +358,7 @@ function enhanceNavLinks() {
       const delay = (last - i) * 30;
 
       setTimeout(() => {
-        span.style.backgroundColor = "white";
+        span.style.backgroundColor = "#FF0000";
         span.style.color = "#000000";
       }, delay);
 
@@ -383,13 +381,13 @@ function enhanceNavLinks() {
     const spans = link.querySelectorAll("span");
     spans.forEach((span, i) => {
       setTimeout(() => {
-        span.style.backgroundColor = "white";
+        span.style.backgroundColor = "#FF0000";
         span.style.color = "#000000";
       }, i * 35);
 
       setTimeout(() => {
         span.style.backgroundColor = "transparent";
-        span.style.color = "#ffffff";
+        span.style.color = "#FF0000";
       }, i * 35 + 20);
     });
   }
@@ -400,6 +398,7 @@ function enhanceNavLinks() {
   if (page.includes("Profile.html")) activateMenu("#about");
   if (page.includes("Achievements.html")) activateMenu("#track");
 }
+
 
 /* =========================
    Animate old active link for wheel scroll
@@ -415,7 +414,7 @@ function animateOldActiveLeaveWheel() {
     const delay = (last - i) * 30;
 
     setTimeout(() => {
-      span.style.backgroundColor = "white";
+      span.style.backgroundColor = "#FF0000";
       span.style.color = "#000000";
     }, delay);
 
@@ -430,6 +429,9 @@ function animateOldActiveLeaveWheel() {
     oldActive.classList.remove("active-page");
   }, (last + 1) * 30 + 20);
 }
+
+
+
 
 
 

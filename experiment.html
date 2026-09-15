@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Particle Portrait</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <script type="module">
+
+        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
+
+
+        // --------------------------------
+        // SCENE
+        // --------------------------------
+
+        const scene = new THREE.Scene();
+
+
+        // --------------------------------
+        // CAMERA
+        // --------------------------------
+
+        const camera = new THREE.OrthographicCamera(
+            -1,
+             1,
+             1,
+            -1,
+            0.1,
+            10
+        );
+
+        camera.position.z = 1;
+
+
+        // --------------------------------
+        // RENDERER
+        // --------------------------------
+
+        const renderer = new THREE.WebGLRenderer({
+            antialias: true
+        });
+
+        renderer.setPixelRatio(
+            Math.min(window.devicePixelRatio, 2)
+        );
+
+        renderer.setSize(
+            window.innerWidth,
+            window.innerHeight
+        );
+
+        document.body.appendChild(renderer.domElement);
+
+
+        // --------------------------------
+        // IMAGE
+        // --------------------------------
+
+        const image = new Image();
+
+        image.src = "portrait.jpg";
+
+
+        image.onload = () => {
+
+            // --------------------------------
+            // IMAGE TEMPORAIRE
+            // --------------------------------
+
+            // On ne l'affiche plus directement.
+            // Elle sert uniquement de source
+            // pour créer les points.
+
+            console.log("IMAGE CHARGÉE");
+
+
+            // --------------------------------
+            // PARTICULES
+            // --------------------------------
+
+            const particles = [];
+
+            const columns = 300;
+            const rows = 130;
+
+
+            // --------------------------------
+            // CANVAS INVISIBLE
+            // --------------------------------
+
+            const canvas = document.createElement("canvas");
+
+            const ctx = canvas.getContext("2d");
+
+            canvas.width = columns;
+            canvas.height = rows;
+
+
+            // --------------------------------
+            // REDIMENSIONNER L'IMAGE
+            // --------------------------------
+
+            const imageRatio =
+                image.width / image.height;
+
+            const imageWidth =
+                rows * imageRatio;
+
+            ctx.drawImage(
+                image,
+                0,
+                0,
+                imageWidth,
+                rows
+            );
+
+
+            // --------------------------------
+            // LIRE LES PIXELS
+            // --------------------------------
+
+            const imageData = ctx.getImageData(
+                0,
+                0,
+                columns,
+                rows
+            );
+
+
+            // --------------------------------
+            // CRÉER LES POINTS
+            // --------------------------------
+
+            for (let y = 0; y < rows; y++) {
+
+                for (let x = 0; x < columns; x++) {
+
+                    const index =
+                        (y * columns + x) * 4;
+
+
+                    // Transparence du pixel
+
+                    const red =
+                        imageData.data[index];
+
+                    const green =
+                        imageData.data[index + 1];
+
+                    const blue =
+                        imageData.data[index + 2];
+
+                    const alpha =
+                        imageData.data[index + 3];
+
+
+                    // Luminosité du pixel
+
+                    const brightness =
+                        (red + green + blue) / 3;
+
+
+                    // On vérifie d'abord que le pixel
+                    // n'est pas transparent
+
+                    if (alpha > 20) {
+
+                        // Les pixels sombres deviennent
+                        // moins présents.
+
+                        if (brightness < 80) {
+                            continue;
+                        }
+
+                        const scale = 0.8;
+
+
+                        const px =
+                            (x / (columns - 1)) * 2 - 1.3;
+
+                        const py =
+                            (y / (rows - 1)) * 2 - 0.7;
+
+                        particles.push(
+                            px * scale,
+                            -py * scale,
+                            0
+                        );
+                    }
+                }
+            }
+
+            // --------------------------------
+            // ORDRE GAUCHE → DROITE
+            // AVEC RETARDS ALÉATOIRES
+            // --------------------------------
+
+            const particleCount =
+                particles.length / 3;
+
+
+            const order =
+                Array.from(
+                    { length: particleCount },
+                    (_, i) => i
+                );
+
+
+            // Chaque particule reçoit une priorité
+
+            const priorities =
+                new Array(particleCount);
+
+
+            for (let i = 0; i < particleCount; i++) {
+
+                const x =
+                    particles[i * 3];
+
+
+                // Position horizontale normalisée
+                // 0 = gauche
+                // 1 = droite
+
+                const horizontal =
+                    (x + 1.3) / 2.6;
+
+
+                // Progression gauche → droite
+
+                const base =
+                    horizontal * 100;
+
+
+                // Retard aléatoire
+                // Certaines particules peuvent
+                // être fortement retardées
+
+                const delay =
+                    Math.random() * 10;
+
+
+                priorities[i] =
+                    base + delay;
+            }
+
+
+            // Trier selon la priorité
+
+            order.sort((a, b) => {
+
+                return priorities[a] - priorities[b];
+
+            });
+
+
+            // --------------------------------
+            // CRÉER LES PARTICULES
+            // DANS LE NOUVEL ORDRE
+            // --------------------------------
+
+            const randomParticles = [];
+
+
+            for (let i = 0; i < order.length; i++) {
+
+                const index =
+                    order[i] * 3;
+
+                randomParticles.push(
+                    particles[index],
+                    particles[index + 1],
+                    particles[index + 2]
+                );
+            }
+            
+            // --------------------------------
+            // GEOMETRY
+            // --------------------------------
+
+            const geometry =
+                new THREE.BufferGeometry();
+
+            geometry.setAttribute(
+                "position",
+
+                new THREE.Float32BufferAttribute(
+                    randomParticles,
+                    3
+                )
+            );
+
+            geometry.setDrawRange(0, 0);
+
+
+            // --------------------------------
+            // MATERIAL
+            // --------------------------------
+
+            const material =
+                new THREE.PointsMaterial({
+
+                    color: 0xffffff,
+
+                    size: 0.008,
+
+                    sizeAttenuation: false
+
+                });
+
+
+            // --------------------------------
+            // POINT CLOUD
+            // --------------------------------
+
+            const points =
+                new THREE.Points(
+                    geometry,
+                    material
+                );
+
+            scene.add(points);
+
+
+            // --------------------------------
+            // ANIMATION
+            // --------------------------------
+
+            // --------------------------------
+            // ANIMATION
+            // --------------------------------
+
+            let visibleParticles = 0;
+
+            const revealSpeed = 70;
+
+
+            function animate() {
+
+                requestAnimationFrame(animate);
+
+
+                if (visibleParticles < particleCount) {
+
+                    visibleParticles += revealSpeed;
+
+                    geometry.setDrawRange(
+                        0,
+                        Math.min(
+                            visibleParticles,
+                            particleCount
+                        )
+                    );
+                }
+
+
+                renderer.render(
+                    scene,
+                    camera
+                );
+            }
+
+            animate();
+
+
+        };
+
+
+        // --------------------------------
+        // IMAGE ERROR
+        // --------------------------------
+
+        image.onerror = () => {
+
+            console.log(
+                "ERREUR : portrait.png introuvable"
+            );
+
+        };
+
+
+        // --------------------------------
+        // RESIZE
+        // --------------------------------
+
+        window.addEventListener(
+            "resize",
+            () => {
+
+                renderer.setSize(
+                    window.innerWidth,
+                    window.innerHeight
+                );
+
+            }
+        );
+
+    </script>
+
+</body>
+
+</html>

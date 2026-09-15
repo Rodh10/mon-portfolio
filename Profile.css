@@ -14,6 +14,7 @@ body {
   overflow: hidden;
   transition: background-color 1s ease;
   cursor: none;
+  z-index: 100;
 
 }
 
@@ -316,10 +317,10 @@ html, body {
 
 .skills5 {
   font-size: 2rem;
-  margin-left: 30%;
+  margin-left: 34%;
   margin-top: 7.5%;
   line-height: 1.1;
-  z-index: 2;
+  z-index: 1000;
   position: fixed;
 
 }
@@ -341,3 +342,34 @@ html, body {
 }
 
 
+
+
+
+
+
+
+/* =========================================================
+   THREE.JS PARTICLE PORTRAIT
+   ========================================================= */
+
+#particle-container {
+    position: fixed;
+  
+
+    inset: 0;
+
+    width: 100vw;
+    height: 100vh;
+
+    z-index: 0;
+
+    pointer-events: none;
+}
+
+
+#particle-container .particle-canvas {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+}
