@@ -163,28 +163,64 @@ if (particleContainer) {
             image.width /
             image.height;
 
-
-        const imageWidth =
+        let imageWidth =
             rows *
             imageRatio;
 
 
-        /*
-           On garde ici ton comportement original :
-           l'image commence à gauche.
-        */
+        /* =================================================
+          RECADRAGE MOBILE
+          ================================================= */
 
-        ctx.drawImage(
+        if (window.innerWidth <= 600) {
 
-            image,
+            const sourceY =
+                image.height / 3;
 
-            0,
-            0,
+            const sourceHeight =
+                image.height / 5;
 
-            imageWidth,
-            rows
+            const croppedRatio =
+                image.width /
+                sourceHeight;
 
-        );
+            imageWidth =
+                rows *
+                croppedRatio * 
+                0.2;
+
+
+            ctx.drawImage(
+
+                image,
+
+                0,
+                sourceY,
+                image.width,
+                sourceHeight,
+
+                0,
+                0,
+                imageWidth,
+                rows * 0.2
+
+            );
+
+        } else {
+
+            ctx.drawImage(
+
+                image,
+
+                0,
+                0,
+
+                imageWidth,
+                rows
+
+            );
+
+        }
 
 
         /* =================================================
@@ -1001,8 +1037,6 @@ function delayedShowCursor() {
 // --------- ÉLÉMENTS QUI DÉSACTIVENT LE CURSEUR ---------
 const nav = document.querySelector('.navigation');
 const resume = document.getElementById('resume');
-const socialLinks = document.querySelectorAll('#icon .icon-link');
-const diteBonjour = document.getElementById('ditebonjour');
 
 if (nav) {
   nav.addEventListener('mouseenter', hideCursor);
@@ -1011,13 +1045,19 @@ if (nav) {
 
 
 
+
 function insertProfileText() {
 
     const perso = document.querySelector('.perso');
     const focus = document.querySelector('.focus');
+    const titleMoi = document.querySelector('.i');
+    const titleExpertise = document.querySelector('.do');
 
-    if (!perso || !focus) return;
 
+
+    if (!perso || !focus || !titleMoi || !titleExpertise) return;
+    titleMoi.textContent = 'Moi';
+    titleExpertise.textContent = 'Mon expertise';
 
     const persoLines = [
         "Développeur,designer et photographe malgache,",
@@ -1027,7 +1067,6 @@ function insertProfileText() {
         "et d’une réflexion personnelle sur",
         "la société et les identités.",
 
-        "",
         "",
         "",
 
@@ -1042,19 +1081,15 @@ function insertProfileText() {
 
         "",
         "",
-        "",
 
         "Après avoir grandi à Farafangana,",
-        "je poursuis des études en informatique,",
-        "notamment en développement logiciel.",
-        "Cette formation nourrit mon approche",
-        "à la fois technique et créative,",
-        "que je transpose dans le design graphique,",
-        "le web design et la direction artistique.",
-        "Autodidacte, je m’intéresse particulièrement",
-        "aux compositions minimalistes,",
-        "à la typographie, à l’image",
-        "et aux expériences visuelles numériques."
+        "j’étudie l’informatique,",
+        "notamment le développement logiciel.",
+        "Je développe une approche",
+        "technique et créative,",
+        "entre design et numérique.",
+        "Autodidacte, je m’intéresse",
+        "à l’image et la typographie."
     ];
 
 
@@ -1065,13 +1100,19 @@ function insertProfileText() {
         "et la création d'interfaces intuitives,",
         "pensées pour offrir une expérience",
         "interactive, fluide et cohérente.",
+
         "",
+        "",
+
         "Je développe le front-end d'applications",
         "et de sites web, en transformant",
         "les maquettes et concepts visuels",
         "en interfaces fonctionnelles, interactives",
         "et adaptées aux différents besoins du projet.",
+
         "",
+        "",
+        
         "Je personnalise également chaque site",
         "selon sa charte graphique, en y intégrant",
         "des éléments graphiques ultra-personnalisés.",
@@ -1090,6 +1131,878 @@ function insertProfileText() {
     focus.innerHTML =
         focusLines.join("<br>");
 }
+
+
+
+function initMobileParagraphs() {
+
+    if (window.innerWidth > 600) return;
+
+    const perso = document.querySelector('.perso');
+    const focus = document.querySelector('.focus');
+    const titleMoi = document.querySelector('.i');
+    const titleExpertise = document.querySelector('.do');
+    const seeMore = document.querySelector('.see-more');
+
+    if (!perso || !focus || !titleMoi || !titleExpertise || !seeMore) return;
+
+    /* ==========================
+       RÉCUPÉRATION DES LIGNES
+       ========================== */
+
+    const persoLines =
+        Array.from(
+            perso.querySelectorAll(':scope > .line-container')
+        );
+
+    const focusLines =
+        Array.from(
+            focus.querySelectorAll(':scope > .line-container')
+        );
+
+
+    /* ==========================
+       DÉTECTION DES PARAGRAPHES
+       ========================== */
+
+    function splitParagraphs(lines) {
+
+        const paragraphs = [];
+        let current = [];
+
+        lines.forEach(line => {
+
+            if (line.textContent.trim() === '') {
+
+                if (current.length) {
+                    paragraphs.push(current);
+                    current = [];
+                }
+
+            } else {
+
+                current.push(line);
+
+            }
+
+        });
+
+        if (current.length) {
+            paragraphs.push(current);
+        }
+
+        return paragraphs;
+    }
+
+
+    const persoParagraphs =
+        splitParagraphs(persoLines);
+
+    const focusParagraphs =
+        splitParagraphs(focusLines);
+
+
+    if (
+        persoParagraphs.length < 3 ||
+        focusParagraphs.length < 3
+    ) return;
+
+
+
+
+    /* ==========================
+      ANIMATION DE LA FLÈCHE
+      ========================== */
+
+    function animateArrow(reverse = false) {
+
+        return new Promise(resolve => {
+
+            const steps = 5;
+            const delay = 50;
+            const trailLength = 4;
+
+            let currentStep = 0;
+
+            seeMore.style.opacity = '1';
+
+            /* ==========================
+              STRUCTURE
+              ========================== */
+
+            seeMore.innerHTML = '';
+
+            const trail =
+                document.createElement('span');
+
+            const head =
+                document.createElement('span');
+
+            trail.className = 'arrow-trail';
+            head.className = 'arrow-head';
+
+            if (reverse) {
+
+                head.textContent = '<';
+
+                seeMore.appendChild(head);
+                seeMore.appendChild(trail);
+
+            } else {
+
+                trail.textContent = '';
+                head.textContent = '>';
+
+                seeMore.appendChild(trail);
+                seeMore.appendChild(head);
+
+            }
+
+
+            /* ==========================
+              PHASE 1
+              LA FLÈCHE AVANCE
+              ========================== */
+
+            function moveArrow() {
+
+                currentStep++;
+
+                if (currentStep <= steps) {
+
+                    const length =
+                        currentStep * trailLength;
+
+                    trail.textContent =
+                        '_'.repeat(length);
+
+                    setTimeout(
+                        moveArrow,
+                        delay
+                    );
+
+                } else {
+
+                    /*
+                    * La tête est maintenant
+                    * arrivée à sa position finale.
+                    *
+                    * On attend un tout petit peu
+                    * avant de commencer la deuxième phase.
+                    */
+
+                    setTimeout(
+                        lockHead,
+                        5
+                    );
+
+                }
+
+            }
+
+
+            /* ==========================
+              VERROUILLAGE DE LA TÊTE
+              ========================== */
+
+            function lockHead() {
+
+                /*
+                * On récupère la position actuelle
+                * de la tête.
+                */
+
+                const headRect =
+                    head.getBoundingClientRect();
+
+                const parentRect =
+                    seeMore.getBoundingClientRect();
+
+                const finalLeft =
+                    headRect.left - parentRect.left;
+
+
+                /*
+                * On fixe la tête EXACTEMENT
+                * là où elle vient d'arriver.
+                */
+
+                head.style.position =
+                    'absolute';
+
+                head.style.left =
+                    `${finalLeft}px`;
+
+                head.style.top = '0';
+
+
+                /*
+                * Le trait reste libre.
+                */
+
+                if (!reverse) {
+
+                    trail.style.position =
+                        'absolute';
+
+                    trail.style.left =
+                        '0';
+
+                } else {
+
+                    trail.style.position =
+                        'absolute';
+
+                    trail.style.left =
+                        `${headRect.width}px`;
+
+                }
+
+
+                removeTrail();
+
+            }
+
+
+            /* ==========================
+              PHASE 2
+              LES TIRETS SE RACCOURCISSENT
+              ========================== */
+
+            function removeTrail() {
+
+                let remaining =
+                    steps * trailLength;
+
+                function removeNext() {
+
+                    if (remaining > 0) {
+
+                        remaining--;
+
+                        trail.textContent =
+                            '_'.repeat(remaining);
+
+                        /*
+                        * Le trait se raccourcit depuis la gauche.
+                        * On déplace donc son point de départ
+                        * vers la droite.
+                        */
+
+                        if (!reverse) {
+
+                            const removed =
+                                (steps * trailLength) - remaining;
+
+                            trail.style.left =
+                                `${removed}ch`;
+
+                        }
+
+                        setTimeout(
+                            removeNext,
+                            5
+                        );
+
+                    } else {
+
+                        /*
+                        * Les tirets ont rejoint la tête.
+                        */
+
+                        head.style.opacity = '0';
+
+                        setTimeout(() => {
+
+                            seeMore.style.opacity =
+                                '0';
+
+                            resolve();
+
+                        }, 100);
+
+                    }
+
+                }
+
+                removeNext();
+
+            }
+
+            moveArrow();
+
+        });
+
+    }
+
+
+    /* ==========================
+      POSITION DE LA FLÈCHE
+      SOUS LE 3e PARAGRAPHE
+      ========================== */
+
+    function positionReverseArrow() {
+
+        const thirdParagraph =
+            persoParagraphs[2];
+
+        const lastLine =
+            thirdParagraph?.[
+                thirdParagraph.length - 1
+            ];
+
+        if (!lastLine) return;
+
+        /*
+        * On remet temporairement la flèche
+        * dans sa position normale pour pouvoir
+        * mesurer correctement sa taille.
+        */
+
+        seeMore.style.transform = 'none';
+
+        /*
+        * On attend que le navigateur ait terminé
+        * le rendu des paragraphes.
+        */
+
+        requestAnimationFrame(() => {
+
+            const paragraphRect =
+                lastLine.getBoundingClientRect();
+
+            const arrowRect =
+                seeMore.getBoundingClientRect();
+
+            const gap = 20;
+
+            const targetTop =
+                paragraphRect.bottom + gap;
+
+            const targetLeft =
+                paragraphRect.right - arrowRect.width;
+
+            const offsetX =
+                targetLeft - arrowRect.left;
+
+            const offsetY =
+                targetTop - arrowRect.top;
+
+            seeMore.style.transform =
+                `translate(${offsetX}px, ${offsetY}px)`;
+
+            seeMore.style.opacity = '1';
+
+        });
+
+    }
+
+
+    /* ==========================
+      POSITION DE LA FLÈCHE
+      ÉTAT INITIAL
+      ========================== */
+
+    function positionInitialArrow() {
+
+        const firstMoiParagraph =
+            persoParagraphs[0];
+
+        const firstMoiLastLine =
+            firstMoiParagraph?.[
+                firstMoiParagraph.length - 1
+            ];
+
+        if (!firstMoiLastLine) return;
+
+        const moiRect =
+            firstMoiLastLine.getBoundingClientRect();
+
+        const arrowRect =
+            seeMore.getBoundingClientRect();
+
+        const arrowGapY = 2;
+
+        const targetTop =
+            moiRect.bottom + arrowGapY;
+
+        const offsetY =
+            targetTop - arrowRect.top;
+
+        /*
+        * Retour à la position horizontale initiale.
+        */
+
+        const offsetX = 0;
+
+        seeMore.style.transform =
+            `translate(${offsetX}px, ${offsetY}px)`;
+
+    }
+
+
+
+    /* ==========================
+       ÉTAT INITIAL
+       ========================== */
+
+    // Les paragraphes 2 et 3 de "Moi"
+    // sont invisibles dès le départ.
+
+    persoParagraphs.slice(1).flat().forEach(line => {
+
+        line.querySelectorAll(':scope > span').forEach(span => {
+
+            span.style.opacity = '0';
+            span.style.color = 'transparent';
+            span.style.backgroundColor = 'transparent';
+
+        });
+
+    });
+
+    /* ==========================
+       ANIMATION DISPARITION
+       ========================== */
+
+    function hideParagraphs(paragraphs, speed = 25) {
+
+        return new Promise(resolve => {
+
+            const lines = paragraphs.flat();
+
+            let totalDuration = 0;
+
+            lines.forEach(line => {
+
+                const spans =
+                    Array.from(
+                        line.querySelectorAll(':scope > span')
+                    );
+
+                const lastIndex = spans.length - 1;
+
+                spans.forEach((span, i) => {
+
+                    const delay =
+                        (lastIndex - i) * speed;
+
+                    setTimeout(() => {
+
+                        span.style.opacity = '1';
+                        span.style.color = '#000000';
+                        span.style.backgroundColor = '#ffffff';
+
+                    }, delay);
+
+                    setTimeout(() => {
+
+                        span.style.opacity = '0';
+                        span.style.color = 'transparent';
+                        span.style.backgroundColor = 'transparent';
+
+                    }, delay + 10);
+
+                    totalDuration =
+                        Math.max(
+                            totalDuration,
+                            delay + 10
+                        );
+
+                });
+
+            });
+
+            setTimeout(() => {
+                resolve();
+            }, totalDuration + 50);
+
+        });
+
+    }
+
+
+    /* ==========================
+       ANIMATION APPARITION
+       ========================== */
+
+    function showParagraphs(paragraphs, speed = 25) {
+
+        return new Promise(resolve => {
+
+            const lines = paragraphs.flat();
+
+            let totalDuration = 0;
+
+            lines.forEach(line => {
+
+                const spans =
+                    Array.from(
+                        line.querySelectorAll(':scope > span')
+                    );
+
+                spans.forEach((span, i) => {
+
+                    const delay = i * speed;
+
+                    setTimeout(() => {
+
+                        span.style.opacity = '1';
+                        span.style.color = '#ffffff';
+                        span.style.backgroundColor = '#000000';
+
+                    }, delay);
+
+                    totalDuration =
+                        Math.max(
+                            totalDuration,
+                            delay + 10
+                        );
+
+                });
+
+            });
+
+            setTimeout(() => {
+                resolve();
+            }, totalDuration + 50);
+
+        });
+
+    }
+
+
+    /* ==========================
+       DESCENTE
+       ========================== */
+
+    function moveExpertise(distance = 220, speed = 70) {
+
+        return new Promise(resolve => {
+
+            let position = initialOffset;
+
+            const step = 20;
+
+            const firstParagraph =
+                focusParagraphs[0];
+
+            const timer = setInterval(() => {
+
+                position += step;
+
+                if (position >= initialOffset + distance) {
+
+                    position = initialOffset + distance;
+
+                    clearInterval(timer);
+                    resolve();
+
+                }
+
+                titleExpertise.style.transform =
+                    `translateY(${position}px)`;
+
+                firstParagraph.forEach(line => {
+
+                    line.style.transform =
+                        `translateY(${position}px)`;
+
+                });
+
+            }, speed);
+
+        });
+
+    }
+
+
+    /* ==========================
+       REMONTÉE
+       ========================== */
+
+    function resetExpertise(distance = 200, speed = 70) {
+
+        return new Promise(resolve => {
+
+            let position = initialOffset + distance;
+
+            const step = 20;
+
+            const firstParagraph =
+                focusParagraphs[0];
+
+            const timer = setInterval(() => {
+
+                position -= step;
+
+                if (position <= initialOffset) {
+
+                    position = initialOffset;
+
+                    clearInterval(timer);
+                    resolve();
+
+                }
+
+                titleExpertise.style.transform =
+                    `translateY(${position}px)`;
+
+                firstParagraph.forEach(line => {
+
+                    line.style.transform =
+                        `translateY(${position}px)`;
+
+                });
+
+            }, speed);
+
+        });
+
+    }
+
+
+    // Position initiale de "Mon expertise"
+    // au niveau du 2e paragraphe de "Moi"
+    /* ==========================
+      POSITIONS INITIALES
+      ========================== */
+
+    let initialOffset = 0;
+
+    const firstMoiLine =
+        persoParagraphs[0]?.[
+            persoParagraphs[0].length - 1
+        ];
+
+    if (firstMoiLine) {
+
+        /* ==========================
+          POSITION DE LA FLÈCHE
+          ========================== */
+
+        /* ==========================
+          POSITION DE LA FLÈCHE
+          ========================== */
+
+        const firstMoiParagraph =
+            persoParagraphs[0];
+
+        const firstMoiLastLine =
+            firstMoiParagraph?.[firstMoiParagraph.length - 1];
+
+        if (firstMoiLastLine) {
+
+            const moiBottom =
+                firstMoiLastLine.getBoundingClientRect().bottom;
+
+            const arrowTop =
+                seeMore.getBoundingClientRect().top;
+
+            const arrowGap = 2;
+
+            const arrowOffset =
+                moiBottom + arrowGap - arrowTop;
+
+            seeMore.style.transform =
+                `translateY(${arrowOffset}px)`;
+        }
+
+
+        /* ==========================
+          POSITION DE MON EXPERTISE
+          ========================== */
+
+        const arrowBottom =
+            seeMore.getBoundingClientRect().bottom;
+
+        const expertiseTop =
+            titleExpertise.getBoundingClientRect().top;
+
+        const expertiseGap = 20;
+
+        initialOffset =
+            arrowBottom + expertiseGap - expertiseTop;
+
+        titleExpertise.style.transform =
+            `translateY(${initialOffset}px)`;
+
+        focusParagraphs.flat().forEach(line => {
+            line.style.transform =
+                `translateY(${initialOffset}px)`;
+        });
+
+    }
+
+    /* ==========================
+       ÉTAT INITIAL
+       ========================== */
+
+    let isExpanded = false;
+    let animationRunning = false;
+
+
+    seeMore.addEventListener('click', async () => {
+
+        if (animationRunning) return;
+
+        animationRunning = true;
+
+        if (!isExpanded) {
+
+            // Flèche vers la droite
+            await animateArrow(false);
+
+            // Même séquence que le clic sur "Moi"
+            await hideParagraphs(
+                focusParagraphs
+            );
+
+            await moveExpertise();
+
+            await showParagraphs(
+                persoParagraphs.slice(1)
+            );
+
+            isExpanded = true;
+
+            /* ==========================
+              NOUVELLE FLÈCHE
+              ========================== */
+
+            seeMore.textContent = '<__';
+
+            positionReverseArrow();
+
+        } else {
+
+            // Flèche vers la gauche
+            await animateArrow(true);
+
+            await hideParagraphs(
+                persoParagraphs.slice(1)
+            );
+
+            await resetExpertise();
+
+            await showParagraphs(
+                focusParagraphs
+            );
+
+            isExpanded = false;
+
+            // Flèche initiale
+            seeMore.textContent = '__>';
+            seeMore.style.opacity = '1';
+
+            positionInitialArrow();
+
+        }
+
+        animationRunning = false;
+
+    });
+
+
+    /* ==========================
+       CLIC SUR "MOI"
+       ========================== */
+
+    titleMoi.addEventListener('click', async () => {
+
+        if (animationRunning) return;
+
+        animationRunning = true;
+
+
+        if (!isExpanded) {
+
+            /*
+             * 1. Faire disparaître
+             *    les paragraphes 2 et 3
+             *    de l'expertise
+             */
+
+            await hideParagraphs(
+                focusParagraphs
+            );
+
+
+            /*
+             * 2. Faire descendre
+             *    "Mon expertise"
+             *    + le premier paragraphe
+             */
+
+            await moveExpertise();
+
+
+            /*
+             * 3. Faire apparaître
+             *    les paragraphes 2 et 3
+             *    de "Moi"
+             */
+
+            await showParagraphs(
+                persoParagraphs.slice(1)
+            );
+
+            isExpanded = true;
+
+
+            // Nouvelle flèche inversée
+            seeMore.textContent = '<__';
+            seeMore.style.opacity = '1';
+
+        } else {
+
+            /*
+             * 1. Faire disparaître
+             *    les paragraphes 2 et 3
+             *    de "Moi"
+             */
+
+            await hideParagraphs(
+                persoParagraphs.slice(1)
+            );
+
+
+            /*
+             * 2. Remonter l'expertise
+             */
+
+            await resetExpertise();
+
+
+            /*
+             * 3. Faire réapparaître
+             *    les paragraphes 2 et 3
+             *    de l'expertise
+             */
+
+            await showParagraphs(
+                focusParagraphs
+            );
+
+           
+
+            isExpanded = false;
+
+
+            // Nouvelle flèche initiale
+            seeMore.textContent = '__>';
+            seeMore.style.opacity = '1';
+
+        }
+
+
+        animationRunning = false;
+
+    });
+    
+
+}
+
 
 
 
@@ -1512,116 +2425,6 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
 });
-
-
-
-
-
-// === Fonction principale qui met à jour l'affichage
-function updateDisplayByStep() {
-  switch (currentStep) {
-    case 0:
-
-      leaveEffectYear();
-      hideAllBlokCMD(); // vitesse par défaut = 25
-      leaveEffectTitled(); 
-      leaveEffectPara();
-      leaveProfileTitleFirstTwo();
-      leaveProfileTitleLastTwo();
-      titreo.classList.add("milefa");
-      talenta.classList.add("miverina");
-
-      appearClockWithRandom();
-      appearLinks(); 
-      initResumeAnimations();
-      cycleHiWords();
-      appearWelcome();
-      appearMonLien();
-      initSayHiAnimations();
-      iconWrapper.classList.remove("hidden");
-      iconWrapper.classList.add("visible");
-      mpanoratra.classList.remove("midina");
-      mpanoratra.classList.add("miakatra");
-      titreo.classList.remove("mipoitra");
-      talenta.classList.remove("mandeha");
-
-
-
-
-
-      break;
-
-    case 1:
-
-
-      leaveEffectYear();
-      leaveClock();
-      leaveEffectResume();
-      leaveEffectHi();
-      leaveEffectWelcome();
-      leaveEffectMonLien();
-      leaveEffectSayHi();
-      hideAllBlokCMD(); // vitesse par défaut = 25
-      iconWrapper.classList.add("hidden");
-      iconWrapper.classList.remove("visible");
-      talenta.classList.add("miverina");
-      talenta.classList.remove("mandeha");
-      titreo.classList.remove("mipoitra");
-      titreo.classList.add("milefa");
-
-
-
-
-
-
-    
-
-
-
-
-
-      break;
-
-    case 2:
-
-
-      leaveClock();
-      leaveEffectLinks();
-      leaveEffectResume();
-      leaveEffectHi();
-      leaveEffectWelcome();
-      leaveEffectMonLien();
-      leaveEffectSayHi();
-      leaveProfileTitleFirstTwo(); // pour lancer la disparition
-      leaveProfileTitleLastTwo(); // pour lancer la disparition
-      leaveEffectTitled(); 
-      leaveEffectPara();
-      titreo.classList.remove("mipoitra");
-      titreo.classList.add("milefa");
-      talenta.classList.add("miverina");
-      talenta.classList.remove("mandeha");
-      tongasoa.classList.add("very");
-      tongasoa.classList.remove("hita");
-
-
-
-      cycleYearWords();
-      showAllBlokCMD();
-      startAnimationSequence();
-
-
-
-
-      break;
-
-
-  }
-
-  updateActiveNav(currentStep);
-
-}
-
-
 
 
 
@@ -2080,11 +2883,10 @@ function leaveEffectTitled() {
 
 
 
-
-appearTitled();
+insertProfileText();
 appearProfileTitleFirstTwo();
 appearProfileTitleLastTwo();
-insertProfileText();
+appearTitled();
 appearPara();
+initMobileParagraphs();
 appearLinks();
-

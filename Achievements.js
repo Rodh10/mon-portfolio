@@ -963,7 +963,7 @@ function montrerDescription(index, pause = 15000, waitBeforeAppear = 500) { // ð
   desc.style.position = 'absolute';
   desc.style.left = `${rect.left}px`;
   desc.style.top = `${rect.bottom + spacing}px`;
-  desc.style.width = "65%";
+  desc.style.width = "40%";
 
   desc.classList.add('visible');
   desc.classList.remove('hidden');

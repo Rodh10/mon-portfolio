@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+
+
+
+<head>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js"
+        }
+    }
+    </script>
+
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Dashboard</title>
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #fff;
+            font-family: monospace;
+            padding: 40px;
+        }
+
+        .dashboard-wrapper {
+            position: relative;
+            width: fit-content;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(3, 250px);
+            grid-template-rows: repeat(2, 250px);
+            gap: 20px;
+        }
+
+        .box {
+            border: 1px solid #444;
+            padding: 20px;
+        }
+
+        .box h2 {
+            font-size: 14px;
+            font-weight: normal;
+            color: #808080;
+            margin-bottom: 20px;
+        }
+
+        .box p {
+            font-size: 16px;
+        }
+
+
+        /* ==========================
+              CASE 01
+           ========================== */
+
+        .box-01 {
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+        }
+
+
+        .box-01 .particle-canvas {
+            position: absolute;
+
+            top: 5px;
+            left: 5px;
+
+            width: calc(100% - 10px);
+            height: calc(100% - 10px);
+
+            pointer-events: none;
+        }
+
+        .box-01 img {
+
+            display: none;
+        }
+
+
+        .box-01 {
+            --reaction: 0;
+        }
+
+        .box-01::after {
+            content: "";
+            position: absolute;
+            inset: 3px;
+            pointer-events: none;
+        }
+
+        /* Zone qui recevra l'animation */
+
+        .box-01:hover img {
+            /* Animation à ajouter plus tard */
+        }
+
+
+        /* ==========================
+              GRILLE DES +
+           ========================== */
+
+        .grid-plus {
+            position: absolute;
+
+            top: -6px;
+            left: -6px;
+
+            width: calc(100% + 12px);
+            height: calc(100% + 12px);
+
+            pointer-events: none;
+        }
+
+        .plus {
+
+            width: 12px;
+            height: 12px;
+
+            color: #ffffff;
+
+            font-size: 12px;
+            line-height: 12px;
+            text-align: center;
+        }
+
+
+        /* Colonnes */
+
+        .grid-plus {
+            left: -2.5%;
+            top: -3.5%;
+            display: grid;
+            grid-template-columns: repeat(4, 270px);
+            grid-template-rows: repeat(3, 270px);
+            column-gap: 2px;
+            row-gap: 2px;
+        }
+
+    </style>
+
+</head>
+
+
+
+
+
+<body>
+
+    <div class="dashboard-wrapper">
+
+        <!-- ==========================
+             GRILLE DES +
+             ========================== -->
+
+        <div class="grid-plus">
+            <span class="plus">+</span>
+            <span class="plus">+</span>
+            <span class="plus">+</span>
+            <span class="plus">+</span>
+
+            <span class="plus">+</span>
+            <span class="plus">+</span>
+            <span class="plus">+</span>
+            <span class="plus">+</span>
+
+            <span class="plus">+</span>
+            <span class="plus">+</span>
+            <span class="plus">+</span>
+            <span class="plus">+</span>
+        </div>
+
+
+        <!-- ==========================
+             DASHBOARD
+             ========================== -->
+
+        <div class="dashboard">
+
+            <!-- Ligne 1 -->
+
+            <div class="box box-01">
+
+
+                <img src="poster.jpg" alt="Poster">
+                <canvas class="particle-canvas"></canvas>
+
+            </div>
+
+            <div class="box">
+                <p></p>
+            </div>
+
+            <div class="box">
+                <p></p>
+            </div>
+
+
+            <!-- Ligne 2 -->
+
+            <div class="box">
+                <p></p>
+            </div>
+
+            <div class="box">
+                <p></p>
+            </div>
+
+            <div class="box">
+                <p></p>
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+
+    <script type="module">
+
+        import * as THREE from 'three';
+
+        const box = document.querySelector('.box-01');
+        const canvas = document.querySelector('.particle-canvas');
+        const image = box.querySelector('img');
+
+        if (!box || !canvas || !image) {
+            throw new Error('Éléments manquants');
+        }
+
+
+        /* ==========================
+            CONFIGURATION
+        ========================== */
+
+        const columns = 10;
+        const rows = 10;
+
+
+        /* ==========================
+            THREE.JS
+        ========================== */
+
+        const scene = new THREE.Scene();
+
+        const camera = new THREE.OrthographicCamera(
+            -1,
+            1,
+            1,
+            -1,
+            0.1,
+            10
+        );
+
+        camera.position.z = 1;
+
+
+        const renderer = new THREE.WebGLRenderer({
+            canvas: canvas,
+            alpha: true,
+            antialias: false
+        });
+
+        renderer.setPixelRatio(1);
+
+
+        /* ==========================
+            IMAGE → CARRÉS
+        ========================== */
+
+        const textureLoader = new THREE.TextureLoader();
+
+
+        textureLoader.load(image.src, (texture) => {
+
+            texture.minFilter = THREE.LinearFilter;
+            texture.magFilter = THREE.LinearFilter;
+            texture.colorSpace = THREE.SRGBColorSpace;
+            texture.flipY = false;
+            texture.needsUpdate = true;
+
+
+            /* ==========================
+                DIMENSIONS
+            ========================== */
+
+            const cellWidth = 2 / columns;
+            const cellHeight = 2 / rows;
+
+            const gap = 0;
+
+            const squares = [];
+
+
+            /* ==========================
+                CRÉATION DES CARRÉS
+            ========================== */
+
+            for (let y = 0; y < rows; y++) {
+
+                for (let x = 0; x < columns; x++) {
+
+                    const geometry =
+                        new THREE.PlaneGeometry(
+                            cellWidth - gap,
+                            cellHeight - gap
+                        );
+
+
+                    /* ==========================
+                        PORTION DE L'IMAGE
+                    ========================== */
+
+                    const u1 = x / columns;
+                    const u2 = (x + 1) / columns;
+
+                    const v1 = y / rows;
+                    const v2 = (y + 1) / rows;
+
+
+                    const uv =
+                        geometry.attributes.uv;
+
+                    uv.setXY(0, u1, v1);
+                    uv.setXY(1, u2, v1);
+                    uv.setXY(2, u1, v2);
+                    uv.setXY(3, u2, v2);
+
+                    uv.needsUpdate = true;
+
+
+                    /* ==========================
+                        MATÉRIAU
+                    ========================== */
+
+                    const material =
+                        new THREE.MeshBasicMaterial({
+                            map: texture,
+                            transparent: true
+                        });
+
+
+                    /* ==========================
+                        CARRÉ
+                    ========================== */
+
+                    const square =
+                        new THREE.Mesh(
+                            geometry,
+                            material
+                        );
+
+
+                    /* ==========================
+                        POSITION INITIALE
+                    ========================== */
+
+                    square.position.x =
+                        -1 +
+                        cellWidth / 2 +
+                        x * cellWidth;
+
+                    square.position.y =
+                        1 -
+                        cellHeight / 2 -
+                        y * cellHeight;
+
+
+                    /* ==========================
+                        DONNÉES DU CARRÉ
+                    ========================== */
+
+                    square.userData.originalX =
+                        square.position.x;
+
+                    square.userData.originalY =
+                        square.position.y;
+
+                    square.userData.randomSize =
+                        0.7 + Math.random() * 0.6;
+
+
+                    scene.add(square);
+
+                    squares.push(square);
+                }
+            }
+
+
+            /* ==========================
+                RÉACTION HOVER
+            ========================== */
+
+            function setupHoverReaction() {
+
+                const mouse = {
+                    x: -10,
+                    y: -10
+                };
+
+
+                const radius = 2;
+                const force = 0.30;
+                const returnSpeed = 0.12;
+
+
+                /* ==========================
+                    SOURIS
+                ========================== */
+
+                box.addEventListener(
+                    'mousemove',
+                    (event) => {
+
+                        const rect =
+                            box.getBoundingClientRect();
+
+
+                        const x =
+                            (event.clientX - rect.left) /
+                            rect.width;
+
+                        const y =
+                            (event.clientY - rect.top) /
+                            rect.height;
+
+
+                        mouse.x =
+                            x * 2 - 1;
+
+                        mouse.y =
+                            -(y * 2 - 1);
+
+                    }
+                );
+
+
+                /* ==========================
+                    SORTIE
+                ========================== */
+
+                box.addEventListener(
+                    'mouseleave',
+                    () => {
+
+                        mouse.x = -10;
+                        mouse.y = -10;
+
+                    }
+                );
+
+
+                /* ==========================
+                    MISE À JOUR
+                ========================== */
+
+                function updateReaction() {
+
+                    squares.forEach((square) => {
+
+                        const originalX =
+                            square.userData.originalX;
+
+                        const originalY =
+                            square.userData.originalY;
+
+
+                        const dx =
+                            square.position.x -
+                            mouse.x;
+
+                        const dy =
+                            square.position.y -
+                            mouse.y;
+
+
+                        const distance =
+                            Math.sqrt(
+                                dx * dx +
+                                dy * dy
+                            );
+
+
+                        /* ==========================
+                            RÉACTION
+                        ========================== */
+
+                        if (distance < radius) {
+
+                            const influence =
+                                1 -
+                                distance / radius;
+
+
+                            const angle =
+                                Math.atan2(
+                                    dy,
+                                    dx
+                                );
+
+
+                            const push =
+                                influence * force;
+
+
+                            const targetX =
+                                originalX +
+                                Math.cos(angle) * push;
+
+                            const targetY =
+                                originalY +
+                                Math.sin(angle) * push;
+
+
+                            square.position.x +=
+                                (
+                                    targetX -
+                                    square.position.x
+                                ) * 0.35;
+
+
+                            square.position.y +=
+                                (
+                                    targetY -
+                                    square.position.y
+                                ) * 0.35;
+
+
+                            /* ==========================
+                                TAILLE
+                            ========================== */
+
+                            const scale =
+                                1 +
+                                influence *
+                                square.userData.randomSize *
+                                0.35;
+
+
+                            square.scale.x +=
+                                (
+                                    scale -
+                                    square.scale.x
+                                ) * 0.3;
+
+
+                            square.scale.y +=
+                                (
+                                    scale -
+                                    square.scale.y
+                                ) * 0.3;
+
+
+                        } else {
+
+                            /* ==========================
+                                RETOUR
+                            ========================== */
+
+                            square.position.x +=
+                                (
+                                    originalX -
+                                    square.position.x
+                                ) * returnSpeed;
+
+
+                            square.position.y +=
+                                (
+                                    originalY -
+                                    square.position.y
+                                ) * returnSpeed;
+
+
+                            square.scale.x +=
+                                (
+                                    1 -
+                                    square.scale.x
+                                ) * returnSpeed;
+
+
+                            square.scale.y +=
+                                (
+                                    1 -
+                                    square.scale.y
+                                ) * returnSpeed;
+
+                        }
+
+
+                        /* ==========================
+                            LIMITES DE LA CASE
+                        ========================== */
+
+                        const halfWidth =
+                            (cellWidth - gap) / 2;
+
+                        const halfHeight =
+                            (cellHeight - gap) / 2;
+
+
+                        square.position.x =
+                            Math.max(
+                                -1 + halfWidth,
+                                Math.min(
+                                    1 - halfWidth,
+                                    square.position.x
+                                )
+                            );
+
+
+                        square.position.y =
+                            Math.max(
+                                -1 + halfHeight,
+                                Math.min(
+                                    1 - halfHeight,
+                                    square.position.y
+                                )
+                            );
+
+                    });
+
+                }
+
+
+                return updateReaction;
+            }
+
+
+            /* ==========================
+                INITIALISATION HOVER
+            ========================== */
+
+            const updateHover =
+                setupHoverReaction();
+
+
+            /* ==========================
+                ANIMATION
+            ========================== */
+
+            function animate() {
+
+                requestAnimationFrame(animate);
+
+                updateHover();
+
+                renderer.render(
+                    scene,
+                    camera
+                );
+            }
+
+
+            /* ==========================
+                DÉMARRAGE
+            ========================== */
+
+            resize();
+
+            animate();
+
+        });
+
+
+
+
+        /* ==========================
+            RESIZE
+        ========================== */
+
+        function resize() {
+
+            const width = box.clientWidth;
+            const height = box.clientHeight;
+
+            renderer.setSize(
+                width,
+                height,
+                false
+            );
+        }
+
+
+
+    </script>
+
+
+
+
+
+
+</body>
+
+</html>

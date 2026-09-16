@@ -121,124 +121,70 @@ html, body {
 
 
 
+
+
+
 .para {
-  font-family: monospace;
-  text-align: left;
   position: fixed;
-  top: 15%;
+  top: 10%;
   left: 24%;
   opacity: 1;
   z-index: 5;
-  display: flex;
   color: transparent;
-  font-size: 0.8rem;
   width: 70%;
-}
-
-/* Tablette */
-@media (max-width: 900px) {
-  .para {
-    font-size: 0.7rem;
-  }
-}
-
-/* Mobile */
-@media (max-width: 600px) {
-  .para {
-    font-size: 0.6rem;
-    width: 92%;
-    display: block;
-    padding: 5%;
-    top: 14%;
-    
-  }
+  display: grid;
+  grid-template-columns: 1fr 1fr;
 }
 
 
 
-.para p {
-  font-size: 0.6rem;
-  width: 100%;
-  white-space: pre-wrap;
-
-}
-
-/* Tablette */
-@media (max-width: 900px) {
-  .para p {
-    font-size: 0.7rem;
-  }
-}
-
-/* Mobile */
-@media (max-width: 600px) {
-  .para p {
-    font-size: 0.6rem;
-    left: 2%;
-    margin-bottom: 40%;
-
-  }
-}
-
-
-
-
-
-
-
-
-.titled {
-  position: fixed;
-  display: flex;
-  top: 2%;
-  left: 20%;
-  font-family: "MaPolice", monospace;
+.para .i {
   font-size: 4rem;
-  color: transparent;
-  background-color: transparent;
-  width: 90%;
+  grid-row: 1;
 }
 
-/* Tablette */
-@media (max-width: 900px) {
-  .titled {
-    font-size: 3rem;
-  }
+.para .do {
+  font-size: 4rem;
+  grid-row: 1;
 }
+
+
 
 /* Mobile */
 @media (max-width: 600px) {
-  .titled {
-    font-size: 1.9rem;
-    width: 100%;
+  .para {
+    top: 32%;
+    opacity: 1;
+    z-index: 5;
+    color: transparent;
+    width: 70%;
+    font-size: 0.6rem;
     display: block;
-    top: 12%;
-    left: 25%;
-
   }
-}
 
-
-
-.titled p {
-  margin-right: 25%;
-  font-family: "MaPolice", monospace;
-}
-/* Tablette */
-@media (max-width: 900px) {
-  .titled p {
+  .para .i {
     font-size: 2rem;
   }
-}
-
-/* Mobile */
-@media (max-width: 600px) {
-  .titled p {
-    margin-right: 8%;
-    margin-bottom: 42%;
-
+  .para .do {
+    margin-top: 5%;
+    font-size: 2rem;
   }
+
 }
+
+
+
+
+
+
+
+.see-more {
+    position: relative;
+    font-size: 1rem;
+    color: rgb(255, 255, 255);
+    z-index: 2000;
+}
+
 
 
 
@@ -263,7 +209,8 @@ html, body {
 /* Mobile */
 @media (max-width: 600px) {
   .profiletitle {
-    top: 32%;
+    top: 50%;
+    left: 0%;
     
   }
 }
@@ -305,7 +252,7 @@ html, body {
 @media (max-width: 600px) {
   .other {
     font-size: 0.5rem;
-    margin-left: 20%;
+    margin-left: 10%;
 
   }
 }
@@ -336,6 +283,7 @@ html, body {
   .skills5 {
     font-size: 1.2rem;
     margin-top: 60%;
+    margin-left: 1%;
     
   }
 }
@@ -363,6 +311,22 @@ html, body {
     z-index: 0;
 
     pointer-events: none;
+}
+
+
+@media (max-width: 600px) {
+
+    #particle-container {
+        top: 0;
+        left: 0;
+        width: 400vw;
+        height: 100vh;
+
+        inset: auto;
+
+        overflow: hidden;
+    }
+
 }
 
 

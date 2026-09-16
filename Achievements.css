@@ -124,12 +124,12 @@ html, body {
   font-size: 0.8rem;
   text-align: left;
   position: fixed;
-  top: 12%;
-  left: 30%;
+  top: 17%;
+  left: 70%;
   opacity: 1;
   z-index: 4;
   pointer-events: auto;
-  width: 50%;
+  width: 40%;
   cursor: pointer;
 }
 
@@ -269,8 +269,8 @@ html, body {
 
 
 .year {
-  left: 16%;
-  top: 12%; /* par ex., à toi d'adapter */
+  left: 70%;
+  top: 5%; /* par ex., à toi d'adapter */
   font-family: monospace;
   font-size: 5rem;
   position: fixed;
