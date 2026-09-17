@@ -3042,14 +3042,17 @@ function appearPara() {
 
             node.textContent.split('').forEach(ch => {
 
-            const span = document.createElement('span');
-            span.textContent = ch;
-            span.style.color = 'transparent';
-            span.style.backgroundColor = 'transparent';
-            span.style.display = 'inline-block';
+                const span = document.createElement('span');
 
-            lineContainer.appendChild(span);
-          });
+                span.textContent =
+                    ch === ' ' ? '\u00A0' : ch;
+
+                span.style.color = 'transparent';
+                span.style.backgroundColor = 'transparent';
+                span.style.display = 'inline-block';
+
+                lineContainer.appendChild(span);
+            });
 
         }
 
