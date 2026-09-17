@@ -151,8 +151,9 @@ html, body {
 /* Mobile */
 @media (max-width: 600px) {
   .conteneur {
-    width: 50%;
     font-size: 0.65rem;
+    left: 30%;
+    top: 25%;
     
   }
 }
@@ -210,7 +211,7 @@ html, body {
 /* Mobile */
 @media (max-width: 600px) {
   .zone-descriptions {
-    width: 60%;
+    width: 100%;
     font-size: 0.65rem;
     top: 1.5%;
   }
@@ -219,7 +220,7 @@ html, body {
 /* Mobile */
 @media (max-width: 500px) {
   .zone-descriptions {
-    width: 60%;
+    width: 100%;
     font-size: 0.65rem;
     top: 1.2%;
   }
@@ -305,7 +306,8 @@ html, body {
 @media (max-width: 600px) {
   .year {
     font-size: 2.5rem;
-    left: 2%;
+    left: 30%;
+    top: 20%;
 
   }
 }
@@ -325,110 +327,4 @@ html, body {
 
 
 
-
-
-
-
-.cmd-link {
-  font-family: "MaPolice", monospace;
-  font-size: 4rem;          /* un peu plus petit que .year */
-  position: fixed;
-  left: 16%;
-  top: 65%; /* par ex., à toi d'adapter */
-  cursor: pointer;
-  display: flex;
-  
-}
-
-
-/* Tablette */
-@media (max-width: 1300px) {
- .cmd-link {
-    font-size: 3.5rem;
-    left: 14%;
-  }
-}
-
-/* Tablette */
-@media (max-width: 900px) {
-  .cmd-link {
-    font-size: 2.8rem;
-    left: 14%;
-    display: flex;
-  }
-}
-
-/* Mobile */
-@media (max-width: 600px) {
-  .cmd-link {
-    font-size: 2rem;
-    top: 75%;
-    flex-wrap: wrap;      /* autorise le passage à la ligne */
-    width: 68%;
-    display: inline-block;
-  }
-}
-
-
-.cmd-link p {
-  margin-right: 6rem;      /* espace entre les liens */  
-}
-
-
-/* Tablette */
-@media (max-width: 1300px) {
- .cmd-link p {
-  margin-right: 4rem;
-  
-  }
-}
-
-/* Tablette */
-@media (max-width: 900px) {
-  .cmd-link p {
-    margin-right: 4rem;
-
-  }
-}
-
-/* Mobile */
-@media (max-width: 600px) {
-  .cmd-link p {
-    margin-right: 3rem;
-    width: 100%;           /* pour que le texte prenne plus de place */
-
-  }
-}
-
-
-
-
-
-
-
-
-.title {
-  font-size: 2rem;
-  margin-left: 16%;
-  top: 60%;
-  line-height: 1.1;
-  z-index: 10;
-  position: fixed;
-  color: #ffffff;
-}
-
-/* Tablette */
-@media (max-width: 900px) {
-  .title {
-    font-size: 1.4rem;
-  }
-}
-
-/* Mobile */
-@media (max-width: 600px) {
-  .title {
-    font-size: 0.8rem;
-    top: 72%;
-  }
-}
 

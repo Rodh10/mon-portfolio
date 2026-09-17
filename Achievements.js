@@ -62,7 +62,6 @@ function delayedShowCursor() {
 
 // --------- ÉLÉMENTS QUI DÉSACTIVENT LE CURSEUR ---------
 const nav = document.querySelector('.navigation');
-const cmdlinks = document.querySelectorAll('.cmd-link p');
 const resume = document.getElementById('resume');
 const socialLinks = document.querySelectorAll('#icon .icon-link');
 const diteBonjour = document.getElementById('ditebonjour');
@@ -73,10 +72,6 @@ if (nav) {
 }
 
 
-cmdlinks.forEach(el => {
-  el.addEventListener('mouseenter', hideCursor);
-  el.addEventListener('mouseleave', delayedShowCursor);
-});
 
 
 
@@ -498,8 +493,7 @@ function leaveAllEffects() {
   return new Promise(resolve => {
     // Ici tu peux appeler toutes tes fonctions leaveEffect :
     hideAllBlokCMD(); // vitesse par défaut = 25
-    leavePhotoPosters();
-    leaveTitle();
+
     animateOldActiveLeaveWheel();
     leaveEffectYear();
 
@@ -1419,242 +1413,11 @@ blokys.forEach((blok, index) => {
 
 
 
-function appearPhotoPosters() {
-  const links = document.querySelectorAll('.cmd-link p');
 
-  links.forEach(link => {
 
-    // Reset anciens timeouts
-    if (link.timeouts) link.timeouts.forEach(t => clearTimeout(t));
-    link.timeouts = [];
 
-    // Transformer texte en spans si pas déjà fait
-    if (!link.querySelector('span')) {
-      const text = link.textContent;
-      link.textContent = '';
-      for (const ch of text) {
-        const span = document.createElement('span');
-        span.textContent = ch;
-        span.style.display = 'inline-block';
-        link.appendChild(span);
-      }
-    }
 
-    const spans = [...link.querySelectorAll('span')];
 
-    const letterDelay = 60;
-    const passedDelay = 80;
-
-    link.isAppeared = true;
-
-    // Apparition lettre par lettre
-    spans.forEach((span, i) => {
-      const t1 = setTimeout(() => {
-        span.style.color = '#000';
-        span.style.background = 'white';
-      }, i * letterDelay);
-
-      const t2 = setTimeout(() => {
-        span.style.color = '#fff';
-        span.style.background = 'transparent';
-      }, i * letterDelay + passedDelay);
-
-      link.timeouts.push(t1, t2);
-    });
-
-
-    // --- Hover effect CMD propre ---
-    let hoverTimeouts = [];
-
-    link.addEventListener('mouseenter', () => {
-      hoverTimeouts.forEach(t => clearTimeout(t));
-      hoverTimeouts = [];
-
-      spans.forEach((span, i) => {
-        const t1 = setTimeout(() => {
-          span.style.color = "#ffffff";
-          span.style.backgroundColor = "#e10000";
-        }, i * 30);
-
-        const t2 = setTimeout(() => {
-          span.style.color = "#ffffff";
-          span.style.backgroundColor = "#e10000";
-        }, i * 30 + 40);
-
-        hoverTimeouts.push(t1, t2);
-      });
-    });
-
-    link.addEventListener('mouseleave', () => {
-      hoverTimeouts.forEach(t => clearTimeout(t));
-      hoverTimeouts = [];
-
-      const last = spans.length - 1;
-
-      spans.forEach((span, i) => {
-        const delay = (last - i) * 30;
-
-        const t1 = setTimeout(() => {
-          span.style.color = "#ffffff";
-          span.style.backgroundColor = "#e10000";
-        }, delay);
-
-        const t2 = setTimeout(() => {
-          span.style.color = "#ffffff";
-          span.style.backgroundColor = "transparent";
-        }, delay + 30);
-
-        hoverTimeouts.push(t1, t2);
-      });
-    });
-
-
-
-
-  });
-
-  // Lancer le flip aléatoire
-  setTimeout(startRandomFlip, 1500);
-}
-
-function startRandomFlip() {
-  const links = document.querySelectorAll('.cmd-link p');
-  if (!links.length) return;
-
-  const randomLink = links[Math.floor(Math.random() * links.length)];
-  let spans = [...randomLink.querySelectorAll('span')];
-
-  // Filtrer les lettres "o" et "_"
-  spans = spans.filter(span => span.textContent !== 'o' && span.textContent !== '_');
-  if (!spans.length) return;
-
-  const letter = spans[Math.floor(Math.random() * spans.length)];
-
-  letter.style.transition = 'transform 80ms linear';
-  letter.style.transform = 'scaleX(-1)';
-
-  setTimeout(() => {
-    letter.style.transform = 'scaleX(1)';
-  }, 600);
-
-  setTimeout(startRandomFlip, 3000);
-}
-
-function leavePhotoPosters() {
-  const links = document.querySelectorAll('.cmd-link p');
-
-  links.forEach(link => {
-    if (!link.isAppeared) return;
-
-    if (link.timeouts) link.timeouts.forEach(t => clearTimeout(t));
-    link.timeouts = [];
-
-    const spans = [...link.querySelectorAll('span')];
-    const last = spans.length - 1;
-
-    spans.forEach((span, i) => {
-      const delay = (last - i) * 30;
-
-      const t1 = setTimeout(() => {
-        span.style.background = 'white';
-        span.style.color = '#000';
-      }, delay);
-
-      const t2 = setTimeout(() => {
-        span.style.background = 'transparent';
-        span.style.color = 'transparent';
-      }, delay + 30);
-
-      link.timeouts.push(t1, t2);
-    });
-
-    link.isAppeared = false;
-  });
-}
-
-document.addEventListener('DOMContentLoaded', appearPhotoPosters);
-
-
-
-
-
-
-
-
-
-
-// === APPARITION (Title) ===
-function appearTitle() {
-  const container = document.querySelector('.title');
-  if (!container) return;
-
-  container.timeouts = [];
-  const paragraphs = container.querySelectorAll('p');
-
-  let maxDelay = 0;
-
-  paragraphs.forEach(p => {
-    // Transforme chaque lettre en span si ce n’est pas déjà fait
-    if (!p.querySelector('span')) {
-      const text = p.textContent;
-      p.textContent = '';
-      text.split('').forEach(ch => {
-        const span = document.createElement('span');
-        span.textContent = ch;
-        span.style.color = 'transparent';
-        span.style.backgroundColor = 'transparent';
-        p.appendChild(span);
-      });
-    }
-
-    const spans = Array.from(p.querySelectorAll('span'));
-
-    spans.forEach((span, i) => {
-      const t1 = setTimeout(() => {
-        span.style.color = '#ffffff';
-        span.style.backgroundColor = '#ffffff';
-      }, i * 20);
-      container.timeouts.push(t1);
-
-      const t2 = setTimeout(() => {
-        span.style.color = '#ffffff';
-        span.style.backgroundColor = '#000000ff';
-      }, i * 20 + 10);
-      container.timeouts.push(t2);
-
-      if (i * 20 + 10 > maxDelay) maxDelay = i * 20 + 10;
-    });
-  });
-
-  container.isAppeared = true;
-}
-
-// === DISPARITION (Title) ===
-function leaveTitle() {
-  const container = document.querySelector('.title');
-  if (!container || !container.isAppeared) return;
-
-  const paragraphs = container.querySelectorAll('p');
-
-  paragraphs.forEach(p => {
-    const spans = Array.from(p.querySelectorAll('span'));
-
-    spans.forEach((span, i) => {
-      const delay = (spans.length - 1 - i) * 20;
-      setTimeout(() => {
-        span.style.color = '#ffffff';
-        span.style.backgroundColor = '#ffffff';
-      }, delay);
-
-      setTimeout(() => {
-        span.style.color = 'transparent';
-        span.style.backgroundColor = 'transparent';
-      }, delay + 20);
-    });
-  });
-
-  container.isAppeared = false;
-}
 
 
 
@@ -1666,7 +1429,5 @@ function leaveTitle() {
 showAllBlokCMD();
 startAnimationSequence();
 appearLinks();
-appearPhotoPosters();
-appearTitle();
 
 
