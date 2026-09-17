@@ -36,21 +36,60 @@
         }
 
         .dashboard-wrapper {
+            top: 50px;
+            left: 80px;
             position: relative;
             width: fit-content;
         }
 
         .dashboard {
             display: grid;
-            grid-template-columns: repeat(3, 250px);
-            grid-template-rows: repeat(2, 250px);
+            grid-template-columns: repeat(3, 200px);
+            grid-template-rows: repeat(2, 200px);
             gap: 20px;
         }
 
         .box {
-            border: 1px solid #444;
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+
+            border: 1px solid transparent;
             padding: 20px;
+
+            transition: border-color 0.25s ease;
         }
+
+
+
+
+        
+
+        /* ==========================
+            APPARITION DES GRILLES
+        ========================== */
+
+        @keyframes gridAppear {
+
+            0% {
+                border-color: transparent;
+            }
+
+            100% {
+                border-color: #444;
+            }
+
+        }
+
+
+        /* ==========================
+            HOVER
+        ========================== */
+
+        .box:hover {
+            border-color: #fff;
+        }
+
 
         .box h2 {
             font-size: 14px;
@@ -117,47 +156,6 @@
 
 
 
-        /* ==========================
-              GRILLE DES +
-           ========================== */
-
-        .grid-plus {
-            position: absolute;
-
-            top: -6px;
-            left: -6px;
-
-            width: calc(100% + 12px);
-            height: calc(100% + 12px);
-
-            pointer-events: none;
-        }
-
-        .plus {
-
-            width: 12px;
-            height: 12px;
-
-            color: #ffffff;
-
-            font-size: 12px;
-            line-height: 12px;
-            text-align: center;
-        }
-
-
-        /* Colonnes */
-
-        .grid-plus {
-            left: -2.5%;
-            top: -3.5%;
-            display: grid;
-            grid-template-columns: repeat(4, 270px);
-            grid-template-rows: repeat(3, 270px);
-            column-gap: 2px;
-            row-gap: 2px;
-        }
-
     </style>
 
 </head>
@@ -174,22 +172,6 @@
              GRILLE DES +
              ========================== -->
 
-        <div class="grid-plus">
-            <span class="plus">+</span>
-            <span class="plus">+</span>
-            <span class="plus">+</span>
-            <span class="plus">+</span>
-
-            <span class="plus">+</span>
-            <span class="plus">+</span>
-            <span class="plus">+</span>
-            <span class="plus">+</span>
-
-            <span class="plus">+</span>
-            <span class="plus">+</span>
-            <span class="plus">+</span>
-            <span class="plus">+</span>
-        </div>
 
 
         <!-- ==========================
@@ -247,6 +229,26 @@
         import * as THREE from 'three';
 
         const boxes = document.querySelectorAll('.box');
+
+
+
+        /* ==========================
+            APPARITION ALÉATOIRE DES GRILLES
+        ========================== */
+
+        boxes.forEach((box, index) => {
+
+            const delay =
+                (index % 3) * 200;
+
+            box.style.animation =
+                `gridAppear 0.6s ease forwards`;
+
+            box.style.animationDelay =
+                `${delay}ms`;
+
+        });
+
 
 
         boxes.forEach((box) => {
@@ -368,7 +370,8 @@
                         const material =
                             new THREE.MeshBasicMaterial({
                                 map: texture,
-                                transparent: true
+                                transparent: true,
+                                opacity: 0
                             });
 
 
@@ -410,6 +413,23 @@
 
                         square.userData.randomSize =
                             0.7 + Math.random() * 0.6;
+
+
+                        const boxIndex = [...boxes].indexOf(box);
+                        const column = boxIndex % 3;
+
+                        square.userData.appearOpacity = 0;
+                        square.userData.appearTarget = 0;
+
+                        square.userData.appearDelay =
+                            column === 0
+                                ? Math.random() * 150
+                                : column === 1
+                                    ? 150 + Math.random() * 150
+                                    : 300 + Math.random() * 200;
+
+                        square.userData.appearing = true;
+
 
 
                         /* ==========================
@@ -532,7 +552,6 @@
 
                     let hovering = false;
 
-
                     /* ==========================
                         SOURIS
                     ========================== */
@@ -618,6 +637,41 @@
                                     dx * dx +
                                     dy * dy
                                 );
+
+
+
+                            /* ==========================
+                                APPARITION ALÉATOIRE
+                            ========================== */
+
+                            if (square.userData.appearing) {
+
+                                square.userData.appearDelay -= 16;
+
+                                if (square.userData.appearDelay <= 0) {
+
+                                    square.userData.appearTarget = 1;
+
+                                    square.userData.appearOpacity +=
+                                        (1 - square.userData.appearOpacity) * 1;
+
+                                    square.material.opacity =
+                                        square.userData.appearOpacity;
+
+                                    if (
+                                        square.userData.appearOpacity > 0.99
+                                    ) {
+
+                                        square.userData.appearOpacity = 1;
+
+                                        square.material.opacity = 1;
+
+                                        square.userData.appearing = false;
+                                    }
+                                }
+                            }
+
+
 
 
                             /* ==========================
