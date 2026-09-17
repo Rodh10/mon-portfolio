@@ -1142,10 +1142,40 @@ function initMobileParagraphs() {
     const focus = document.querySelector('.focus');
     const titleMoi = document.querySelector('.i');
     const titleExpertise = document.querySelector('.do');
-    const seeMore = document.querySelector('.see-more');
+    if (!perso || !focus || !titleMoi || !titleExpertise) return;
 
-    if (!perso || !focus || !titleMoi || !titleExpertise || !seeMore) return;
 
+    /* ==========================
+       CRÉATION DE LA FLÈCHE
+       ========================== */
+
+    const seeMore =
+        document.createElement('div');
+
+    seeMore.className =
+        'see-more';
+
+    seeMore.innerHTML =
+        '__>';
+
+    seeMore.style.color =
+        '#666666';
+
+    seeMore.style.opacity =
+        '1';
+
+    seeMore.style.fontSize =
+        '1rem'; // ← change la taille ici
+
+
+    /*
+    * La flèche est créée directement
+    * dans le même conteneur que l'ancienne.
+    */
+
+    titleMoi.parentNode.appendChild(
+        seeMore
+    );
     /* ==========================
        RÉCUPÉRATION DES LIGNES
        ========================== */
@@ -1214,21 +1244,22 @@ function initMobileParagraphs() {
       ANIMATION DE LA FLÈCHE
       ========================== */
 
+    /* ==========================
+      ANIMATION DE LA FLÈCHE
+      ========================== */
+
     function animateArrow(reverse = false) {
 
         return new Promise(resolve => {
 
-            const steps = 5;
+            const steps = 6;
             const delay = 50;
             const trailLength = 4;
 
             let currentStep = 0;
 
             seeMore.style.opacity = '1';
-
-            /* ==========================
-              STRUCTURE
-              ========================== */
+            seeMore.style.color = '#666666';
 
             seeMore.innerHTML = '';
 
@@ -1250,7 +1281,6 @@ function initMobileParagraphs() {
 
             } else {
 
-                trail.textContent = '';
                 head.textContent = '>';
 
                 seeMore.appendChild(trail);
@@ -1261,7 +1291,7 @@ function initMobileParagraphs() {
 
             /* ==========================
               PHASE 1
-              LA FLÈCHE AVANCE
+              CONSTRUCTION DE LA FLÈCHE
               ========================== */
 
             function moveArrow() {
@@ -1273,8 +1303,19 @@ function initMobileParagraphs() {
                     const length =
                         currentStep * trailLength;
 
-                    trail.textContent =
-                        '_'.repeat(length);
+                    trail.innerHTML = '';
+
+                    for (let i = 0; i < length; i++) {
+
+                        const char =
+                            document.createElement('span');
+
+                        char.textContent = '_';
+                        char.style.color = '#666666';
+
+                        trail.appendChild(char);
+
+                    }
 
                     setTimeout(
                         moveArrow,
@@ -1282,14 +1323,6 @@ function initMobileParagraphs() {
                     );
 
                 } else {
-
-                    /*
-                    * La tête est maintenant
-                    * arrivée à sa position finale.
-                    *
-                    * On attend un tout petit peu
-                    * avant de commencer la deuxième phase.
-                    */
 
                     setTimeout(
                         lockHead,
@@ -1302,15 +1335,10 @@ function initMobileParagraphs() {
 
 
             /* ==========================
-              VERROUILLAGE DE LA TÊTE
+              VERROUILLAGE
               ========================== */
 
             function lockHead() {
-
-                /*
-                * On récupère la position actuelle
-                * de la tête.
-                */
 
                 const headRect =
                     head.getBoundingClientRect();
@@ -1322,36 +1350,25 @@ function initMobileParagraphs() {
                     headRect.left - parentRect.left;
 
 
-                /*
-                * On fixe la tête EXACTEMENT
-                * là où elle vient d'arriver.
-                */
-
                 head.style.position =
                     'absolute';
 
                 head.style.left =
                     `${finalLeft}px`;
 
-                head.style.top = '0';
+                head.style.top =
+                    '0';
 
 
-                /*
-                * Le trait reste libre.
-                */
+                trail.style.position =
+                    'absolute';
 
                 if (!reverse) {
-
-                    trail.style.position =
-                        'absolute';
 
                     trail.style.left =
                         '0';
 
                 } else {
-
-                    trail.style.position =
-                        'absolute';
 
                     trail.style.left =
                         `${headRect.width}px`;
@@ -1359,63 +1376,69 @@ function initMobileParagraphs() {
                 }
 
 
-                removeTrail();
+                changeTrailColor();
 
             }
 
 
             /* ==========================
               PHASE 2
-              LES TIRETS SE RACCOURCISSENT
+              LES TIRETS DEVIENNENT NOIRS
               ========================== */
 
-            function removeTrail() {
+            function changeTrailColor() {
 
-                let remaining =
-                    steps * trailLength;
+                const chars =
+                    Array.from(
+                        trail.children
+                    );
 
-                function removeNext() {
+                let index = 0;
 
-                    if (remaining > 0) {
+                function changeNext() {
 
-                        remaining--;
-
-                        trail.textContent =
-                            '_'.repeat(remaining);
-
-                        /*
-                        * Le trait se raccourcit depuis la gauche.
-                        * On déplace donc son point de départ
-                        * vers la droite.
-                        */
+                    if (index < chars.length) {
 
                         if (!reverse) {
 
-                            const removed =
-                                (steps * trailLength) - remaining;
+                            /*
+                            * Gauche → droite
+                            */
 
-                            trail.style.left =
-                                `${removed}ch`;
+                            chars[index].style.color =
+                                '#000000';
+
+                        } else {
+
+                            /*
+                            * Droite → gauche
+                            */
+
+                            chars[
+                                chars.length - 1 - index
+                            ].style.color =
+                                '#000000';
 
                         }
 
+                        index++;
+
                         setTimeout(
-                            removeNext,
+                            changeNext,
                             5
                         );
 
                     } else {
 
                         /*
-                        * Les tirets ont rejoint la tête.
+                        * Tous les tirets sont noirs.
+                        * La tête devient noire à son tour.
                         */
 
-                        head.style.opacity = '0';
+                        head.style.color =
+                            '#000000';
 
                         setTimeout(() => {
-
-                            seeMore.style.opacity =
-                                '0';
 
                             resolve();
 
@@ -1425,9 +1448,10 @@ function initMobileParagraphs() {
 
                 }
 
-                removeNext();
+                changeNext();
 
             }
+
 
             moveArrow();
 
@@ -1435,13 +1459,45 @@ function initMobileParagraphs() {
 
     }
 
-
     /* ==========================
       POSITION DE LA FLÈCHE
       SOUS LE 3e PARAGRAPHE
       ========================== */
 
-    function positionReverseArrow() {
+
+
+    /* ==========================
+       CRÉATION DE LA NOUVELLE FLÈCHE
+       ========================== */
+
+    function createReverseArrow() {
+
+        const newArrow =
+            seeMore.cloneNode(false);
+
+        newArrow.className =
+            'see-more reverse-arrow';
+
+        newArrow.textContent =
+            '<__';
+
+        newArrow.style.color =
+            '#000000';
+
+        newArrow.style.opacity =
+            '1';
+
+        newArrow.style.transform =
+            'none';
+
+        seeMore.parentNode.appendChild(
+            newArrow
+        );
+
+        newArrow.addEventListener(
+            'click',
+            toggleProfile
+        );
 
         const thirdParagraph =
             persoParagraphs[2];
@@ -1451,20 +1507,7 @@ function initMobileParagraphs() {
                 thirdParagraph.length - 1
             ];
 
-        if (!lastLine) return;
-
-        /*
-        * On remet temporairement la flèche
-        * dans sa position normale pour pouvoir
-        * mesurer correctement sa taille.
-        */
-
-        seeMore.style.transform = 'none';
-
-        /*
-        * On attend que le navigateur ait terminé
-        * le rendu des paragraphes.
-        */
+        if (!lastLine) return newArrow;
 
         requestAnimationFrame(() => {
 
@@ -1472,7 +1515,7 @@ function initMobileParagraphs() {
                 lastLine.getBoundingClientRect();
 
             const arrowRect =
-                seeMore.getBoundingClientRect();
+                newArrow.getBoundingClientRect();
 
             const gap = 20;
 
@@ -1480,7 +1523,7 @@ function initMobileParagraphs() {
                 paragraphRect.bottom + gap;
 
             const targetLeft =
-                paragraphRect.right - arrowRect.width;
+                paragraphRect.right - arrowRect.width + 180;
 
             const offsetX =
                 targetLeft - arrowRect.left;
@@ -1488,14 +1531,374 @@ function initMobileParagraphs() {
             const offsetY =
                 targetTop - arrowRect.top;
 
-            seeMore.style.transform =
+            newArrow.style.transform =
                 `translate(${offsetX}px, ${offsetY}px)`;
 
-            seeMore.style.opacity = '1';
+        });
+
+        return newArrow;
+
+    }
+
+
+
+
+    function animateReverseArrow() {
+
+        return new Promise(resolve => {
+
+            if (!reverseArrow) {
+                resolve();
+                return;
+            }
+
+            const arrow =
+                reverseArrow;
+
+
+            /* ==========================
+            CRÉATION DE LA FLÈCHE
+            ========================== */
+
+            arrow.innerHTML = '';
+
+            arrow.style.color =
+                '#BA3A23';
+
+
+            const head =
+                document.createElement('span');
+
+            const trail =
+                document.createElement('span');
+
+
+            head.className =
+                'arrow-head';
+
+            trail.className =
+                'arrow-trail';
+
+
+            head.textContent =
+                '<';
+
+
+            /*
+            * 2 traits au départ.
+            */
+
+            for (
+                let i = 0;
+                i < 2;
+                i++
+            ) {
+
+                const char =
+                    document.createElement('span');
+
+                char.textContent =
+                    '_';
+
+                char.style.color =
+                    '#BA3A23';
+
+                trail.appendChild(
+                    char
+                );
+
+            }
+
+
+            arrow.appendChild(head);
+            arrow.appendChild(trail);
+
+
+            /* ==========================
+            POSITION DE DÉPART
+            ========================== */
+
+            head.style.position =
+                'absolute';
+
+            trail.style.position =
+                'absolute';
+
+            head.style.top =
+                '0';
+
+            trail.style.top =
+                '0';
+
+
+            const arrowRect =
+                arrow.getBoundingClientRect();
+
+            const headRect =
+                head.getBoundingClientRect();
+
+
+            const startHeadLeft =
+                headRect.left -
+                arrowRect.left;
+
+
+            const headWidth =
+                headRect.width;
+
+
+            /*
+            * Position initiale.
+            */
+
+            head.style.left =
+                `${startHeadLeft}px`;
+
+            trail.style.left =
+                `${startHeadLeft + headWidth}px`;
+
+
+            /* ==========================
+            PARAMÈTRES
+            ========================== */
+
+            const steps =
+                5;
+
+            const delay =
+                40;
+
+            const moveDistance =
+                37;
+
+            const trailLength =
+                4;
+
+
+            let currentStep =
+                0;
+
+
+            /* ==========================
+            DÉPLACEMENT + ALLONGEMENT
+            ========================== */
+
+            function moveArrow() {
+
+                currentStep++;
+
+
+                if (
+                    currentStep <=
+                    steps
+                ) {
+
+                    /*
+                    * La tête se déplace
+                    * progressivement vers la gauche.
+                    */
+
+                    const newHeadLeft =
+                        startHeadLeft -
+                        currentStep *
+                        moveDistance;
+
+
+                    head.style.left =
+                        `${newHeadLeft}px`;
+
+
+                    /*
+                    * Les traits s'allongent
+                    * pendant exactement le même
+                    * mouvement.
+                    */
+
+                    const length =
+                        2 +
+                        currentStep *
+                        trailLength;
+
+
+                    trail.innerHTML =
+                        '';
+
+
+                    for (
+                        let i = 0;
+                        i < length;
+                        i++
+                    ) {
+
+                        const char =
+                            document.createElement('span');
+
+                        char.textContent =
+                            '_';
+
+                        char.style.color =
+                            '#BA3A23';
+
+                        trail.appendChild(
+                            char
+                        );
+
+                    }
+
+
+                    /*
+                    * Les traits restent attachés
+                    * à la tête.
+                    */
+
+                    trail.style.left =
+                        `${newHeadLeft + headWidth}px`;
+
+
+                    /*
+                    * Prochaine étape.
+                    */
+
+                    setTimeout(
+                        moveArrow,
+                        delay
+                    );
+
+
+                } else {
+
+                    /* ==========================
+                    POSITION FINALE
+                    ========================== */
+
+                    const finalHeadLeft =
+                        startHeadLeft -
+                        steps *
+                        moveDistance;
+
+
+                    /*
+                    * Tête définitivement fixée.
+                    */
+
+                    head.style.left =
+                        `${finalHeadLeft}px`;
+
+
+                    /*
+                    * Les traits restent définitivement
+                    * attachés à la tête.
+                    */
+
+                    trail.style.left =
+                        `${finalHeadLeft + headWidth}px`;
+
+
+                    /*
+                    * IMPORTANT :
+                    *
+                    * On ne modifie plus ni la tête
+                    * ni la position des traits.
+                    *
+                    * On passe uniquement à la couleur.
+                    */
+
+                    changeTrailColor();
+
+                }
+
+            }
+
+
+            /* ==========================
+            COLORATION
+            DROITE → GAUCHE
+            ========================== */
+
+            function changeTrailColor() {
+
+                const chars =
+                    Array.from(
+                        trail.children
+                    );
+
+                let index =
+                    0;
+
+
+                function changeNext() {
+
+                    if (
+                        index <
+                        chars.length
+                    ) {
+
+                        /*
+                        * Le dernier trait devient noir
+                        * en premier.
+                        *
+                        * Puis l'avant-dernier,
+                        * puis le précédent...
+                        */
+
+                        chars[
+                            chars.length -
+                            1 -
+                            index
+                        ].style.color =
+                            '#000000';
+
+
+                        index++;
+
+
+                        setTimeout(
+                            changeNext,
+                            5
+                        );
+
+
+                    } else {
+
+                        /*
+                        * Tous les traits sont noirs.
+                        *
+                        * La tête devient noire
+                        * à la fin.
+                        */
+
+                        head.style.color =
+                            '#000000';
+
+
+                        setTimeout(() => {
+
+                            resolve();
+
+                        }, 100);
+
+                    }
+
+                }
+
+
+                changeNext();
+
+            }
+
+
+            /* ==========================
+            DÉMARRAGE
+            ========================== */
+
+            moveArrow();
 
         });
 
     }
+
+
+
 
 
     /* ==========================
@@ -1840,50 +2243,127 @@ function initMobileParagraphs() {
 
     let isExpanded = false;
     let animationRunning = false;
+    let reverseArrow = null;
 
 
-    seeMore.addEventListener('click', async () => {
+    
+    /* ==========================
+    ANIMATION PRINCIPALE
+    ========================== */
+
+    async function toggleProfile() {
 
         if (animationRunning) return;
 
         animationRunning = true;
 
+
+
         if (!isExpanded) {
 
-            // Flèche vers la droite
+            /* ==========================
+            1. L'ANCIENNE FLÈCHE DEVIENT NOIRE
+            ========================== */
+
             await animateArrow(false);
 
-            // Même séquence que le clic sur "Moi"
+
+            /* ==========================
+            2. DISPARITION DE L'EXPERTISE
+            ========================== */
+
             await hideParagraphs(
                 focusParagraphs
             );
 
+
+            /* ==========================
+            3. NOUVELLE FLÈCHE NOIRE
+               SOUS LE 3e PARAGRAPHE
+            ========================== */
+
+            reverseArrow =
+                createReverseArrow();
+
+
+            /* ==========================
+            4. DESCENTE DE L'EXPERTISE
+            ========================== */
+
             await moveExpertise();
+
+
+            /* ==========================
+            5. APPARITION DE "MOI"
+            ========================== */
 
             await showParagraphs(
                 persoParagraphs.slice(1)
             );
 
-            isExpanded = true;
 
             /* ==========================
-              NOUVELLE FLÈCHE
-              ========================== */
+            6. L'ANCIENNE FLÈCHE DISPARAÎT
+            ========================== */
 
-            seeMore.textContent = '<__';
+            seeMore.style.opacity =
+                '0';
 
-            positionReverseArrow();
+
+            /* ==========================
+            7. LA NOUVELLE FLÈCHE DEVIENT ROUGE
+            ========================== */
+
+            if (reverseArrow) {
+
+                reverseArrow.style.color =
+                    '#BA3A23';
+
+            }
+
+            isExpanded = true;
 
         } else {
 
-            // Flèche vers la gauche
-            await animateArrow(true);
+            /* ==========================
+            1. ANIMATION INVERSE
+            ========================== */
+
+            await animateReverseArrow();
+
+            /* ==========================
+            2. DISPARITION DE "MOI"
+            ========================== */
 
             await hideParagraphs(
                 persoParagraphs.slice(1)
             );
 
+
+            /* ==========================
+            3. SUPPRESSION DE LA
+               NOUVELLE FLÈCHE
+            ========================== */
+
+            if (reverseArrow) {
+
+                reverseArrow.remove();
+
+                reverseArrow = null;
+
+            }
+
+
+            /* ==========================
+            4. REMONTÉE DE L'EXPERTISE
+            ========================== */
+
             await resetExpertise();
+
+
+            /* ==========================
+            5. RÉAPPARITION DE L'EXPERTISE
+            ========================== */
 
             await showParagraphs(
                 focusParagraphs
@@ -1891,116 +2371,55 @@ function initMobileParagraphs() {
 
             isExpanded = false;
 
-            // Flèche initiale
-            seeMore.textContent = '__>';
-            seeMore.style.opacity = '1';
+
+            /* ==========================
+            6. RETOUR À L'ÉTAT INITIAL
+            ========================== */
+
+            seeMore.innerHTML =
+                '__>';
+
+            seeMore.style.opacity =
+                '1';
+
+            seeMore.style.color =
+                '#666666';
+
+            seeMore.style.position =
+                'relative';
+
+            seeMore.style.transform =
+                'none';
 
             positionInitialArrow();
 
         }
 
         animationRunning = false;
-
-    });
+    }
 
 
     /* ==========================
-       CLIC SUR "MOI"
-       ========================== */
+    CLIC SUR "MOI"
+    ========================== */
 
-    titleMoi.addEventListener('click', async () => {
-
-        if (animationRunning) return;
-
-        animationRunning = true;
-
-
-        if (!isExpanded) {
-
-            /*
-             * 1. Faire disparaître
-             *    les paragraphes 2 et 3
-             *    de l'expertise
-             */
-
-            await hideParagraphs(
-                focusParagraphs
-            );
+    titleMoi.addEventListener(
+        'click',
+        toggleProfile
+    );
 
 
-            /*
-             * 2. Faire descendre
-             *    "Mon expertise"
-             *    + le premier paragraphe
-             */
+    /* ==========================
+    CLIC SUR LA FLÈCHE
+    ========================== */
 
-            await moveExpertise();
-
-
-            /*
-             * 3. Faire apparaître
-             *    les paragraphes 2 et 3
-             *    de "Moi"
-             */
-
-            await showParagraphs(
-                persoParagraphs.slice(1)
-            );
-
-            isExpanded = true;
+    seeMore.addEventListener(
+        'click',
+        toggleProfile
+    );
 
 
-            // Nouvelle flèche inversée
-            seeMore.textContent = '<__';
-            seeMore.style.opacity = '1';
-
-        } else {
-
-            /*
-             * 1. Faire disparaître
-             *    les paragraphes 2 et 3
-             *    de "Moi"
-             */
-
-            await hideParagraphs(
-                persoParagraphs.slice(1)
-            );
-
-
-            /*
-             * 2. Remonter l'expertise
-             */
-
-            await resetExpertise();
-
-
-            /*
-             * 3. Faire réapparaître
-             *    les paragraphes 2 et 3
-             *    de l'expertise
-             */
-
-            await showParagraphs(
-                focusParagraphs
-            );
-
-           
-
-            isExpanded = false;
-
-
-            // Nouvelle flèche initiale
-            seeMore.textContent = '__>';
-            seeMore.style.opacity = '1';
-
-        }
-
-
-        animationRunning = false;
-
-    });
     
-
 }
 
 
@@ -2886,7 +3305,6 @@ function leaveEffectTitled() {
 insertProfileText();
 appearProfileTitleFirstTwo();
 appearProfileTitleLastTwo();
-appearTitled();
 appearPara();
 initMobileParagraphs();
 appearLinks();

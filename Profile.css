@@ -125,6 +125,7 @@ html, body {
 
 
 .para {
+  font-size: 0.6rem;
   position: fixed;
   top: 10%;
   left: 24%;
@@ -158,7 +159,7 @@ html, body {
     z-index: 5;
     color: transparent;
     width: 70%;
-    font-size: 0.6rem;
+    font-size: 0.5rem;
     display: block;
   }
 
@@ -166,24 +167,16 @@ html, body {
     font-size: 2rem;
   }
   .para .do {
-    margin-top: 5%;
     font-size: 2rem;
   }
 
+
 }
 
 
 
 
 
-
-
-.see-more {
-    position: relative;
-    font-size: 1rem;
-    color: rgb(255, 255, 255);
-    z-index: 2000;
-}
 
 
 
