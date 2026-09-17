@@ -2742,9 +2742,12 @@ function enhanceNavLinks() {
 /* ============================================================
    PROMISE POUR LES ANIMATIONS DE DISPARITION
    ============================================================ */
+
+
 async function leaveAllEffects() {
 
     leaveEffectPara();
+
     leaveProfileTitleFirstTwo();
     leaveProfileTitleLastTwo();
     leaveEffectTitled();
@@ -2754,7 +2757,14 @@ async function leaveAllEffects() {
         await window.leaveParticlePortrait();
     }
 
+    // Attendre que les autres animations de sortie terminent
+    await new Promise(resolve => {
+        setTimeout(resolve, 1000);
+    });
+
 }
+
+
 
 window.addEventListener("DOMContentLoaded", enhanceNavLinks);
 
@@ -3123,40 +3133,59 @@ const leaveEffectTimersPara = new WeakMap();
 
 function leaveEffectPara() {
   const container = document.querySelector('.para');
-  if (!container || !container.isAppeared) return;
+  if (!container || !container.isAppeared) return Promise.resolve();
 
-  const paragraphs = container.querySelectorAll('p');
+  return new Promise(resolve => {
 
-  paragraphs.forEach(p => {
-    const lineContainers = Array.from(p.children);
-    lineContainers.forEach(line => {
-      const spans = Array.from(line.children);
+    const paragraphs = container.querySelectorAll('p');
 
-      // Mettre toutes les lettres visibles au départ
-      spans.forEach(span => {
-        span.style.color = '#ffffff';
-        span.style.backgroundColor = 'transparent';
-      });
+    let totalDuration = 0;
 
-      const lastIndex = spans.length - 1;
-      // Disparition de droite à gauche (effet cmd)
-      spans.forEach((span, i) => {
-        const delay = (lastIndex - i) * 20;
-        const t1 = setTimeout(() => {
+    paragraphs.forEach(p => {
+
+      const lineContainers = Array.from(p.children);
+
+      lineContainers.forEach(line => {
+
+        const spans = Array.from(line.children);
+
+        // Mettre toutes les lettres visibles au départ
+        spans.forEach(span => {
           span.style.color = '#ffffff';
-          span.style.backgroundColor = '#ffffff';
-        }, delay);
-        const t2 = setTimeout(() => {
-          span.style.color = 'transparent';
           span.style.backgroundColor = 'transparent';
-        }, delay + 20);
+        });
+
+        const lastIndex = spans.length - 1;
+
+        // Disparition de droite à gauche
+        spans.forEach((span, i) => {
+
+          const delay = (lastIndex - i) * 20;
+
+          const t1 = setTimeout(() => {
+            span.style.color = '#ffffff';
+            span.style.backgroundColor = '#ffffff';
+          }, delay);
+
+          const t2 = setTimeout(() => {
+            span.style.color = 'transparent';
+            span.style.backgroundColor = 'transparent';
+          }, delay + 20);
+
+          totalDuration = Math.max(
+            totalDuration,
+            delay + 20
+          );
+
+        });
+
       });
+
     });
+
+
   });
-
-  container.isAppeared = false;
 }
-
 
 
 
