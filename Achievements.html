@@ -11,8 +11,19 @@
     <link rel="icon" type="image/svg+xml" href="station.svg">
 
 
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js"
+        }
+    }
+    </script>
+
+
 </head>
+
 <body>
+
 
     <div class="navigation">
         <div class="navbar-container">
@@ -21,6 +32,70 @@
             <a href="#track" class="nav">Achèvements</a>
         </div>
     </div>  
+
+
+
+    <div class="dashboard-wrapper">
+
+        <!-- ==========================
+            DASHBOARD
+        ========================== -->
+
+        <div class="dashboard">
+
+            <!-- Ligne 1 -->
+
+            <div class="box box-01">
+
+                <img src="poster.jpg" alt="Poster">
+                <canvas class="particle-canvas"></canvas>
+
+            </div>
+
+            <div class="box box-02">
+
+                <img src="photo.jpg" alt="Image">
+                <canvas class="particle-canvas"></canvas>
+
+            </div>
+
+            <div class="box box-03">
+
+                <img src="design.jpg" alt="Collage">
+                <canvas class="particle-canvas"></canvas>
+
+            </div>
+
+
+            <!-- Ligne 2 -->
+
+            <div class="box box-04">
+
+                <img src="insta.jpg" alt="Instagram">
+                <canvas class="particle-canvas"></canvas>
+
+            </div>
+
+            <div class="box box-05">
+
+                <img src="identity.jpg" alt="Forgotten">
+                <canvas class="particle-canvas"></canvas>
+
+            </div>
+
+            <div class="box box-06">
+
+                <img src="eye.jpg" alt="Memory">
+                <canvas class="particle-canvas"></canvas>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
 
 
     <div class="year"></div>
@@ -92,7 +167,7 @@
 
 
     
-<script src="Achievements.js"></script>
+    <script type="module" src="achievements.js"></script>
 
 </body>
 </html>

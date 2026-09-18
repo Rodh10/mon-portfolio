@@ -485,6 +485,29 @@ window.addEventListener("DOMContentLoaded", () => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* ============================================================
    PROMISE POUR LES ANIMATIONS DE DISPARITION
    ============================================================ */
@@ -1429,5 +1452,1208 @@ blokys.forEach((blok, index) => {
 showAllBlokCMD();
 startAnimationSequence();
 appearLinks();
+
+
+
+
+
+
+
+
+
+import * as THREE from 'three';
+
+
+const boxes = document.querySelectorAll('.box');
+
+
+/* ==========================
+    CONFIGURATION
+========================== */
+
+const columns = 7;
+const rows = 7;
+
+const gap = 0;
+
+
+/* ==========================
+    RESIZE
+========================== */
+
+function resize(box, renderer) {
+
+    const width = box.clientWidth;
+    const height = box.clientHeight;
+
+    renderer.setSize(
+        width,
+        height,
+        false
+    );
+
+}
+
+
+
+/* ==========================
+    APPARITION
+========================== */
+
+function startAppearance(squares) {
+
+    squares.forEach((square) => {
+
+        square.userData.appearOpacity = 0;
+
+        square.material.opacity = 0;
+
+        square.userData.appearDelay =
+            1000 + Math.random() * 1000;
+
+        square.userData.appearing = true;
+
+        square.userData.disappearing = false;
+
+    });
+
+}
+
+
+/* ==========================
+    DISPARITION
+========================== */
+
+function startDisappearance(squares) {
+
+    squares.forEach((square) => {
+
+        square.userData.disappearOpacity = 1;
+
+        square.material.opacity = 1;
+
+        square.userData.disappearDelay =
+            1000 + Math.random() * 1000;
+
+        square.userData.disappearing = true;
+
+        square.userData.appearing = false;
+
+    });
+
+}
+
+
+
+
+
+/* ==========================
+    CRÉATION DES CARRÉS
+========================== */
+
+function createSquares(
+    scene,
+    texture,
+    cellWidth,
+    cellHeight
+) {
+
+    const squares = [];
+
+
+    for (let y = 0; y < rows; y++) {
+
+        for (let x = 0; x < columns; x++) {
+
+
+            /* ==========================
+                GÉOMÉTRIE
+            ========================== */
+
+            const geometry =
+                new THREE.PlaneGeometry(
+                    cellWidth - gap,
+                    cellHeight - gap
+                );
+
+
+            /* ==========================
+                PORTION DE L'IMAGE
+            ========================== */
+
+            const u1 = x / columns;
+            const u2 = (x + 1) / columns;
+
+            const v1 = y / rows;
+            const v2 = (y + 1) / rows;
+
+
+            const uv =
+                geometry.attributes.uv;
+
+            uv.setXY(0, u1, v1);
+            uv.setXY(1, u2, v1);
+            uv.setXY(2, u1, v2);
+            uv.setXY(3, u2, v2);
+
+            uv.needsUpdate = true;
+
+
+            /* ==========================
+                MATÉRIAU
+            ========================== */
+
+            const material =
+                new THREE.MeshBasicMaterial({
+                    map: texture,
+                    transparent: true,
+                    opacity: 0
+                });
+
+
+            /* ==========================
+                CARRÉ
+            ========================== */
+
+            const square =
+                new THREE.Mesh(
+                    geometry,
+                    material
+                );
+
+
+            /* ==========================
+                POSITION INITIALE
+            ========================== */
+
+            square.position.x =
+                -1 +
+                cellWidth / 2 +
+                x * cellWidth;
+
+            square.position.y =
+                1 -
+                cellHeight / 2 -
+                y * cellHeight;
+
+
+            /* ==========================
+                DONNÉES DU CARRÉ
+            ========================== */
+
+            square.userData.originalX =
+                square.position.x;
+
+            square.userData.originalY =
+                square.position.y;
+
+            square.userData.randomSize =
+                0.7 + Math.random() * 0.6;
+
+
+            square.userData.appearOpacity = 0;
+
+            square.userData.appearTarget = 0;
+
+            square.userData.appearDelay =
+                1000 + Math.random() * 1000;
+
+            square.userData.appearing = true;
+
+
+            square.userData.disappearOpacity = 1;
+
+            square.userData.disappearDelay = 0;
+
+            square.userData.disappearing = false;
+
+
+            /* ==========================
+                OVERLAY BLANC
+            ========================== */
+
+            const overlayMaterial =
+                new THREE.MeshBasicMaterial({
+                    color: 0xffffff,
+                    transparent: true,
+                    opacity: 0,
+                    depthWrite: false
+                });
+
+
+            const overlay =
+                new THREE.Mesh(
+                    geometry.clone(),
+                    overlayMaterial
+                );
+
+
+            overlay.position.copy(
+                square.position
+            );
+
+
+            overlay.userData.targetOpacity = 0;
+
+            overlay.userData.nextBlink =
+                Math.random() * 500;
+
+            overlay.userData.blinking = false;
+
+            overlay.userData.blinkTimer = 0;
+
+
+            scene.add(overlay);
+
+
+            square.userData.overlay =
+                overlay;
+
+
+            /* ==========================
+                BORDURE BLANCHE
+            ========================== */
+
+            const borderMaterial =
+                new THREE.LineBasicMaterial({
+                    color: 0xffffff,
+                    transparent: true,
+                    opacity: 1
+                });
+
+
+            const borderGeometry =
+                new THREE.EdgesGeometry(
+                    geometry.clone()
+                );
+
+
+            const border =
+                new THREE.LineSegments(
+                    borderGeometry,
+                    borderMaterial
+                );
+
+
+            border.position.copy(
+                square.position
+            );
+
+
+            border.visible = false;
+
+
+            scene.add(border);
+
+
+            square.userData.border =
+                border;
+
+            square.userData.borderBlinking =
+                false;
+
+            square.userData.borderTimer =
+                0;
+
+            square.userData.borderNextBlink =
+                Math.random() * 500;
+
+
+            /* ==========================
+                AJOUT DE LA SCÈNE
+            ========================== */
+
+            scene.add(square);
+
+            squares.push(square);
+
+        }
+
+    }
+
+
+    return squares;
+
+}
+
+
+/* ==========================
+    RÉACTION HOVER
+========================== */
+
+function setupHoverReaction(
+    box,
+    squares,
+    cellWidth,
+    cellHeight
+) {
+
+    const mouse = {
+        x: -10,
+        y: -10
+    };
+
+
+    const radius = 2;
+    const force = 0.30;
+    const returnSpeed = 0.12;
+
+
+    const blinkValues = [
+        1,
+        0.75,
+        0.5,
+        0.25,
+        0
+    ];
+
+
+    const blinkChance = 0.007;
+    const blinkDurationMin = 1000;
+    const blinkDurationMax = 4000;
+
+
+    /* ==========================
+        CONFIGURATION BORDURE
+    ========================== */
+
+    const borderChance = 0.013;
+
+    const borderDurationMin = 1000;
+    const borderDurationMax = 4000;
+
+
+    let hovering = false;
+
+
+    /* ==========================
+        SOURIS
+    ========================== */
+
+    box.addEventListener(
+        'mousemove',
+        (event) => {
+
+            hovering = true;
+
+
+            const rect =
+                box.getBoundingClientRect();
+
+
+            const x =
+                (event.clientX - rect.left) /
+                rect.width;
+
+
+            const y =
+                (event.clientY - rect.top) /
+                rect.height;
+
+
+            mouse.x =
+                x * 2 - 1;
+
+            mouse.y =
+                -(y * 2 - 1);
+
+        }
+    );
+
+
+    /* ==========================
+        SORTIE
+    ========================== */
+
+    box.addEventListener(
+        'mouseleave',
+        () => {
+
+            hovering = false;
+
+            mouse.x = -10;
+            mouse.y = -10;
+
+        }
+    );
+
+
+    return {
+        mouse,
+        getHovering: () => hovering
+    };
+
+}
+
+
+/* ==========================
+    MISE À JOUR HOVER
+========================== */
+
+function updateReaction(
+    squares,
+    mouse,
+    hovering,
+    cellWidth,
+    cellHeight
+) {
+
+    const radius = 2;
+    const force = 0.30;
+    const returnSpeed = 0.12;
+
+
+    const blinkValues = [
+        1,
+        0.75,
+        0.5,
+        0.25,
+        0
+    ];
+
+
+    const blinkChance = 0.007;
+    const blinkDurationMin = 1000;
+    const blinkDurationMax = 4000;
+
+
+    const borderChance = 0.013;
+    const borderDurationMin = 1000;
+    const borderDurationMax = 4000;
+
+
+    squares.forEach((square) => {
+
+
+        const overlay =
+            square.userData.overlay;
+
+        const border =
+            square.userData.border;
+
+
+        const originalX =
+            square.userData.originalX;
+
+        const originalY =
+            square.userData.originalY;
+
+
+        const dx =
+            square.position.x -
+            mouse.x;
+
+        const dy =
+            square.position.y -
+            mouse.y;
+
+
+        const distance =
+            Math.sqrt(
+                dx * dx +
+                dy * dy
+            );
+
+
+        /* ==========================
+            APPARITION
+        ========================== */
+
+        if (square.userData.appearing) {
+
+            square.userData.appearDelay -= 16;
+
+
+            if (
+                square.userData.appearDelay <= 0
+            ) {
+
+                square.userData.appearTarget = 1;
+
+
+                square.userData.appearOpacity +=
+                    (
+                        1 -
+                        square.userData.appearOpacity
+                    ) * 1;
+
+
+                square.material.opacity =
+                    square.userData.appearOpacity;
+
+
+                if (
+                    square.userData.appearOpacity > 0.99
+                ) {
+
+                    square.userData.appearOpacity = 1;
+
+                    square.material.opacity = 1;
+
+                    square.userData.appearing = false;
+
+                }
+
+            }
+
+        }
+
+
+
+        /* ==========================
+            DISPARITION
+        ========================== */
+
+        if (square.userData.disappearing) {
+
+            square.userData.disappearDelay -= 16;
+
+
+            if (square.userData.disappearDelay <= 0) {
+
+                square.userData.disappearOpacity +=
+                    (
+                        0 -
+                        square.userData.disappearOpacity
+                    ) * 1;
+
+
+                square.material.opacity =
+                    square.userData.disappearOpacity;
+
+
+                if (
+                    square.userData.disappearOpacity < 0.01
+                ) {
+
+                    square.userData.disappearOpacity = 0;
+
+                    square.material.opacity = 0;
+
+                    square.userData.disappearing = false;
+
+                }
+
+            }
+
+        }
+
+
+        
+
+        /* ==========================
+            RÉACTION
+        ========================== */
+
+        if (distance < radius) {
+
+            const influence =
+                1 -
+                distance / radius;
+
+
+            const angle =
+                Math.atan2(
+                    dy,
+                    dx
+                );
+
+
+            const push =
+                influence * force;
+
+
+            const targetX =
+                originalX +
+                Math.cos(angle) * push;
+
+
+            const targetY =
+                originalY +
+                Math.sin(angle) * push;
+
+
+            square.position.x +=
+                (
+                    targetX -
+                    square.position.x
+                ) * 0.35;
+
+
+            square.position.y +=
+                (
+                    targetY -
+                    square.position.y
+                ) * 0.35;
+
+
+            /* ==========================
+                TAILLE
+            ========================== */
+
+            const scale =
+                1 +
+                influence *
+                square.userData.randomSize *
+                0.35;
+
+
+            square.scale.x +=
+                (
+                    scale -
+                    square.scale.x
+                ) * 0.3;
+
+
+            square.scale.y +=
+                (
+                    scale -
+                    square.scale.y
+                ) * 0.3;
+
+
+        } else {
+
+
+            /* ==========================
+                RETOUR
+            ========================== */
+
+            square.position.x +=
+                (
+                    originalX -
+                    square.position.x
+                ) * returnSpeed;
+
+
+            square.position.y +=
+                (
+                    originalY -
+                    square.position.y
+                ) * returnSpeed;
+
+
+            square.scale.x +=
+                (
+                    1 -
+                    square.scale.x
+                ) * returnSpeed;
+
+
+            square.scale.y +=
+                (
+                    1 -
+                    square.scale.y
+                ) * returnSpeed;
+
+        }
+
+
+        /* ==========================
+            LIMITES
+        ========================== */
+
+        const halfWidth =
+            (cellWidth - gap) / 2;
+
+        const halfHeight =
+            (cellHeight - gap) / 2;
+
+
+        square.position.x =
+            Math.max(
+                -1 + halfWidth,
+                Math.min(
+                    1 - halfWidth,
+                    square.position.x
+                )
+            );
+
+
+        square.position.y =
+            Math.max(
+                -1 + halfHeight,
+                Math.min(
+                    1 - halfHeight,
+                    square.position.y
+                )
+            );
+
+
+        /* ==========================
+            BLINK BLANC
+        ========================== */
+
+        if (hovering) {
+
+
+            overlay.userData.nextBlink -= 16;
+
+
+            if (
+                overlay.userData.nextBlink <= 0 &&
+                !overlay.userData.blinking
+            ) {
+
+
+                if (
+                    Math.random() <
+                    blinkChance
+                ) {
+
+
+                    const randomIndex =
+                        Math.floor(
+                            Math.random() *
+                            blinkValues.length
+                        );
+
+
+                    overlay.userData.targetOpacity =
+                        blinkValues[randomIndex];
+
+
+                    overlay.userData.blinking =
+                        true;
+
+
+                    overlay.userData.blinkTimer =
+                        blinkDurationMin +
+                        Math.random() *
+                        (
+                            blinkDurationMax -
+                            blinkDurationMin
+                        );
+
+
+                } else {
+
+
+                    overlay.userData.nextBlink =
+                        100 +
+                        Math.random() * 300;
+
+                }
+
+            }
+
+
+            /* ==========================
+                FIN BLINK
+            ========================== */
+
+            if (
+                overlay.userData.blinking
+            ) {
+
+                overlay.userData.blinkTimer -= 16;
+
+
+                if (
+                    overlay.userData.blinkTimer <= 0
+                ) {
+
+                    overlay.userData.blinking =
+                        false;
+
+                    overlay.userData.targetOpacity =
+                        0;
+
+                    overlay.userData.nextBlink =
+                        100 +
+                        Math.random() * 300;
+
+                }
+
+            }
+
+
+        } else {
+
+
+            overlay.userData.blinking =
+                false;
+
+            overlay.userData.targetOpacity =
+                0;
+
+            overlay.userData.nextBlink =
+                100;
+
+        }
+
+
+        /* ==========================
+            BLINK BORDURE
+        ========================== */
+
+        if (hovering) {
+
+
+            square.userData.borderNextBlink -= 16;
+
+
+            if (
+                square.userData.borderNextBlink <= 0 &&
+                !square.userData.borderBlinking
+            ) {
+
+
+                if (
+                    Math.random() <
+                    borderChance
+                ) {
+
+                    square.userData.borderBlinking =
+                        true;
+
+
+                    square.userData.borderTimer =
+                        borderDurationMin +
+                        Math.random() *
+                        (
+                            borderDurationMax -
+                            borderDurationMin
+                        );
+
+
+                    border.visible = true;
+
+
+                } else {
+
+
+                    square.userData.borderNextBlink =
+                        100 +
+                        Math.random() * 500;
+
+                }
+
+            }
+
+
+            /* ==========================
+                FIN BORDURE
+            ========================== */
+
+            if (
+                square.userData.borderBlinking
+            ) {
+
+                square.userData.borderTimer -= 16;
+
+
+                if (
+                    square.userData.borderTimer <= 0
+                ) {
+
+                    square.userData.borderBlinking =
+                        false;
+
+                    border.visible = false;
+
+                    square.userData.borderNextBlink =
+                        100 +
+                        Math.random() * 500;
+
+                }
+
+            }
+
+
+        } else {
+
+
+            square.userData.borderBlinking =
+                false;
+
+            border.visible = false;
+
+            square.userData.borderNextBlink =
+                100;
+
+        }
+
+
+        /* ==========================
+            ANIMATION OPACITÉ
+        ========================== */
+
+        overlay.material.opacity +=
+            (
+                overlay.userData.targetOpacity -
+                overlay.material.opacity
+            ) * 0.25;
+
+
+        /* ==========================
+            POSITION + TAILLE OVERLAY
+        ========================== */
+
+        overlay.position.x =
+            square.position.x;
+
+        overlay.position.y =
+            square.position.y;
+
+        overlay.scale.x =
+            square.scale.x;
+
+        overlay.scale.y =
+            square.scale.y;
+
+
+        /* ==========================
+            POSITION + TAILLE BORDURE
+        ========================== */
+
+        border.position.x =
+            square.position.x;
+
+        border.position.y =
+            square.position.y;
+
+        border.scale.x =
+            square.scale.x;
+
+        border.scale.y =
+            square.scale.y;
+
+    });
+
+}
+
+
+/* ==========================
+    ANIMATION
+========================== */
+
+function animate(
+    scene,
+    renderer,
+    updateHover
+) {
+
+    requestAnimationFrame(() => {
+        animate(
+            scene,
+            renderer,
+            updateHover
+        );
+    });
+
+
+    updateHover();
+
+
+    renderer.render(
+        scene,
+        renderer.camera
+    );
+
+}
+
+
+/* ==========================
+    INITIALISATION D'UNE BOX
+========================== */
+
+function initializeBox(box) {
+
+
+    const canvas =
+        box.querySelector(
+            '.particle-canvas'
+        );
+
+
+    const image =
+        box.querySelector('img');
+
+
+    if (!canvas || !image) {
+        return;
+    }
+
+
+    /* ==========================
+        THREE.JS
+    ========================== */
+
+    const scene =
+        new THREE.Scene();
+
+
+    const camera =
+        new THREE.OrthographicCamera(
+            -1,
+            1,
+            1,
+            -1,
+            0.1,
+            10
+        );
+
+
+    camera.position.z = 1;
+
+
+    const renderer =
+        new THREE.WebGLRenderer({
+            canvas: canvas,
+            alpha: true,
+            antialias: false
+        });
+
+
+    renderer.setPixelRatio(1);
+
+
+    /* ==========================
+        TEXTURE
+    ========================== */
+
+    const textureLoader =
+        new THREE.TextureLoader();
+
+
+    textureLoader.load(
+        image.src,
+        (texture) => {
+
+
+            texture.minFilter =
+                THREE.LinearFilter;
+
+            texture.magFilter =
+                THREE.LinearFilter;
+
+            texture.colorSpace =
+                THREE.SRGBColorSpace;
+
+            texture.flipY = false;
+
+            texture.needsUpdate = true;
+
+
+            /* ==========================
+                DIMENSIONS
+            ========================== */
+
+            const cellWidth =
+                2 / columns;
+
+            const cellHeight =
+                2 / rows;
+
+
+            /* ==========================
+                CARRÉS
+            ========================== */
+
+            const squares =
+                createSquares(
+                    scene,
+                    texture,
+                    cellWidth,
+                    cellHeight
+                );
+
+
+            /* ==========================
+                HOVER
+            ========================== */
+
+            const hover =
+                setupHoverReaction(
+                    box,
+                    squares,
+                    cellWidth,
+                    cellHeight
+                );
+
+
+            /* ==========================
+                ANIMATION
+            ========================== */
+
+            function update() {
+
+                updateReaction(
+                    squares,
+                    hover.mouse,
+                    hover.getHovering(),
+                    cellWidth,
+                    cellHeight
+                );
+
+            }
+
+
+            /* ==========================
+                DÉMARRAGE
+            ========================== */
+
+            resize(
+                box,
+                renderer
+            );
+
+
+            function render() {
+
+                requestAnimationFrame(
+                    render
+                );
+
+
+                update();
+
+
+                renderer.render(
+                    scene,
+                    camera
+                );
+
+            }
+
+
+            render();
+
+        }
+    );
+
+
+    /* ==========================
+        RESIZE
+    ========================== */
+
+    window.addEventListener(
+        'resize',
+        () => {
+
+            resize(
+                box,
+                renderer
+            );
+
+        }
+    );
+
+}
+
+
+/* ==========================
+    INITIALISATION
+========================== */
+
+boxes.forEach((box) => {
+
+    initializeBox(box);
+
+});
+
+
+
 
 

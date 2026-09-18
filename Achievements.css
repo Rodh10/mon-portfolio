@@ -117,6 +117,73 @@ html, body {
 
 
 
+.dashboard-wrapper {
+    top: 80px;
+    left: 150px;
+    position: relative;
+    width: fit-content;
+}
+
+
+.dashboard {
+    display: grid;
+    grid-template-columns: repeat(3, 200px);
+    grid-template-rows: repeat(2, 200px);
+    gap: 20px;
+}
+
+
+.box {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+}
+
+
+.box .particle-canvas {
+    position: absolute;
+
+    top: 5px;
+    left: 5px;
+
+    width: calc(100% - 10px);
+    height: calc(100% - 10px);
+
+    pointer-events: none;
+}
+
+
+.box img {
+    display: none;
+}
+
+
+@media (max-width: 600px) {
+
+    .dashboard-wrapper {
+        top: 80px;
+        left: 110px;
+    }
+
+    .box:not(:first-child) {
+        display: none;
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /* Conteneur principal */
@@ -153,7 +220,7 @@ html, body {
   .conteneur {
     font-size: 0.65rem;
     left: 30%;
-    top: 25%;
+    top: 50%;
     
   }
 }
@@ -307,7 +374,7 @@ html, body {
   .year {
     font-size: 2.5rem;
     left: 30%;
-    top: 20%;
+    top: 45%;
 
   }
 }
