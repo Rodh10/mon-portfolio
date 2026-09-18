@@ -1461,10 +1461,16 @@ appearLinks();
 
 
 
+
+
+
+
 import * as THREE from 'three';
 
 
 const boxes = document.querySelectorAll('.box');
+
+let loadedBoxes = 0;
 
 
 /* ==========================
@@ -1533,7 +1539,7 @@ function startDisappearance(squares) {
         square.material.opacity = 1;
 
         square.userData.disappearDelay =
-            1000 + Math.random() * 1000;
+            1000 + Math.random() * 500;
 
         square.userData.disappearing = true;
 
@@ -1544,6 +1550,110 @@ function startDisappearance(squares) {
 }
 
 
+
+/* ==========================
+    BOUCLE MOBILE
+========================== */
+
+function startMobileLoop() {
+
+    if (window.innerWidth > 600) {
+        return;
+    }
+
+
+    const mobileBoxes =
+        Array.from(boxes);
+
+
+    let currentIndex = 0;
+
+
+    function showNextBox() {
+
+        /* ==========================
+            CACHER TOUTES LES BOXES
+        ========================== */
+
+        mobileBoxes.forEach((box) => {
+
+            box.style.display = 'none';
+
+        });
+
+
+        /* ==========================
+            BOX ACTUELLE
+        ========================== */
+
+        const box =
+            mobileBoxes[currentIndex];
+
+
+        box.style.display = '';
+
+
+        const canvas =
+            box.querySelector(
+                '.particle-canvas'
+            );
+
+
+        const squares =
+            canvas.userData.squares;
+
+
+        /* ==========================
+            APPARITION
+        ========================== */
+
+        startAppearance(squares);
+
+
+        /* ==========================
+            ATTENDRE 5 SECONDES
+        ========================== */
+
+        setTimeout(() => {
+
+
+            /* ==========================
+                DISPARITION
+            ========================== */
+
+            startDisappearance(squares);
+
+
+            /* ==========================
+                ATTENDRE LA DISPARITION
+            ========================== */
+
+            setTimeout(() => {
+
+
+                /* ==========================
+                    BOX SUIVANTE
+                ========================== */
+
+                currentIndex =
+                    (currentIndex + 1) %
+                    mobileBoxes.length;
+
+
+                showNextBox();
+
+
+            }, 1500);
+
+
+        }, 20000);
+
+    }
+
+
+    showNextBox();
+
+}
 
 
 
@@ -2560,6 +2670,22 @@ function initializeBox(box) {
                 );
 
 
+            canvas.userData = {
+                squares: squares
+            };
+
+
+            loadedBoxes++;
+
+            if (
+                window.innerWidth <= 600 &&
+                loadedBoxes === boxes.length
+            ) {
+                startMobileLoop();
+            }
+
+
+
             /* ==========================
                 HOVER
             ========================== */
@@ -2652,8 +2778,6 @@ boxes.forEach((box) => {
     initializeBox(box);
 
 });
-
-
 
 
 

@@ -165,9 +165,6 @@ html, body {
         left: 110px;
     }
 
-    .box:not(:first-child) {
-        display: none;
-    }
 
 }
 
