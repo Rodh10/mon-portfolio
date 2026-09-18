@@ -324,7 +324,7 @@ if (particleContainer) {
                         (
                             x /
                             (columns - 1)
-                        ) * 2 - 1.24;
+                        ) * 2 - 1.4;
 
 
                     const py =
