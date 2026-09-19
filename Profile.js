@@ -1,979 +1,6 @@
 
 
 
-/* =========================================================
-   THREE.JS — PARTICLE PORTRAIT
-   ========================================================= */
-
-import * as THREE from
-    'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
-
-
-/* =========================================================
-   CONTENEUR
-   ========================================================= */
-
-const particleContainer =
-    document.getElementById("particle-container");
-
-
-/*
-   Si le conteneur n'existe pas,
-   on arrête Three.js.
-*/
-
-if (particleContainer) {
-
-
-    /* =====================================================
-       SCENE
-       ===================================================== */
-
-    const scene =
-        new THREE.Scene();
-
-
-    /* =====================================================
-       CAMERA
-       ===================================================== */
-
-    const camera =
-        new THREE.OrthographicCamera(
-
-            -1,
-            1,
-            1,
-            -1,
-
-            0.1,
-            10
-
-        );
-
-
-    camera.position.z = 1;
-
-
-    /* =====================================================
-       RENDERER
-       ===================================================== */
-
-    const renderer =
-        new THREE.WebGLRenderer({
-
-            antialias: true,
-
-            alpha: true
-
-        });
-
-
-    renderer.setPixelRatio(
-
-        Math.min(
-            window.devicePixelRatio,
-            2
-        )
-
-    );
-
-
-    renderer.setSize(
-
-        particleContainer.clientWidth,
-        particleContainer.clientHeight
-
-    );
-
-
-    /*
-       On donne une classe au canvas
-       pour pouvoir le contrôler en CSS.
-    */
-
-    renderer.domElement.className =
-        "particle-canvas";
-
-
-    /*
-       IMPORTANT :
-
-       Le canvas est placé dans
-       #particle-container
-       et non dans le body.
-    */
-
-    particleContainer.appendChild(
-        renderer.domElement
-    );
-
-
-    /* =====================================================
-       IMAGE
-       ===================================================== */
-
-    const image =
-        new Image();
-
-
-    image.src =
-        "portrait.jpg";
-
-
-    image.onload = () => {
-
-
-        /* =================================================
-           PARTICULES
-           ================================================= */
-
-        const particles = [];
-
-
-        const columns = 300;
-
-        const rows = 130;
-
-
-        /* =================================================
-           CANVAS INVISIBLE
-           ================================================= */
-
-        const canvas =
-            document.createElement("canvas");
-
-
-        const ctx =
-            canvas.getContext("2d");
-
-
-        canvas.width =
-            columns;
-
-
-        canvas.height =
-            rows;
-
-
-        /* =================================================
-           REDIMENSIONNER L'IMAGE
-           ================================================= */
-
-        const imageRatio =
-            image.width /
-            image.height;
-
-        let imageWidth =
-            rows *
-            imageRatio;
-
-
-        /* =================================================
-          RECADRAGE MOBILE
-          ================================================= */
-
-        if (window.innerWidth <= 600) {
-
-            const sourceY =
-                image.height / 3;
-
-            const sourceHeight =
-                image.height / 5;
-
-            const croppedRatio =
-                image.width /
-                sourceHeight;
-
-            imageWidth =
-                rows *
-                croppedRatio * 
-                0.2;
-
-
-            ctx.drawImage(
-
-                image,
-
-                0,
-                sourceY,
-                image.width,
-                sourceHeight,
-
-                0,
-                0,
-                imageWidth,
-                rows * 0.2
-
-            );
-
-        } else {
-
-            ctx.drawImage(
-
-                image,
-
-                0,
-                0,
-
-                imageWidth,
-                rows
-
-            );
-
-        }
-
-
-        /* =================================================
-           LIRE LES PIXELS
-           ================================================= */
-
-        const imageData =
-            ctx.getImageData(
-
-                0,
-                0,
-
-                columns,
-                rows
-
-            );
-
-
-        /* =================================================
-           CRÉER LES POINTS
-           ================================================= */
-
-        for (
-            let y = 0;
-            y < rows;
-            y++
-        ) {
-
-
-            for (
-                let x = 0;
-                x < columns;
-                x++
-            ) {
-
-
-                const index =
-                    (
-                        y *
-                        columns +
-                        x
-                    ) * 4;
-
-
-                const red =
-                    imageData.data[index];
-
-
-                const green =
-                    imageData.data[index + 1];
-
-
-                const blue =
-                    imageData.data[index + 2];
-
-
-                const alpha =
-                    imageData.data[index + 3];
-
-
-                /* =========================================
-                   LUMINOSITÉ
-                   ========================================= */
-
-                const brightness =
-                    (
-                        red +
-                        green +
-                        blue
-                    ) / 3;
-
-
-                /* =========================================
-                   TRANSPARENCE
-                   ========================================= */
-
-                if (
-                    alpha > 20
-                ) {
-
-
-                    /*
-                       Les pixels sombres
-                       deviennent moins présents.
-                    */
-
-                    if (
-                        brightness < 80
-                    ) {
-
-                        continue;
-
-                    }
-
-
-                    const scale =
-                        0.78;
-
-
-                    const px =
-                        (
-                            x /
-                            (columns - 1)
-                        ) * 2 - 1.4;
-
-
-                    const py =
-                        (
-                            y /
-                            (rows - 1)
-                        ) * 2 - 0.88;
-
-
-                    particles.push(
-
-                        px * scale,
-
-                        -py * scale,
-
-                        0
-
-                    );
-
-                }
-
-            }
-
-        }
-
-
-        /* =================================================
-           NOMBRE DE PARTICULES
-           ================================================= */
-
-        const particleCount =
-            particles.length / 3;
-
-
-        /* =================================================
-           ORDRE GAUCHE → DROITE
-           ================================================= */
-
-        const order =
-            Array.from(
-
-                {
-                    length:
-                        particleCount
-                },
-
-                (_, i) => i
-
-            );
-
-
-        const priorities =
-            new Array(
-                particleCount
-            );
-
-
-        for (
-            let i = 0;
-            i < particleCount;
-            i++
-        ) {
-
-
-            const x =
-                particles[i * 3];
-
-
-            const horizontal =
-                (
-                    x + 1.3
-                ) / 2.6;
-
-
-            const base =
-                horizontal * 100;
-
-
-            const delay =
-                Math.random() * 10;
-
-
-            priorities[i] =
-                base + delay;
-
-        }
-
-
-        /* =================================================
-           TRIER
-           ================================================= */
-
-        order.sort(
-
-            (a, b) => {
-
-                return (
-                    priorities[a] -
-                    priorities[b]
-                );
-
-            }
-
-        );
-
-
-        /* =================================================
-           NOUVEL ORDRE
-           ================================================= */
-
-        const randomParticles = [];
-
-
-        for (
-            let i = 0;
-            i < order.length;
-            i++
-        ) {
-
-
-            const index =
-                order[i] * 3;
-
-
-            randomParticles.push(
-
-                particles[index],
-
-                particles[index + 1],
-
-                particles[index + 2]
-
-            );
-
-        }
-
-
-        /* =================================================
-           GEOMETRY
-           ================================================= */
-
-        const geometry =
-            new THREE.BufferGeometry();
-
-
-        geometry.setAttribute(
-
-            "position",
-
-            new THREE.Float32BufferAttribute(
-
-                randomParticles,
-
-                3
-
-            )
-
-        );
-
-
-        /*
-           On commence avec zéro particule.
-        */
-
-        geometry.setDrawRange(
-
-            0,
-            0
-
-        );
-
-        /* =================================================
-           CURSEUR
-           ================================================= */
-
-        const mouse =
-            new THREE.Vector2(
-                -10,
-                -10
-            );
-
-
-        window.addEventListener(
-
-            "mousemove",
-
-            (event) => {
-
-                const rect =
-                    particleContainer.getBoundingClientRect();
-
-
-                /*
-                   Vérifier si le curseur est
-                   réellement dans le portrait.
-                */
-
-                const inside =
-
-                    event.clientX >= rect.left &&
-                    event.clientX <= rect.right &&
-                    event.clientY >= rect.top &&
-                    event.clientY <= rect.bottom;
-
-
-                if (!inside) {
-
-                    mouse.set(
-                        -10,
-                        -10
-                    );
-
-                    return;
-
-                }
-
-
-                /*
-                   Position du curseur
-                   dans le conteneur.
-                */
-
-                const x =
-                    event.clientX -
-                    rect.left;
-
-
-                const y =
-                    event.clientY -
-                    rect.top;
-
-
-                /*
-                   Conversion en coordonnées
-                   Three.js.
-                */
-
-                mouse.x =
-                    (
-                        x /
-                        rect.width
-                    ) * 2 - 1;
-
-
-                mouse.y =
-                    1 -
-                    (
-                        y /
-                        rect.height
-                    ) * 2;
-
-            }
-
-        );
-
-
-        /* =================================================
-           MATERIAL
-           ================================================= */
-
-        const material =
-            new THREE.ShaderMaterial({
-
-                transparent: true,
-
-                depthWrite: false,
-
-                uniforms: {
-
-                    uMouse: {
-                        value: mouse
-                    },
-
-                    uRadiusX: {
-                        value: 0.9
-                    },
-
-                    uRadiusY: {
-                        value: 1.2
-                    }
-
-                },
-
-                vertexShader: `
-
-                    uniform vec2 uMouse;
-
-                    uniform float uRadiusX;
-                    uniform float uRadiusY;
-
-                    varying float vInfluence;
-
-
-                    void main() {
-
-                        /*
-                           Distance entre le point
-                           et le curseur.
-                        */
-
-                        vec2 difference =
-                            position.xy - uMouse;
-
-                        difference.x /= uRadiusX;
-                        difference.y /= uRadiusY;
-
-                        float distanceToMouse =
-                            length(difference);
-
-
-                        /*
-                           Influence du curseur.
-
-                           Proche = 1
-                           Loin = 0
-                        */
-
-                        vInfluence =
-                            1.0 -
-                            smoothstep(
-                                0.0,
-                                uRadiusX,
-                                distanceToMouse
-                            );
-
-
-                        /*
-                           Les points proches
-                           deviennent légèrement plus gros.
-                        */
-
-                        gl_PointSize =
-                            3.0 +
-                            vInfluence * 4.0;
-
-
-                        gl_Position =
-                            projectionMatrix *
-                            modelViewMatrix *
-                            vec4(
-                                position,
-                                1.0
-                            );
-
-                    }
-
-                `,
-
-                fragmentShader: `
-
-                    varying float vInfluence;
-
-
-                    void main() {
-
-                        /*
-                           Couleur normale :
-                           blanc.
-
-                           Couleur au survol :
-                           rouge #BA3A23.
-                        */
-
-                        vec3 white =
-                            vec3(
-                                1.0,
-                                1.0,
-                                1.0
-                            );
-
-
-                        vec3 red =
-                            vec3(
-                                0.729,
-                                0.227,
-                                0.137
-                            );
-
-
-                        /*
-                           Mélange progressif
-                           blanc → rouge.
-                        */
-
-                        vec3 color =
-                            mix(
-                                white,
-                                red,
-                                vInfluence
-                            );
-
-
-                        /*
-                           Les points éloignés
-                           deviennent légèrement
-                           moins visibles.
-                        */
-
-                        float opacity =
-                            0.50 +
-                            vInfluence * 0.80;
-
-
-                        gl_FragColor =
-                            vec4(
-                                color,
-                                opacity
-                            );
-
-                    }
-
-                `
-
-            });
-
-
-        /* =================================================
-           POINT CLOUD
-           ================================================= */
-
-        const points =
-            new THREE.Points(
-
-                geometry,
-
-                material
-
-            );
-
-
-        scene.add(points);
-
-        /* =================================================
-          ANIMATION
-          ================================================= */
-
-        let visibleParticles = 0;
-
-        let isLeaving = false;
-
-
-        const revealSpeed =
-            70;
-
-
-        function animate() {
-
-            requestAnimationFrame(
-                animate
-            );
-
-
-            /*
-              Apparition normale :
-              0 → toutes les particules
-            */
-
-            if (
-                !isLeaving &&
-                visibleParticles <
-                particleCount
-            ) {
-
-                visibleParticles +=
-                    revealSpeed;
-
-
-                geometry.setDrawRange(
-
-                    0,
-
-                    Math.min(
-
-                        Math.floor(
-                            visibleParticles
-                        ),
-
-                        particleCount
-
-                    )
-
-                );
-
-            }
-
-
-            material.uniforms.uMouse.value =
-                mouse;
-
-
-            renderer.render(
-
-                scene,
-
-                camera
-
-            );
-
-        }
-
-
-        animate();
-
-
-        function leaveParticlePortrait() {
-
-            return new Promise(resolve => {
-
-                isLeaving = true;
-
-
-                function disappear() {
-
-                    visibleParticles -=
-                        revealSpeed;
-
-
-                    if (
-                        visibleParticles <= 0
-                    ) {
-
-                        visibleParticles = 0;
-
-                        geometry.setDrawRange(
-                            0,
-                            0
-                        );
-
-                        resolve();
-
-                        return;
-
-                    }
-
-
-                    geometry.setDrawRange(
-
-                        0,
-
-                        Math.floor(
-                            visibleParticles
-                        )
-
-                    );
-
-
-                    requestAnimationFrame(
-                        disappear
-                    );
-
-                }
-
-
-                disappear();
-
-            });
-
-        }
-
-        window.leaveParticlePortrait =
-            leaveParticlePortrait;
-
-
-    };
-
-
-    /* =====================================================
-       IMAGE ERROR
-       ===================================================== */
-
-    image.onerror = () => {
-
-
-        console.error(
-
-            "ERREUR : portrait.jpg introuvable"
-
-        );
-
-    };
-
-
-    /* =====================================================
-       RESIZE
-       ===================================================== */
-
-    window.addEventListener(
-
-        "resize",
-
-        () => {
-
-
-            const width =
-                particleContainer.clientWidth;
-
-
-            const height =
-                particleContainer.clientHeight;
-
-
-            renderer.setSize(
-
-                width,
-                height
-
-            );
-
-        }
-
-    );
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 /* ==========================
@@ -1042,6 +69,2243 @@ if (nav) {
   nav.addEventListener('mouseenter', hideCursor);
   nav.addEventListener('mouseleave', delayedShowCursor);
 }
+
+
+
+
+
+const leaveEffectTimersLinks = new WeakMap();
+
+function appearLinks() {
+  const links = document.querySelectorAll('.icon-link');
+
+  links.forEach((el, index) => {
+    const text = el.textContent;
+    el.textContent = '';
+
+    // Création des spans
+    const letters = text.split('');
+    letters.forEach(letter => {
+      const span = document.createElement('span');
+      span.textContent = letter;
+      el.appendChild(span);
+    });
+
+    let timeouts = [];
+    el.isAppeared = true;
+
+    function playCmdEffect(delayStart = 0, colorNormal = '#000000', colorAfter = '#808080') {
+      timeouts.forEach(t => clearTimeout(t));
+      timeouts = [];
+
+      const spans = el.querySelectorAll('span');
+      spans.forEach((span, i) => {
+        const timeout1 = setTimeout(() => {
+          span.style.color = colorNormal;
+          span.style.backgroundColor = 'white';
+        }, delayStart + i * 30);
+        timeouts.push(timeout1);
+
+        const timeout2 = setTimeout(() => {
+          span.style.color = colorAfter;
+          span.style.backgroundColor = 'transparent';
+        }, delayStart + i * 30 + 10);
+        timeouts.push(timeout2);
+      });
+    }
+
+    // Apparition initiale pour tous les liens
+    playCmdEffect(300);
+    el.style.pointerEvents = 'auto';
+
+    // Hover
+    el.addEventListener('mouseenter', () => {
+      playCmdEffect(0, '#000000', '#b8b8b8');
+    });
+
+    // Leave
+    el.addEventListener('mouseleave', () => {
+      timeouts.forEach(t => clearTimeout(t));
+      timeouts = [];
+
+      const spans = el.querySelectorAll('span');
+      const lastIndex = spans.length - 1;
+
+      spans.forEach((span, i) => {
+        const delay = (lastIndex - i) * 30;
+
+        const timeout1 = setTimeout(() => {
+          span.style.color = '#000000';
+          span.style.backgroundColor = '#808080';
+        }, delay);
+        timeouts.push(timeout1);
+
+        const timeout2 = setTimeout(() => {
+          span.style.color = '#808080';
+          span.style.backgroundColor = 'transparent';
+        }, delay + 20);
+        timeouts.push(timeout2);
+      });
+    });
+
+    // Dans ta fonction qui gère l'apparition des liens
+    el.addEventListener('click', (e) => {
+      e.preventDefault(); // Empêche ouverture immédiate
+      const linkUrl = el.getAttribute('href');
+
+      const spans = el.querySelectorAll('span');
+
+      spans.forEach((span, i) => {
+        setTimeout(() => {
+          span.style.backgroundColor = 'white'; // Fond blanc visible
+          span.style.color = '#000000'; // Noir pendant le balayage
+        }, i * 40);
+
+        setTimeout(() => {
+          span.style.backgroundColor = 'transparent'; // Enlève le fond
+          span.style.color = '#ffffffff'; // Reste noir après
+        }, i * 40 + 20);
+      });
+
+      // Durée totale avant ouverture du lien
+      const totalTime = spans.length * 40 + 200;
+      setTimeout(() => {
+        window.location.href = linkUrl;
+      }, totalTime);
+    });
+
+  });
+}
+
+function leaveEffectLinks() {
+  const links = document.querySelectorAll('.icon-link');
+  if (!links.length) return;
+
+  links.forEach(el => {
+    if (!el.isAppeared) return;
+
+    const timers = leaveEffectTimersLinks.get(el) || [];
+    timers.forEach(t => clearTimeout(t));
+    leaveEffectTimersLinks.set(el, []);
+
+    const spans = el.querySelectorAll('span');
+    if (!spans.length) return;
+
+    spans.forEach(span => {
+      span.style.color = '#808080';
+      span.style.backgroundColor = 'transparent';
+      span.style.opacity = '1';
+    });
+
+    const lastIndex = spans.length - 1;
+    spans.forEach((span, i) => {
+      const delay = (lastIndex - i) * 30;
+
+      const t1 = setTimeout(() => {
+        span.style.color = '#000000';
+        span.style.backgroundColor = 'white';
+        span.style.opacity = '1';
+      }, delay);
+      leaveEffectTimersLinks.get(el).push(t1);
+
+      const t2 = setTimeout(() => {
+        span.style.opacity = '0';
+        span.style.color = '#000000';
+        span.style.backgroundColor = 'transparent';
+      }, delay + 20);
+      leaveEffectTimersLinks.get(el).push(t2);
+    });
+
+    const totalTime = (lastIndex + 1) * 30 + 20;
+    setTimeout(() => {
+      el.style.pointerEvents = 'none';
+    }, totalTime);
+
+    el.isAppeared = false;
+  });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/* ===========================
+   NAVIGATION STYLE "CMD"
+   =========================== */
+
+function enhanceNavLinks() {
+  const links = document.querySelectorAll('.nav');
+
+  links.forEach(el => {
+    const text = el.textContent.trim();
+    el.textContent = '';
+
+    // Création des spans lettre par lettre
+    const letters = text.split('');
+    letters.forEach(letter => {
+      const span = document.createElement('span');
+      span.textContent = letter;
+      span.style.color = "#808080"; // gris par défaut
+      el.appendChild(span);
+    });
+
+    let timeouts = [];
+
+    /* ============ HOVER CMD ============ */
+    el.addEventListener('mouseenter', () => {
+      if (el.classList.contains("active-page")) return;
+
+      const spans = el.querySelectorAll("span");
+      timeouts.forEach(t => clearTimeout(t));
+      timeouts = [];
+
+      spans.forEach((span, i) => {
+        const t1 = setTimeout(() => {
+          span.style.color = "#000000";
+          span.style.backgroundColor = "#FF0000";
+        }, i * 30);
+        timeouts.push(t1);
+
+        const t2 = setTimeout(() => {
+          span.style.color = "#808080";
+          span.style.backgroundColor = "#FF0000";
+        }, i * 30 + 20);
+        timeouts.push(t2);
+
+        const t3 = setTimeout(() => {
+          span.style.color = "#000000";
+          span.style.backgroundColor = "#FF0000";
+        }, i * 30 + 30);
+        timeouts.push(t3);
+      });
+    });
+
+    /* ============ LEAVE CMD ============ */
+    el.addEventListener('mouseleave', () => {
+      if (el.classList.contains("active-page")) return;
+
+      const spans = el.querySelectorAll("span");
+      timeouts.forEach(t => clearTimeout(t));
+      timeouts = [];
+
+      const last = spans.length - 1;
+
+      spans.forEach((span, i) => {
+        const delay = (last - i) * 30;
+
+        const t1 = setTimeout(() => {
+          span.style.color = "#000000";
+          span.style.backgroundColor = "#FF0000";
+        }, delay);
+        timeouts.push(t1);
+
+        const t2 = setTimeout(() => {
+          span.style.color = "#808080";
+          span.style.backgroundColor = "transparent";
+        }, delay + 20);
+        timeouts.push(t2);
+      });
+    });
+
+    /* ============ CLICK (avec leaveEffect) ============ */
+    el.addEventListener('click', async e => {
+      e.preventDefault();
+      if (el.classList.contains("active-page")) return;
+
+      const linkUrl = el.getAttribute('href');
+      const oldActive = document.querySelector(".active-page");
+
+      // Animation leave sur l'ancien menu actif
+      if (oldActive && oldActive !== el) animateOldActiveLeave(oldActive);
+      if (oldActive) oldActive.classList.remove("active-page");
+
+      // Toutes les animations de disparition
+      await leaveAllEffects();
+
+      // Redirection après animations
+      if (linkUrl === "#home") window.location.href = "index.html";
+      if (linkUrl === "#about") window.location.href = "Profile.html";
+      if (linkUrl === "#track") window.location.href = "Achievements.html";
+    });
+  });
+
+  /* ============================================================
+     FONCTION : Leave CMD de l'ancien menu actif
+     ============================================================ */
+  function animateOldActiveLeave(link) {
+    const spans = link.querySelectorAll("span");
+    const last = spans.length - 1;
+
+    spans.forEach((span, i) => {
+      const delay = (last - i) * 30;
+
+      setTimeout(() => {
+        span.style.backgroundColor = "white";
+        span.style.color = "#000000";
+      }, delay);
+
+      setTimeout(() => {
+        span.style.backgroundColor = "transparent";
+        span.style.color = "#808080";
+      }, delay + 20);
+    });
+  }
+
+  /* ============================================================
+     ACTIVER LE MENU ACTIF (page courante)
+     ============================================================ */
+  function activateMenu(href) {
+    const link = document.querySelector(`.nav[href="${href}"]`);
+    if (!link) return;
+
+    link.classList.add("active-page");
+
+    const spans = link.querySelectorAll("span");
+    spans.forEach((span, i) => {
+      setTimeout(() => {
+        span.style.backgroundColor = "#FF0000";
+        span.style.color = "#000000";
+      }, i * 35);
+
+      setTimeout(() => {
+        span.style.backgroundColor = "transparent";
+        span.style.color = "#FF0000";
+      }, i * 35 + 20);
+    });
+  }
+
+  const page = window.location.pathname;
+  if (page.includes("index.html")) activateMenu("#home");
+  if (page.includes("Profile.html")) activateMenu("#about");
+  if (page.includes("Achievements.html")) activateMenu("#track");
+}
+
+/* ============================================================
+   PROMISE POUR LES ANIMATIONS DE DISPARITION
+   ============================================================ */
+
+
+async function leaveAllEffects() {
+
+    leaveEffectPara();
+    leaveProfileTitleFirstTwo();
+    leaveProfileTitleLastTwo();
+    leaveEffectTitled();
+    animateOldActiveLeaveWheel();
+
+    if (window.leaveParticlePortrait) {
+        await window.leaveParticlePortrait();
+    }
+
+    disappearCMDArrow(
+        document.querySelector('.see-more')
+    );
+
+    // Attendre que les autres animations de sortie terminent
+    await new Promise(resolve => {
+        setTimeout(resolve, 1000);
+    });
+
+
+
+}
+
+
+
+window.addEventListener("DOMContentLoaded", enhanceNavLinks);
+
+
+
+
+
+/* =========================
+   Animate old active link for wheel scroll
+   ========================= */
+function animateOldActiveLeaveWheel() {
+  const oldActive = document.querySelector(".active-page");
+  if (!oldActive) return;
+
+  const spans = oldActive.querySelectorAll("span");
+  const last = spans.length - 1;
+
+  spans.forEach((span, i) => {
+    const delay = (last - i) * 30;
+
+    setTimeout(() => {
+      span.style.backgroundColor = "#FF0000";
+      span.style.color = "#000000";
+    }, delay);
+
+    setTimeout(() => {
+      span.style.backgroundColor = "transparent";
+      span.style.color = "#808080";
+    }, delay + 20);
+  });
+
+  // Retirer la classe active après l'animation
+  setTimeout(() => {
+    oldActive.classList.remove("active-page");
+  }, (last + 1) * 30 + 20);
+}
+
+
+
+
+
+
+
+
+
+
+
+window.addEventListener("DOMContentLoaded", () => {
+
+  let scrollCooldown = false;
+  let startY = 0; // position initiale du doigt sur mobile
+
+  async function handleScroll(direction) {
+    if (scrollCooldown) return;
+    scrollCooldown = true;
+
+    // Lancer toutes les animations de leave
+    await leaveAllEffects();
+
+    // Redirection selon la direction
+    if (direction === "down") {
+      window.location.href = "Achievements.html"; // scroll vers le bas
+    } else if (direction === "up") {
+      window.location.href = "index.html"; // scroll vers le haut
+    }
+  }
+
+  // === Desktop : molette ===
+  window.addEventListener('wheel', e => {
+    const direction = e.deltaY > 0 ? "down" : "up";
+    handleScroll(direction);
+  });
+
+  // === Mobile : swipe ===
+  window.addEventListener('touchstart', e => {
+    startY = e.touches[0].clientY;
+  });
+
+  window.addEventListener('touchend', e => {
+    const endY = e.changedTouches[0].clientY;
+    const diff = startY - endY;
+
+    if (Math.abs(diff) > 50) { // seuil pour éviter les petits gestes accidentels
+      const direction = diff > 0 ? "down" : "up"; // swipe vers le haut = down, vers le bas = up
+      handleScroll(direction);
+    }
+  });
+
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* =========================================================
+   THREE.JS — PARTICLE PORTRAIT
+   ========================================================= */
+
+import * as THREE from
+    'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
+
+
+/* =========================================================
+   CONTENEUR
+   ========================================================= */
+
+const particleContainer =
+    document.getElementById("particle-container");
+
+
+
+
+/*
+   Si le conteneur n'existe pas,
+   on arrête Three.js.
+*/
+
+
+/* =========================================================
+   CONFIGURATION
+   ========================================================= */
+
+const columns = 300;
+const rows = 130;
+
+const revealSpeed = 70;
+
+
+/* =========================================================
+   SCENE
+   ========================================================= */
+
+function createScene() {
+
+    return new THREE.Scene();
+
+}
+
+
+/* =========================================================
+   CAMERA
+   ========================================================= */
+
+function createCamera() {
+
+    const camera =
+        new THREE.OrthographicCamera(
+
+            -1,
+            1,
+            1,
+            -1,
+
+            0.1,
+            10
+
+        );
+
+
+    camera.position.z = 1;
+
+
+    return camera;
+
+}
+
+
+/* =========================================================
+   RENDERER
+   ========================================================= */
+
+function createRenderer(particleContainer) {
+
+    const renderer =
+        new THREE.WebGLRenderer({
+
+            antialias: true,
+
+            alpha: true
+
+        });
+
+
+    renderer.setPixelRatio(
+
+        Math.min(
+            window.devicePixelRatio,
+            2
+        )
+
+    );
+
+
+    renderer.setSize(
+
+        particleContainer.clientWidth,
+        particleContainer.clientHeight
+
+    );
+
+
+    /*
+       On donne une classe au canvas
+       pour pouvoir le contrôler en CSS.
+    */
+
+    renderer.domElement.className =
+        "particle-canvas";
+
+
+    /*
+       IMPORTANT :
+
+       Le canvas est placé dans
+       #particle-container
+       et non dans le body.
+    */
+
+    particleContainer.appendChild(
+        renderer.domElement
+    );
+
+
+    return renderer;
+
+}
+
+
+/* =========================================================
+   IMAGE
+   ========================================================= */
+
+function loadImage(src) {
+
+    const image =
+        new Image();
+
+
+    image.src =
+        src;
+
+
+    return image;
+
+}
+
+
+/* =========================================================
+   CANVAS INVISIBLE
+   ========================================================= */
+
+function createImageCanvas() {
+
+    const canvas =
+        document.createElement("canvas");
+
+
+    const ctx =
+        canvas.getContext("2d");
+
+
+    canvas.width =
+        columns;
+
+
+    canvas.height =
+        rows;
+
+
+    return {
+        canvas,
+        ctx
+    };
+
+}
+
+
+/* =========================================================
+   REDIMENSIONNER L'IMAGE
+   ========================================================= */
+
+function drawImageToCanvas(
+    image,
+    ctx
+) {
+
+    const imageRatio =
+        image.width /
+        image.height;
+
+
+    let imageWidth =
+        rows *
+        imageRatio;
+
+
+    /* =====================================================
+       RECADRAGE MOBILE
+       ===================================================== */
+
+    if (window.innerWidth <= 600) {
+
+        const sourceY =
+            image.height / 3;
+
+
+        const sourceHeight =
+            image.height / 5;
+
+
+        const croppedRatio =
+            image.width /
+            sourceHeight;
+
+
+        imageWidth =
+            rows *
+            croppedRatio *
+            0.2;
+
+
+        ctx.drawImage(
+
+            image,
+
+            0,
+            sourceY,
+            image.width,
+            sourceHeight,
+
+            0,
+            0,
+            imageWidth,
+            rows * 0.2
+
+        );
+
+    } else {
+
+        ctx.drawImage(
+
+            image,
+
+            0,
+            0,
+
+            imageWidth,
+            rows
+
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   LIRE LES PIXELS
+   ========================================================= */
+
+function getImageData(ctx) {
+
+    return ctx.getImageData(
+
+        0,
+        0,
+
+        columns,
+        rows
+
+    );
+
+}
+
+
+/* =========================================================
+   CRÉER LES PARTICULES
+   ========================================================= */
+
+function createParticles(imageData) {
+
+    const particles = [];
+
+
+    for (
+        let y = 0;
+        y < rows;
+        y++
+    ) {
+
+
+        for (
+            let x = 0;
+            x < columns;
+            x++
+        ) {
+
+
+            const index =
+                (
+                    y *
+                    columns +
+                    x
+                ) * 4;
+
+
+            const red =
+                imageData.data[index];
+
+
+            const green =
+                imageData.data[index + 1];
+
+
+            const blue =
+                imageData.data[index + 2];
+
+
+            const alpha =
+                imageData.data[index + 3];
+
+
+            /* =============================================
+               LUMINOSITÉ
+               ============================================= */
+
+            const brightness =
+                (
+                    red +
+                    green +
+                    blue
+                ) / 3;
+
+
+            /* =============================================
+               TRANSPARENCE
+               ============================================= */
+
+            if (
+                alpha > 20
+            ) {
+
+
+                /*
+                   Les pixels sombres
+                   deviennent moins présents.
+                */
+
+                if (
+                    brightness < 80
+                ) {
+
+                    continue;
+
+                }
+
+
+                const isMobile =
+                    window.innerWidth <= 600;
+
+
+                const scale =
+                    isMobile
+                        ? 1
+                        : 0.78;
+
+
+                const px =
+                    (
+                        x /
+                        (columns - 1)
+                    ) * 2 -
+                    (
+                        isMobile
+                            ? 1
+                            : 1.35
+                    );
+
+
+                const py =
+                    (
+                        y /
+                        (rows - 1)
+                    ) * 2 -
+                    (
+                        isMobile
+                            ? 0.8
+                            : 0.88
+                    );
+
+
+                particles.push(
+
+                    px * scale,
+
+                    -py * scale,
+
+                    0
+
+                );
+
+            }
+
+        }
+
+    }
+
+
+    return particles;
+
+}
+
+
+
+/* =========================================================
+   CRÉER L'ORDRE
+   ========================================================= */
+
+function createParticleOrder(particles) {
+
+    const particleCount =
+        particles.length / 3;
+
+
+    const order =
+        Array.from(
+
+            {
+                length:
+                    particleCount
+            },
+
+            (_, i) => i
+
+        );
+
+
+    const priorities =
+        new Array(
+            particleCount
+        );
+
+
+    for (
+        let i = 0;
+        i < particleCount;
+        i++
+    ) {
+
+
+        const x =
+            particles[i * 3];
+
+
+        const horizontal =
+            (
+                x + 1.3
+            ) / 2.6;
+
+
+        const base =
+            horizontal * 100;
+
+
+        const delay =
+            Math.random() * 10;
+
+
+        priorities[i] =
+            base + delay;
+
+    }
+
+
+    return {
+        order,
+        priorities,
+        particleCount
+    };
+
+}
+
+
+/* =========================================================
+   TRIER L'ORDRE
+   ========================================================= */
+
+function sortParticleOrder(
+    order,
+    priorities
+) {
+
+    order.sort(
+
+        (a, b) => {
+
+            return (
+                priorities[a] -
+                priorities[b]
+            );
+
+        }
+
+    );
+
+
+    return order;
+
+}
+
+
+/* =========================================================
+   CRÉER LE NOUVEL ORDRE
+   ========================================================= */
+
+function createOrderedParticles(
+    particles,
+    order
+) {
+
+    const randomParticles = [];
+
+
+    for (
+        let i = 0;
+        i < order.length;
+        i++
+    ) {
+
+
+        const index =
+            order[i] * 3;
+
+
+        randomParticles.push(
+
+            particles[index],
+
+            particles[index + 1],
+
+            particles[index + 2]
+
+        );
+
+    }
+
+
+    return randomParticles;
+
+}
+
+
+/* =========================================================
+   GEOMETRY
+   ========================================================= */
+
+function createGeometry(
+    randomParticles
+) {
+
+    const geometry =
+        new THREE.BufferGeometry();
+
+
+    geometry.setAttribute(
+
+        "position",
+
+        new THREE.Float32BufferAttribute(
+
+            randomParticles,
+
+            3
+
+        )
+
+    );
+
+
+    /*
+       On commence avec zéro particule.
+    */
+
+    geometry.setDrawRange(
+
+        0,
+        0
+
+    );
+
+
+    return geometry;
+
+}
+
+
+/* =========================================================
+   CURSEUR
+   ========================================================= */
+
+function createMouse() {
+
+    return new THREE.Vector2(
+        -10,
+        -10
+    );
+
+}
+
+
+/* =========================================================
+   MISE À JOUR DU CURSEUR
+   ========================================================= */
+
+function updateMouse(
+    event,
+    particleContainer,
+    mouse
+) {
+
+    const rect =
+        particleContainer.getBoundingClientRect();
+
+
+    /*
+       Vérifier si le curseur est
+       réellement dans le portrait.
+    */
+
+    const inside =
+
+        event.clientX >= rect.left &&
+        event.clientX <= rect.right &&
+        event.clientY >= rect.top &&
+        event.clientY <= rect.bottom;
+
+
+    if (!inside) {
+
+        mouse.set(
+            -10,
+            -10
+        );
+
+        return;
+
+    }
+
+
+    /*
+       Position du curseur
+       dans le conteneur.
+    */
+
+    const x =
+        event.clientX -
+        rect.left;
+
+
+    const y =
+        event.clientY -
+        rect.top;
+
+
+    /*
+       Conversion en coordonnées
+       Three.js.
+    */
+
+    mouse.x =
+        (
+            x /
+            rect.width
+        ) * 2 - 1;
+
+
+    mouse.y =
+        1 -
+        (
+            y /
+            rect.height
+        ) * 2;
+
+}
+
+
+/* =========================================================
+   ÉCOUTER LA SOURIS
+   ========================================================= */
+
+function setupMouse(
+    particleContainer,
+    mouse
+) {
+
+    window.addEventListener(
+
+        "mousemove",
+
+        (event) => {
+
+            updateMouse(
+                event,
+                particleContainer,
+                mouse
+            );
+
+        }
+
+    );
+
+}
+
+
+/* =========================================================
+   MATERIAL
+   ========================================================= */
+
+function createMaterial(mouse) {
+
+    const material =
+        new THREE.ShaderMaterial({
+
+            transparent: true,
+
+            depthWrite: false,
+
+            uniforms: {
+
+                uMouse: {
+                    value: mouse
+                },
+
+                uRadiusX: {
+                    value: 0.9
+                },
+
+                uRadiusY: {
+                    value: 1.2
+                }
+
+            },
+
+            vertexShader: `
+
+                uniform vec2 uMouse;
+
+                uniform float uRadiusX;
+                uniform float uRadiusY;
+
+                varying float vInfluence;
+
+
+                void main() {
+
+                    /*
+                       Distance entre le point
+                       et le curseur.
+                    */
+
+                    vec2 difference =
+                        position.xy - uMouse;
+
+                    difference.x /= uRadiusX;
+                    difference.y /= uRadiusY;
+
+                    float distanceToMouse =
+                        length(difference);
+
+
+                    /*
+                       Influence du curseur.
+
+                       Proche = 1
+                       Loin = 0
+                    */
+
+                    vInfluence =
+                        1.0 -
+                        smoothstep(
+                            0.0,
+                            uRadiusX,
+                            distanceToMouse
+                        );
+
+
+                    /*
+                       Les points proches
+                       deviennent légèrement plus gros.
+                    */
+
+                    gl_PointSize =
+                        3.0 +
+                        vInfluence * 4.0;
+
+
+                    gl_Position =
+                        projectionMatrix *
+                        modelViewMatrix *
+                        vec4(
+                            position,
+                            1.0
+                        );
+
+                }
+
+            `,
+
+            fragmentShader: `
+
+                varying float vInfluence;
+
+
+                void main() {
+
+                    /*
+                       Couleur normale :
+                       blanc.
+
+                       Couleur au survol :
+                       rouge #BA3A23.
+                    */
+
+                    vec3 white =
+                        vec3(
+                            1.0,
+                            1.0,
+                            1.0
+                        );
+
+
+                    vec3 red =
+                        vec3(
+                            0.729,
+                            0.227,
+                            0.137
+                        );
+
+
+                    /*
+                       Mélange progressif
+                       blanc → rouge.
+                    */
+
+                    vec3 color =
+                        mix(
+                            white,
+                            red,
+                            vInfluence
+                        );
+
+
+                    /*
+                       Les points éloignés
+                       deviennent légèrement
+                       moins visibles.
+                    */
+
+                    float opacity =
+                        0.50 +
+                        vInfluence * 0.80;
+
+
+                    gl_FragColor =
+                        vec4(
+                            color,
+                            opacity
+                        );
+
+                }
+
+            `
+
+        });
+
+
+    return material;
+
+}
+
+
+/* =========================================================
+   POINT CLOUD
+   ========================================================= */
+
+function createPoints(
+    geometry,
+    material
+) {
+
+    const points =
+        new THREE.Points(
+
+            geometry,
+
+            material
+
+        );
+
+
+    return points;
+
+}
+
+
+/* =========================================================
+   AJOUTER LE POINT CLOUD À LA SCÈNE
+   ========================================================= */
+
+function addPointsToScene(
+    scene,
+    points
+) {
+
+    scene.add(points);
+
+}
+
+
+/* =========================================================
+   ANIMATION
+   ========================================================= */
+
+function createAnimation(
+    geometry,
+    material,
+    mouse,
+    renderer,
+    scene,
+    camera,
+    particleCount
+) {
+
+    let visibleParticles = 0;
+
+    let isLeaving = false;
+
+
+    function animate() {
+
+        requestAnimationFrame(
+            animate
+        );
+
+
+        /*
+          Apparition normale :
+          0 → toutes les particules
+        */
+
+        if (
+            !isLeaving &&
+            visibleParticles <
+            particleCount
+        ) {
+
+            visibleParticles +=
+                revealSpeed;
+
+
+            geometry.setDrawRange(
+
+                0,
+
+                Math.min(
+
+                    Math.floor(
+                        visibleParticles
+                    ),
+
+                    particleCount
+
+                )
+
+            );
+
+        }
+
+
+        material.uniforms.uMouse.value =
+            mouse;
+
+
+        renderer.render(
+
+            scene,
+
+            camera
+
+        );
+
+    }
+
+
+    animate();
+
+
+    return {
+
+        getVisibleParticles: () => {
+            return visibleParticles;
+        },
+
+        setLeaving: (value) => {
+            isLeaving = value;
+        },
+
+        setVisibleParticles: (value) => {
+            visibleParticles = value;
+        }
+
+    };
+
+}
+
+
+/* =========================================================
+   DISPARITION DES PARTICULES
+   ========================================================= */
+
+function createLeaveParticlePortrait(
+    geometry,
+    animation
+) {
+
+    return function leaveParticlePortrait() {
+
+        return new Promise(resolve => {
+
+            animation.setLeaving(true);
+
+
+            function disappear() {
+
+                let visibleParticles =
+                    animation.getVisibleParticles();
+
+
+                visibleParticles -=
+                    revealSpeed;
+
+
+                if (
+                    visibleParticles <= 0
+                ) {
+
+                    visibleParticles = 0;
+
+
+                    geometry.setDrawRange(
+                        0,
+                        0
+                    );
+
+
+                    animation.setVisibleParticles(
+                        visibleParticles
+                    );
+
+
+                    resolve();
+
+
+                    return;
+
+                }
+
+
+                animation.setVisibleParticles(
+                    visibleParticles
+                );
+
+
+                geometry.setDrawRange(
+
+                    0,
+
+                    Math.floor(
+                        visibleParticles
+                    )
+
+                );
+
+
+                requestAnimationFrame(
+                    disappear
+                );
+
+            }
+
+
+            disappear();
+
+        });
+
+    };
+
+}
+
+
+/* =========================================================
+   RESIZE
+   ========================================================= */
+
+function resizeRenderer(
+    renderer,
+    particleContainer
+) {
+
+    const width =
+        particleContainer.clientWidth;
+
+
+    const height =
+        particleContainer.clientHeight;
+
+
+    renderer.setSize(
+
+        width,
+
+        height
+
+    );
+
+}
+
+
+/* =========================================================
+   ÉCOUTER LE RESIZE
+   ========================================================= */
+
+function setupResize(
+    renderer,
+    particleContainer
+) {
+
+    window.addEventListener(
+
+        "resize",
+
+        () => {
+
+            resizeRenderer(
+                renderer,
+                particleContainer
+            );
+
+        }
+
+    );
+
+}
+
+
+/* =========================================================
+   TRAITEMENT COMPLET DE L'IMAGE
+   ========================================================= */
+
+function setupParticlePortrait(
+    image,
+    scene,
+    renderer,
+    camera,
+    particleContainer
+) {
+
+    const {
+        ctx
+    } =
+        createImageCanvas();
+
+
+    /* =====================================================
+       REDIMENSIONNER L'IMAGE
+       ===================================================== */
+
+    drawImageToCanvas(
+        image,
+        ctx
+    );
+
+
+    /* =====================================================
+       LIRE LES PIXELS
+       ===================================================== */
+
+    const imageData =
+        getImageData(ctx);
+
+
+    /* =====================================================
+       CRÉER LES PARTICULES
+       ===================================================== */
+
+    const particles =
+        createParticles(
+            imageData
+        );
+
+
+    /* =====================================================
+       NOMBRE DE PARTICULES
+       ===================================================== */
+
+    const {
+        order,
+        priorities,
+        particleCount
+    } =
+        createParticleOrder(
+            particles
+        );
+
+
+    /* =====================================================
+       TRIER
+       ===================================================== */
+
+    sortParticleOrder(
+        order,
+        priorities
+    );
+
+
+    /* =====================================================
+       NOUVEL ORDRE
+       ===================================================== */
+
+    const randomParticles =
+        createOrderedParticles(
+            particles,
+            order
+        );
+
+
+    /* =====================================================
+       GEOMETRY
+       ===================================================== */
+
+    const geometry =
+        createGeometry(
+            randomParticles
+        );
+
+
+    /* =====================================================
+       CURSEUR
+       ===================================================== */
+
+    const mouse =
+        createMouse();
+
+
+    setupMouse(
+        particleContainer,
+        mouse
+    );
+
+
+    /* =====================================================
+       MATERIAL
+       ===================================================== */
+
+    const material =
+        createMaterial(
+            mouse
+        );
+
+
+    /* =====================================================
+       POINT CLOUD
+       ===================================================== */
+
+    const points =
+        createPoints(
+            geometry,
+            material
+        );
+
+
+    addPointsToScene(
+        scene,
+        points
+    );
+
+
+    /* =====================================================
+       ANIMATION
+       ===================================================== */
+
+    const animation =
+        createAnimation(
+
+            geometry,
+
+            material,
+
+            mouse,
+
+            renderer,
+
+            scene,
+
+            camera,
+
+            particleCount
+
+        );
+
+
+    /* =====================================================
+       DISPARITION
+       ===================================================== */
+
+    const leaveParticlePortrait =
+        createLeaveParticlePortrait(
+
+            geometry,
+
+            animation
+
+        );
+
+
+    window.leaveParticlePortrait =
+        leaveParticlePortrait;
+
+}
+
+
+
+
+
+
+
+/* =========================================================
+   POSITION RÉELLE DU PORTRAIT
+   ========================================================= */
+
+function updateParticlePortraitPosition(
+    particleContainer
+) {
+
+    const rect =
+        particleContainer.getBoundingClientRect();
+
+
+    /*
+       MOBILE
+    */
+
+    if (window.innerWidth <= 600) {
+
+        /*
+           Le crop de l'image est :
+
+           sourceY =
+               image.height / 3
+
+           sourceHeight =
+               image.height / 5
+
+           Il est ensuite dessiné
+           sur une hauteur de :
+
+           rows * 0.2
+        */
+
+        const portraitHeight =
+            rows * 0.2;
+
+
+        /*
+           Dans createParticles(),
+           le système mobile utilise :
+
+           py =
+               (y / (rows - 1)) * 2
+               - 0.8
+
+           puis :
+
+           -py
+
+           Pour la dernière ligne
+           du crop :
+
+           y ≈ rows * 0.2
+
+           La position correspondante
+           dans le canvas est donc
+           calculée ici.
+        */
+
+        const lastY =
+            portraitHeight /
+            (rows - 1);
+
+
+        const portraitNDCY =
+            -(
+                lastY * 2 -
+                0.8
+            );
+
+
+        /*
+           Conversion NDC → écran
+
+           +1 = haut
+           -1 = bas
+        */
+
+        const portraitBottomRatio =
+            (
+                1 -
+                portraitNDCY
+            ) / 2;
+
+
+        const portraitBottom =
+            rect.top +
+            (
+                rect.height *
+                portraitBottomRatio
+            );
+
+
+        window.particlePortraitPosition = {
+
+            top:
+                rect.top,
+
+            bottom:
+                portraitBottom,
+
+            left:
+                rect.left,
+
+            right:
+                rect.right,
+
+            width:
+                rect.width,
+
+            height:
+                rect.height
+
+        };
+
+
+        return;
+
+    }
+
+
+    /*
+       DESKTOP
+
+       Le portrait occupe
+       normalement le conteneur.
+    */
+
+    window.particlePortraitPosition = {
+
+        top:
+            rect.top,
+
+        bottom:
+            rect.bottom,
+
+        left:
+            rect.left,
+
+        right:
+            rect.right,
+
+        width:
+            rect.width,
+
+        height:
+            rect.height
+
+    };
+
+}
+
+
+
+
+
+
+
+
+/* =========================================================
+   INITIALISATION PRINCIPALE
+   ========================================================= */
+
+function initializeParticlePortrait(
+    particleContainer
+) {
+
+    /* =====================================================
+       SCENE
+       ===================================================== */
+
+    const scene =
+        createScene();
+
+
+    /* =====================================================
+       CAMERA
+       ===================================================== */
+
+    const camera =
+        createCamera();
+
+
+    /* =====================================================
+       RENDERER
+       ===================================================== */
+
+    const renderer =
+        createRenderer(
+            particleContainer
+        );
+
+
+    /* =====================================================
+       IMAGE
+       ===================================================== */
+
+    const image =
+        loadImage(
+            "portrait.jpg"
+        );
+
+
+    image.onload = () => {
+
+        setupParticlePortrait(
+
+            image,
+
+            scene,
+
+            renderer,
+
+            camera,
+
+            particleContainer
+
+        );
+
+    };
+
+
+    /* =====================================================
+       IMAGE ERROR
+       ===================================================== */
+
+    image.onerror = () => {
+
+        console.error(
+
+            "ERREUR : portrait.jpg introuvable"
+
+        );
+
+    };
+
+
+    /* =====================================================
+       RESIZE
+       ===================================================== */
+
+    setupResize(
+
+        renderer,
+
+        particleContainer
+
+    );
+
+}
+
+
+/* =========================================================
+   DÉMARRAGE
+   ========================================================= */
+
+if (particleContainer) {
+
+    initializeParticlePortrait(
+        particleContainer
+    );
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ==========================
+   APPARITION CMD — __>
+   ========================== */
+
+function appearCMDArrow(element) {
+
+    if (!element) return;
+
+    const text = '__>';
+
+    element.innerHTML = '';
+    element.style.opacity = '1';
+
+    const spans = [];
+
+    /* ==========================
+       CRÉATION DES LETTRES
+       ========================== */
+
+    text.split('').forEach(char => {
+
+        const span =
+            document.createElement('span');
+
+        span.textContent =
+            char;
+
+        span.style.color =
+            'transparent';
+
+        span.style.backgroundColor =
+            'transparent';
+
+        element.appendChild(span);
+
+        spans.push(span);
+
+    });
+
+
+    /* ==========================
+       APPARITION CMD
+       ========================== */
+
+    spans.forEach((span, i) => {
+
+        const delay =
+            i * 30;
+
+
+        /* Passage blanc */
+
+        setTimeout(() => {
+
+            span.style.color =
+                '#050505';
+
+            span.style.backgroundColor =
+                '#666666';
+
+        }, delay);
+
+
+        /* État final */
+
+        setTimeout(() => {
+
+            span.style.color =
+                '#666666';
+
+            span.style.backgroundColor =
+                'transparent';
+
+        }, delay + 10);
+
+    });
+
+}
+
+
+/* ==========================
+   DISPARITION CMD — __>
+   ========================== */
+
+function disappearCMDArrow(element) {
+
+    if (!element) return;
+
+    const spans =
+        element.querySelectorAll('span');
+
+
+    /* ==========================
+       DISPARITION CMD
+       ========================== */
+
+    [...spans].reverse().forEach((span, i) => {
+
+        const delay =
+            i * 30;
+
+
+        /* Passage gris */
+
+        setTimeout(() => {
+
+            span.style.color =
+                '#050505';
+
+            span.style.backgroundColor =
+                '#666666';
+
+        }, delay);
+
+
+        /* État final */
+
+        setTimeout(() => {
+
+            span.style.color =
+                'transparent';
+
+            span.style.backgroundColor =
+                'transparent';
+
+        }, delay + 10);
+
+    });
+
+}
+
 
 
 
@@ -1155,14 +2419,7 @@ function initMobileParagraphs() {
     seeMore.className =
         'see-more';
 
-    seeMore.innerHTML =
-        '__>';
-
-    seeMore.style.color =
-        '#666666';
-
-    seeMore.style.opacity =
-        '1';
+    appearCMDArrow(seeMore);
 
     seeMore.style.fontSize =
         '1rem'; // ← change la taille ici
@@ -2421,441 +3678,6 @@ function initMobileParagraphs() {
 
     
 }
-
-
-
-
-
-const leaveEffectTimersLinks = new WeakMap();
-
-function appearLinks() {
-  const links = document.querySelectorAll('.icon-link');
-
-  links.forEach((el, index) => {
-    const text = el.textContent;
-    el.textContent = '';
-
-    // Création des spans
-    const letters = text.split('');
-    letters.forEach(letter => {
-      const span = document.createElement('span');
-      span.textContent = letter;
-      el.appendChild(span);
-    });
-
-    let timeouts = [];
-    el.isAppeared = true;
-
-    function playCmdEffect(delayStart = 0, colorNormal = '#000000', colorAfter = '#808080') {
-      timeouts.forEach(t => clearTimeout(t));
-      timeouts = [];
-
-      const spans = el.querySelectorAll('span');
-      spans.forEach((span, i) => {
-        const timeout1 = setTimeout(() => {
-          span.style.color = colorNormal;
-          span.style.backgroundColor = 'white';
-        }, delayStart + i * 30);
-        timeouts.push(timeout1);
-
-        const timeout2 = setTimeout(() => {
-          span.style.color = colorAfter;
-          span.style.backgroundColor = 'transparent';
-        }, delayStart + i * 30 + 10);
-        timeouts.push(timeout2);
-      });
-    }
-
-    // Apparition initiale pour tous les liens
-    playCmdEffect(300);
-    el.style.pointerEvents = 'auto';
-
-    // Hover
-    el.addEventListener('mouseenter', () => {
-      playCmdEffect(0, '#000000', '#b8b8b8');
-    });
-
-    // Leave
-    el.addEventListener('mouseleave', () => {
-      timeouts.forEach(t => clearTimeout(t));
-      timeouts = [];
-
-      const spans = el.querySelectorAll('span');
-      const lastIndex = spans.length - 1;
-
-      spans.forEach((span, i) => {
-        const delay = (lastIndex - i) * 30;
-
-        const timeout1 = setTimeout(() => {
-          span.style.color = '#000000';
-          span.style.backgroundColor = '#808080';
-        }, delay);
-        timeouts.push(timeout1);
-
-        const timeout2 = setTimeout(() => {
-          span.style.color = '#808080';
-          span.style.backgroundColor = 'transparent';
-        }, delay + 20);
-        timeouts.push(timeout2);
-      });
-    });
-
-    // Dans ta fonction qui gère l'apparition des liens
-    el.addEventListener('click', (e) => {
-      e.preventDefault(); // Empêche ouverture immédiate
-      const linkUrl = el.getAttribute('href');
-
-      const spans = el.querySelectorAll('span');
-
-      spans.forEach((span, i) => {
-        setTimeout(() => {
-          span.style.backgroundColor = 'white'; // Fond blanc visible
-          span.style.color = '#000000'; // Noir pendant le balayage
-        }, i * 40);
-
-        setTimeout(() => {
-          span.style.backgroundColor = 'transparent'; // Enlève le fond
-          span.style.color = '#ffffffff'; // Reste noir après
-        }, i * 40 + 20);
-      });
-
-      // Durée totale avant ouverture du lien
-      const totalTime = spans.length * 40 + 200;
-      setTimeout(() => {
-        window.location.href = linkUrl;
-      }, totalTime);
-    });
-
-  });
-}
-
-function leaveEffectLinks() {
-  const links = document.querySelectorAll('.icon-link');
-  if (!links.length) return;
-
-  links.forEach(el => {
-    if (!el.isAppeared) return;
-
-    const timers = leaveEffectTimersLinks.get(el) || [];
-    timers.forEach(t => clearTimeout(t));
-    leaveEffectTimersLinks.set(el, []);
-
-    const spans = el.querySelectorAll('span');
-    if (!spans.length) return;
-
-    spans.forEach(span => {
-      span.style.color = '#808080';
-      span.style.backgroundColor = 'transparent';
-      span.style.opacity = '1';
-    });
-
-    const lastIndex = spans.length - 1;
-    spans.forEach((span, i) => {
-      const delay = (lastIndex - i) * 30;
-
-      const t1 = setTimeout(() => {
-        span.style.color = '#000000';
-        span.style.backgroundColor = 'white';
-        span.style.opacity = '1';
-      }, delay);
-      leaveEffectTimersLinks.get(el).push(t1);
-
-      const t2 = setTimeout(() => {
-        span.style.opacity = '0';
-        span.style.color = '#000000';
-        span.style.backgroundColor = 'transparent';
-      }, delay + 20);
-      leaveEffectTimersLinks.get(el).push(t2);
-    });
-
-    const totalTime = (lastIndex + 1) * 30 + 20;
-    setTimeout(() => {
-      el.style.pointerEvents = 'none';
-    }, totalTime);
-
-    el.isAppeared = false;
-  });
-}
-
-
-
-
-
-
-
-
-
-
-
-
-/* ===========================
-   NAVIGATION STYLE "CMD"
-   =========================== */
-
-function enhanceNavLinks() {
-  const links = document.querySelectorAll('.nav');
-
-  links.forEach(el => {
-    const text = el.textContent.trim();
-    el.textContent = '';
-
-    // Création des spans lettre par lettre
-    const letters = text.split('');
-    letters.forEach(letter => {
-      const span = document.createElement('span');
-      span.textContent = letter;
-      span.style.color = "#808080"; // gris par défaut
-      el.appendChild(span);
-    });
-
-    let timeouts = [];
-
-    /* ============ HOVER CMD ============ */
-    el.addEventListener('mouseenter', () => {
-      if (el.classList.contains("active-page")) return;
-
-      const spans = el.querySelectorAll("span");
-      timeouts.forEach(t => clearTimeout(t));
-      timeouts = [];
-
-      spans.forEach((span, i) => {
-        const t1 = setTimeout(() => {
-          span.style.color = "#000000";
-          span.style.backgroundColor = "#FF0000";
-        }, i * 30);
-        timeouts.push(t1);
-
-        const t2 = setTimeout(() => {
-          span.style.color = "#808080";
-          span.style.backgroundColor = "#FF0000";
-        }, i * 30 + 20);
-        timeouts.push(t2);
-
-        const t3 = setTimeout(() => {
-          span.style.color = "#000000";
-          span.style.backgroundColor = "#FF0000";
-        }, i * 30 + 30);
-        timeouts.push(t3);
-      });
-    });
-
-    /* ============ LEAVE CMD ============ */
-    el.addEventListener('mouseleave', () => {
-      if (el.classList.contains("active-page")) return;
-
-      const spans = el.querySelectorAll("span");
-      timeouts.forEach(t => clearTimeout(t));
-      timeouts = [];
-
-      const last = spans.length - 1;
-
-      spans.forEach((span, i) => {
-        const delay = (last - i) * 30;
-
-        const t1 = setTimeout(() => {
-          span.style.color = "#000000";
-          span.style.backgroundColor = "#FF0000";
-        }, delay);
-        timeouts.push(t1);
-
-        const t2 = setTimeout(() => {
-          span.style.color = "#808080";
-          span.style.backgroundColor = "transparent";
-        }, delay + 20);
-        timeouts.push(t2);
-      });
-    });
-
-    /* ============ CLICK (avec leaveEffect) ============ */
-    el.addEventListener('click', async e => {
-      e.preventDefault();
-      if (el.classList.contains("active-page")) return;
-
-      const linkUrl = el.getAttribute('href');
-      const oldActive = document.querySelector(".active-page");
-
-      // Animation leave sur l'ancien menu actif
-      if (oldActive && oldActive !== el) animateOldActiveLeave(oldActive);
-      if (oldActive) oldActive.classList.remove("active-page");
-
-      // Toutes les animations de disparition
-      await leaveAllEffects();
-
-      // Redirection après animations
-      if (linkUrl === "#home") window.location.href = "index.html";
-      if (linkUrl === "#about") window.location.href = "Profile.html";
-      if (linkUrl === "#track") window.location.href = "Achievements.html";
-    });
-  });
-
-  /* ============================================================
-     FONCTION : Leave CMD de l'ancien menu actif
-     ============================================================ */
-  function animateOldActiveLeave(link) {
-    const spans = link.querySelectorAll("span");
-    const last = spans.length - 1;
-
-    spans.forEach((span, i) => {
-      const delay = (last - i) * 30;
-
-      setTimeout(() => {
-        span.style.backgroundColor = "white";
-        span.style.color = "#000000";
-      }, delay);
-
-      setTimeout(() => {
-        span.style.backgroundColor = "transparent";
-        span.style.color = "#808080";
-      }, delay + 20);
-    });
-  }
-
-  /* ============================================================
-     ACTIVER LE MENU ACTIF (page courante)
-     ============================================================ */
-  function activateMenu(href) {
-    const link = document.querySelector(`.nav[href="${href}"]`);
-    if (!link) return;
-
-    link.classList.add("active-page");
-
-    const spans = link.querySelectorAll("span");
-    spans.forEach((span, i) => {
-      setTimeout(() => {
-        span.style.backgroundColor = "#FF0000";
-        span.style.color = "#000000";
-      }, i * 35);
-
-      setTimeout(() => {
-        span.style.backgroundColor = "transparent";
-        span.style.color = "#FF0000";
-      }, i * 35 + 20);
-    });
-  }
-
-  const page = window.location.pathname;
-  if (page.includes("index.html")) activateMenu("#home");
-  if (page.includes("Profile.html")) activateMenu("#about");
-  if (page.includes("Achievements.html")) activateMenu("#track");
-}
-
-/* ============================================================
-   PROMISE POUR LES ANIMATIONS DE DISPARITION
-   ============================================================ */
-
-
-async function leaveAllEffects() {
-
-    leaveEffectPara();
-
-    leaveProfileTitleFirstTwo();
-    leaveProfileTitleLastTwo();
-    leaveEffectTitled();
-    animateOldActiveLeaveWheel();
-
-    if (window.leaveParticlePortrait) {
-        await window.leaveParticlePortrait();
-    }
-
-    // Attendre que les autres animations de sortie terminent
-    await new Promise(resolve => {
-        setTimeout(resolve, 1000);
-    });
-
-}
-
-
-
-window.addEventListener("DOMContentLoaded", enhanceNavLinks);
-
-
-
-
-
-/* =========================
-   Animate old active link for wheel scroll
-   ========================= */
-function animateOldActiveLeaveWheel() {
-  const oldActive = document.querySelector(".active-page");
-  if (!oldActive) return;
-
-  const spans = oldActive.querySelectorAll("span");
-  const last = spans.length - 1;
-
-  spans.forEach((span, i) => {
-    const delay = (last - i) * 30;
-
-    setTimeout(() => {
-      span.style.backgroundColor = "#FF0000";
-      span.style.color = "#000000";
-    }, delay);
-
-    setTimeout(() => {
-      span.style.backgroundColor = "transparent";
-      span.style.color = "#808080";
-    }, delay + 20);
-  });
-
-  // Retirer la classe active après l'animation
-  setTimeout(() => {
-    oldActive.classList.remove("active-page");
-  }, (last + 1) * 30 + 20);
-}
-
-
-
-
-
-
-
-
-
-
-
-window.addEventListener("DOMContentLoaded", () => {
-
-  let scrollCooldown = false;
-  let startY = 0; // position initiale du doigt sur mobile
-
-  async function handleScroll(direction) {
-    if (scrollCooldown) return;
-    scrollCooldown = true;
-
-    // Lancer toutes les animations de leave
-    await leaveAllEffects();
-
-    // Redirection selon la direction
-    if (direction === "down") {
-      window.location.href = "Achievements.html"; // scroll vers le bas
-    } else if (direction === "up") {
-      window.location.href = "index.html"; // scroll vers le haut
-    }
-  }
-
-  // === Desktop : molette ===
-  window.addEventListener('wheel', e => {
-    const direction = e.deltaY > 0 ? "down" : "up";
-    handleScroll(direction);
-  });
-
-  // === Mobile : swipe ===
-  window.addEventListener('touchstart', e => {
-    startY = e.touches[0].clientY;
-  });
-
-  window.addEventListener('touchend', e => {
-    const endY = e.changedTouches[0].clientY;
-    const diff = startY - endY;
-
-    if (Math.abs(diff) > 50) { // seuil pour éviter les petits gestes accidentels
-      const direction = diff > 0 ? "down" : "up"; // swipe vers le haut = down, vers le bas = up
-      handleScroll(direction);
-    }
-  });
-
-});
-
-
 
 
 
