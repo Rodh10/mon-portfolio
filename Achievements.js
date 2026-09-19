@@ -1950,7 +1950,7 @@ function createSquares(
                 Math.random() * 500;
 
             square.userData.autoBorder = false;
-
+            square.userData.autoWhite = false;
             /* ==========================
                 AJOUT DE LA SCÈNE
             ========================== */
@@ -2378,8 +2378,10 @@ function updateReaction(
             BLINK BLANC
         ========================== */
 
-        if (hovering) {
-
+        if (
+            hovering ||
+            square.userData.autoWhite
+        ) {
 
             overlay.userData.nextBlink -= 16;
 
@@ -2641,7 +2643,7 @@ function updateAutoReaction(
     squares.forEach((square) => {
 
         square.userData.autoBorder = true;
-
+        square.userData.autoWhite = true;
         const originalX =
             square.userData.originalX;
 
@@ -2802,6 +2804,143 @@ function updateAutoReaction(
                     square.position.y
                 )
             );
+
+
+
+
+
+
+
+
+        /* ==========================
+            BLINK BLANC AUTOMATIQUE
+        ========================== */
+
+        const overlay =
+            square.userData.overlay;
+
+        const blinkValues = [
+            1,
+            0.75,
+            0.5,
+            0.25,
+            0
+        ];
+
+        const blinkChance = 0.007;
+
+        const blinkDurationMin = 1000;
+        const blinkDurationMax = 4000;
+
+
+        overlay.userData.nextBlink -= 16;
+
+
+        if (
+            overlay.userData.nextBlink <= 0 &&
+            !overlay.userData.blinking
+        ) {
+
+            if (
+                Math.random() <
+                blinkChance
+            ) {
+
+                const randomIndex =
+                    Math.floor(
+                        Math.random() *
+                        blinkValues.length
+                    );
+
+
+                overlay.userData.targetOpacity =
+                    blinkValues[randomIndex];
+
+
+                overlay.userData.blinking =
+                    true;
+
+
+                overlay.userData.blinkTimer =
+                    blinkDurationMin +
+                    Math.random() *
+                    (
+                        blinkDurationMax -
+                        blinkDurationMin
+                    );
+
+
+            } else {
+
+                overlay.userData.nextBlink =
+                    100 +
+                    Math.random() * 300;
+
+            }
+
+        }
+
+
+        /* ==========================
+            FIN BLINK BLANC
+        ========================== */
+
+        if (
+            overlay.userData.blinking
+        ) {
+
+            overlay.userData.blinkTimer -= 16;
+
+
+            if (
+                overlay.userData.blinkTimer <= 0
+            ) {
+
+                overlay.userData.blinking =
+                    false;
+
+                overlay.userData.targetOpacity =
+                    0;
+
+                overlay.userData.nextBlink =
+                    100 +
+                    Math.random() * 300;
+
+            }
+
+        }
+
+
+        /* ==========================
+            ANIMATION OPACITÉ
+        ========================== */
+
+        overlay.material.opacity +=
+            (
+                overlay.userData.targetOpacity -
+                overlay.material.opacity
+            ) * 0.25;
+
+
+        /* ==========================
+            POSITION + TAILLE OVERLAY
+        ========================== */
+
+        overlay.position.x =
+            square.position.x;
+
+        overlay.position.y =
+            square.position.y;
+
+        overlay.scale.x =
+            square.scale.x;
+
+        overlay.scale.y =
+            square.scale.y;
+
+
+
+
 
 
 
