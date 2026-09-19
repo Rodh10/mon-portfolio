@@ -1447,8 +1447,6 @@ blokys.forEach((blok, index) => {
 
 
 
-
-
 showAllBlokCMD();
 startAnimationSequence();
 appearLinks();
@@ -1614,7 +1612,97 @@ function startMobileLoop() {
             ATTENDRE 5 SECONDES
         ========================== */
 
+        /* ==========================
+            ATTENDRE AVEC RÉACTION
+        ========================== */
+
+        let autoReactionActive = false;
+
+        let autoReactionX = 0;
+        let autoReactionY = 0;
+
+
+        /* ==========================
+            DÉPLACEMENT AUTOMATIQUE
+        ========================== */
+
+        const reactionTimer =
+            setInterval(() => {
+
+                if (!autoReactionActive) {
+                    return;
+                }
+
+
+                updateAutoReaction(
+                    squares,
+                    2 / columns,
+                    2 / rows,
+                    autoReactionX,
+                    autoReactionY
+                );
+
+            }, 16);
+
+
+        /* ==========================
+            ACTIVER LA RÉACTION
+        ========================== */
+
         setTimeout(() => {
+
+            autoReactionActive = true;
+
+
+            /* ==========================
+                POSITION ALÉATOIRE
+            ========================== */
+
+            autoReactionX =
+                -0.8 +
+                Math.random() * 1.6;
+
+            autoReactionY =
+                -0.8 +
+                Math.random() * 1.6;
+
+
+        }, 3000);
+
+
+        /* ==========================
+            CHANGER DE POSITION
+        ========================== */
+
+        const reactionMoveTimer =
+            setInterval(() => {
+
+                if (!autoReactionActive) {
+                    return;
+                }
+
+
+                autoReactionX =
+                    -0.8 +
+                    Math.random() * 1.6;
+
+                autoReactionY =
+                    -0.8 +
+                    Math.random() * 1.6;
+
+            }, 2500);
+
+
+        /* ==========================
+            DISPARITION APRÈS 20 SEC
+        ========================== */
+
+        setTimeout(() => {
+
+            autoReactionActive = false;
+
+            clearInterval(reactionTimer);
+            clearInterval(reactionMoveTimer);
 
 
             /* ==========================
@@ -1630,18 +1718,11 @@ function startMobileLoop() {
 
             setTimeout(() => {
 
-
-                /* ==========================
-                    BOX SUIVANTE
-                ========================== */
-
                 currentIndex =
                     (currentIndex + 1) %
                     mobileBoxes.length;
 
-
                 showNextBox();
-
 
             }, 1500);
 
@@ -2532,6 +2613,194 @@ function updateReaction(
     });
 
 }
+
+
+
+/* ==========================
+    RÉACTION AUTOMATIQUE
+========================== */
+
+function updateAutoReaction(
+    squares,
+    cellWidth,
+    cellHeight,
+    activeX,
+    activeY
+) {
+
+    const radius = 2;
+    const force = 0.30;
+    const returnSpeed = 0.12;
+
+
+    squares.forEach((square) => {
+
+        const originalX =
+            square.userData.originalX;
+
+        const originalY =
+            square.userData.originalY;
+
+
+        const dx =
+            square.position.x -
+            activeX;
+
+        const dy =
+            square.position.y -
+            activeY;
+
+
+        const distance =
+            Math.sqrt(
+                dx * dx +
+                dy * dy
+            );
+
+
+        /* ==========================
+            RÉACTION
+        ========================== */
+
+        if (distance < radius) {
+
+            const influence =
+                1 -
+                distance / radius;
+
+
+            const angle =
+                Math.atan2(
+                    dy,
+                    dx
+                );
+
+
+            const push =
+                influence * force;
+
+
+            const targetX =
+                originalX +
+                Math.cos(angle) * push;
+
+
+            const targetY =
+                originalY +
+                Math.sin(angle) * push;
+
+
+            square.position.x +=
+                (
+                    targetX -
+                    square.position.x
+                ) * 0.35;
+
+
+            square.position.y +=
+                (
+                    targetY -
+                    square.position.y
+                ) * 0.35;
+
+
+            /* ==========================
+                TAILLE
+            ========================== */
+
+            const scale =
+                1 +
+                influence *
+                square.userData.randomSize *
+                0.35;
+
+
+            square.scale.x +=
+                (
+                    scale -
+                    square.scale.x
+                ) * 0.3;
+
+
+            square.scale.y +=
+                (
+                    scale -
+                    square.scale.y
+                ) * 0.3;
+
+
+        } else {
+
+
+            /* ==========================
+                RETOUR
+            ========================== */
+
+            square.position.x +=
+                (
+                    originalX -
+                    square.position.x
+                ) * returnSpeed;
+
+
+            square.position.y +=
+                (
+                    originalY -
+                    square.position.y
+                ) * returnSpeed;
+
+
+            square.scale.x +=
+                (
+                    1 -
+                    square.scale.x
+                ) * returnSpeed;
+
+
+            square.scale.y +=
+                (
+                    1 -
+                    square.scale.y
+                ) * returnSpeed;
+
+        }
+
+
+        /* ==========================
+            LIMITES
+        ========================== */
+
+        const halfWidth =
+            (cellWidth - gap) / 2;
+
+        const halfHeight =
+            (cellHeight - gap) / 2;
+
+
+        square.position.x =
+            Math.max(
+                -1 + halfWidth,
+                Math.min(
+                    1 - halfWidth,
+                    square.position.x
+                )
+            );
+
+
+        square.position.y =
+            Math.max(
+                -1 + halfHeight,
+                Math.min(
+                    1 - halfHeight,
+                    square.position.y
+                )
+            );
+
+    });
+
+}
+
+
 
 
 /* ==========================
