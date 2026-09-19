@@ -783,6 +783,54 @@ function drawImageToCanvas(
 
         );
 
+
+    /* =====================================================
+       RECADRAGE ÉCRANS ≤ 1000px
+       ===================================================== */
+
+    } else if (
+        window.innerWidth >= 768 &&
+        window.innerWidth <= 1200 &&
+        window.innerHeight >= 1000
+    ) {
+        const sourceY =
+            image.height / 3;
+
+
+        const sourceHeight =
+            image.height / 5;
+
+
+        const croppedRatio =
+            image.width /
+            sourceHeight;
+
+        const imageX = 20;
+        const imageY = 80;
+
+
+        imageWidth =
+            rows *
+            croppedRatio 
+
+
+        ctx.drawImage(
+
+            image,
+
+            0,
+            sourceY,
+            image.width,
+            sourceHeight,
+
+            imageX,
+            imageY,
+            imageWidth * 1,
+            rows * 0.4
+
+        );
+
+
     } else {
 
         ctx.drawImage(
@@ -800,6 +848,9 @@ function drawImageToCanvas(
     }
 
 }
+
+
+
 
 
 /* =========================================================

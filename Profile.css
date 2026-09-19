@@ -227,7 +227,7 @@ html, body {
 @media (max-width: 600px) {
 
   .para {
-    margin-top: -120%;
+    margin-top: -130%;
     position: relative;
     opacity: 1;
     z-index: 5;
@@ -264,12 +264,6 @@ html, body {
   position: fixed;  
 }
 
-/* Tablette */
-@media (max-width: 900px) {
-  .profiletitle {
-    top: 57%;
-  }
-}
 
 /* Mobile */
 @media (max-width: 600px) {
@@ -328,7 +322,7 @@ html, body {
 
 .skills5 {
   font-size: 2rem;
-  margin-left: 34%;
+  margin-left: 0%;
   margin-top: 7.5%;
   line-height: 1.1;
   z-index: 1000;
@@ -337,9 +331,11 @@ html, body {
 }
 
 /* Tablette */
-@media (max-width: 900px) {
+@media (max-width: 1000px) {
   .skills5 {
     font-size: 1.7rem;
+    margin-left: 20%;
+    margin-top: -100%;
   }
 }
 
