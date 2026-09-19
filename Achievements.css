@@ -165,6 +165,10 @@ html, body {
         left: 110px;
     }
 
+    .box img {
+        pointer-events: none;
+    }
+
 
 }
 

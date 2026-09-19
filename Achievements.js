@@ -1949,6 +1949,7 @@ function createSquares(
             square.userData.borderNextBlink =
                 Math.random() * 500;
 
+            square.userData.autoBorder = false;
 
             /* ==========================
                 AJOUT DE LA SCÈNE
@@ -2094,6 +2095,10 @@ function updateReaction(
     const returnSpeed = 0.12;
 
 
+    const borderChance = 0.013;
+    const borderDurationMin = 1000;
+    const borderDurationMax = 4000;
+
     const blinkValues = [
         1,
         0.75,
@@ -2108,9 +2113,7 @@ function updateReaction(
     const blinkDurationMax = 4000;
 
 
-    const borderChance = 0.013;
-    const borderDurationMin = 1000;
-    const borderDurationMax = 4000;
+
 
 
     squares.forEach((square) => {
@@ -2478,8 +2481,10 @@ function updateReaction(
             BLINK BORDURE
         ========================== */
 
-        if (hovering) {
-
+        if (
+            hovering ||
+            square.userData.autoBorder
+        ) {
 
             square.userData.borderNextBlink -= 16;
 
@@ -2634,6 +2639,8 @@ function updateAutoReaction(
 
 
     squares.forEach((square) => {
+
+        square.userData.autoBorder = true;
 
         const originalX =
             square.userData.originalX;
@@ -2795,6 +2802,105 @@ function updateAutoReaction(
                     square.position.y
                 )
             );
+
+
+
+        /* ==========================
+            BLINK BORDURE AUTOMATIQUE
+        ========================== */
+
+        const border =
+            square.userData.border;
+
+
+        square.userData.borderNextBlink -= 16;
+
+
+        if (
+            square.userData.borderNextBlink <= 0 &&
+            !square.userData.borderBlinking
+        ) {
+
+
+            if (
+                Math.random() <
+                borderChance
+            ) {
+
+                square.userData.borderBlinking =
+                    true;
+
+
+                square.userData.borderTimer =
+                    borderDurationMin +
+                    Math.random() *
+                    (
+                        borderDurationMax -
+                        borderDurationMin
+                    );
+
+
+                border.visible = true;
+
+
+            } else {
+
+
+                square.userData.borderNextBlink =
+                    100 +
+                    Math.random() * 500;
+
+            }
+
+        }
+
+
+        /* ==========================
+            FIN BORDURE
+        ========================== */
+
+        if (
+            square.userData.borderBlinking
+        ) {
+
+            square.userData.borderTimer -= 16;
+
+
+            if (
+                square.userData.borderTimer <= 0
+            ) {
+
+                square.userData.borderBlinking =
+                    false;
+
+                border.visible = false;
+
+                square.userData.borderNextBlink =
+                    100 +
+                    Math.random() * 500;
+
+            }
+
+        }
+
+
+        /* ==========================
+            POSITION + TAILLE BORDURE
+        ========================== */
+
+        border.position.x =
+            square.position.x;
+
+        border.position.y =
+            square.position.y;
+
+        border.scale.x =
+            square.scale.x;
+
+        border.scale.y =
+            square.scale.y;
+
+
 
     });
 
