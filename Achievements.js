@@ -435,16 +435,25 @@ window.addEventListener("DOMContentLoaded", () => {
   let scrollCooldown = false;
   let startY = 0; // position initiale du doigt sur mobile
 
-  async function handleScrollUp() {
+    async function handleScrollUp() {
     if (scrollCooldown) return;
     scrollCooldown = true;
 
-    // Lancer toutes les animations de leave
+    // Lancer l'animation de disparition du dashboard mobile
+    const mobileLeavePromise =
+        window.innerWidth <= 600 && window.leaveMobilePage
+        ? window.leaveMobilePage()
+        : Promise.resolve();
+
+    // Lancer les autres animations de leave
     await leaveAllEffects();
+
+    // Attendre la fin de la disparition du dashboard mobile
+    await mobileLeavePromise;
 
     // Redirection vers la page précédente
     window.location.href = "Profile.html";
-  }
+    }
 
   // === Desktop : molette ===
   window.addEventListener('wheel', async (e) => {
@@ -1566,7 +1575,7 @@ function startMobileLoop() {
     let currentIndex = 0;
 
     let isTransitioning = false;
-
+    let isLeaving = false;
 
     /* ==========================
         TOUCH
@@ -1654,6 +1663,89 @@ function startMobileLoop() {
         }
 
     }
+
+
+
+    /* ==========================
+        QUITTER LA PAGE
+    ========================== */
+
+    function leaveMobilePage() {
+
+        if (isLeaving) {
+            return Promise.resolve();
+        }
+
+
+        isLeaving = true;
+
+
+        /* ==========================
+            NETTOYER LES TIMERS
+        ========================== */
+
+        clearMobileTimers();
+
+
+        /* ==========================
+            IMAGE ACTUELLE
+        ========================== */
+
+        const currentBox =
+            mobileBoxes[currentIndex];
+
+
+        const currentCanvas =
+            currentBox.querySelector(
+                '.particle-canvas'
+            );
+
+
+        const currentSquares =
+            currentCanvas.userData.squares;
+
+
+        /* ==========================
+            DÉSACTIVER LES EFFETS
+        ========================== */
+
+        currentSquares.forEach((square) => {
+
+            square.userData.autoBorder = false;
+
+            square.userData.autoWhite = false;
+
+        });
+
+
+        /* ==========================
+            DISPARITION
+        ========================== */
+
+        startDisappearance(
+            currentSquares
+        );
+
+
+        /* ==========================
+            ATTENDRE LA FIN
+        ========================== */
+
+        return new Promise((resolve) => {
+
+            setTimeout(() => {
+
+                resolve();
+
+            }, 1500);
+
+        });
+
+    }
+
+
+    window.leaveMobilePage =
+        leaveMobilePage;
 
 
     /* ==========================

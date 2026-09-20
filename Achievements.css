@@ -154,7 +154,9 @@ html, body {
 
 
 .box img {
-    display: none;
+  
+    opacity: 0;
+
 }
 
 
