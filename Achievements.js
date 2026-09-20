@@ -436,23 +436,27 @@ window.addEventListener("DOMContentLoaded", () => {
   let startY = 0; // position initiale du doigt sur mobile
 
     async function handleScrollUp() {
-    if (scrollCooldown) return;
-    scrollCooldown = true;
+        if (scrollCooldown) return;
+        scrollCooldown = true;
 
-    // Lancer l'animation de disparition du dashboard mobile
-    const mobileLeavePromise =
-        window.innerWidth <= 600 && window.leaveMobilePage
-        ? window.leaveMobilePage()
-        : Promise.resolve();
+        const mobileLeavePromise =
+            window.innerWidth <= 600 && window.leaveMobilePage
+                ? window.leaveMobilePage()
+                : Promise.resolve();
 
-    // Lancer les autres animations de leave
-    await leaveAllEffects();
+        const desktopLeavePromise =
+            window.innerWidth > 600 && window.leaveDesktopPage
+                ? window.leaveDesktopPage()
+                : Promise.resolve();
 
-    // Attendre la fin de la disparition du dashboard mobile
-    await mobileLeavePromise;
+        await leaveAllEffects();
 
-    // Redirection vers la page précédente
-    window.location.href = "Profile.html";
+        await Promise.all([
+            mobileLeavePromise,
+            desktopLeavePromise
+        ]);
+
+        window.location.href = "Profile.html";
     }
 
   // === Desktop : molette ===
@@ -1555,6 +1559,48 @@ function startDisappearance(squares) {
     });
 
 }
+
+
+function leaveDesktopPage() {
+
+    if (window.innerWidth <= 600) {
+        return Promise.resolve();
+    }
+
+    boxes.forEach((box) => {
+
+        const canvas =
+            box.querySelector('.particle-canvas');
+
+        if (!canvas || !canvas.userData?.squares) {
+            return;
+        }
+
+        const squares =
+            canvas.userData.squares;
+
+        squares.forEach((square) => {
+
+            square.userData.autoBorder = false;
+            square.userData.autoWhite = false;
+
+        });
+
+        startDisappearance(squares);
+
+    });
+
+    return new Promise((resolve) => {
+
+        setTimeout(() => {
+            resolve();
+        }, 1500);
+
+    });
+
+}
+
+window.leaveDesktopPage = leaveDesktopPage;
 
 
 /* ==========================
