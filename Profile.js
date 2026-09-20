@@ -722,7 +722,6 @@ function createImageCanvas() {
 
 }
 
-
 /* =========================================================
    REDIMENSIONNER L'IMAGE
    ========================================================= */
@@ -743,115 +742,70 @@ function drawImageToCanvas(
 
 
     /* =====================================================
-       RECADRAGE MOBILE
+       RECADRAGE
+       ===================================================== */
+
+    const sourceY =
+        image.height / 3;
+
+
+    const sourceHeight =
+        image.height / 5;
+
+
+    const croppedRatio =
+        image.width /
+        sourceHeight;
+
+
+    imageWidth =
+        rows *
+        croppedRatio *
+        0.2;
+
+
+    let imageX = 0;
+    let imageY = 0;
+
+
+    /* =====================================================
+       POSITION
        ===================================================== */
 
     if (window.innerWidth <= 600) {
 
-        const sourceY =
-            image.height / 3;
-
-
-        const sourceHeight =
-            image.height / 5;
-
-
-        const croppedRatio =
-            image.width /
-            sourceHeight;
-
-
-        imageWidth =
-            rows *
-            croppedRatio *
-            0.2;
-
-
-        ctx.drawImage(
-
-            image,
-
-            0,
-            sourceY,
-            image.width,
-            sourceHeight,
-
-            0,
-            0,
-            imageWidth,
-            rows * 0.2
-
-        );
-
-
-    /* =====================================================
-       RECADRAGE ÉCRANS ≤ 1000px
-       ===================================================== */
+        imageX = 0;
+        imageY = 0;
 
     } else if (
         window.innerWidth >= 768 &&
         window.innerWidth <= 1200 &&
         window.innerHeight >= 1000
     ) {
-        const sourceY =
-            image.height / 3;
 
-
-        const sourceHeight =
-            image.height / 5;
-
-
-        const croppedRatio =
-            image.width /
-            sourceHeight;
-
-        const imageX = 20;
-        const imageY = 80;
-
-
-        imageWidth =
-            rows *
-            croppedRatio 
-
-
-        ctx.drawImage(
-
-            image,
-
-            0,
-            sourceY,
-            image.width,
-            sourceHeight,
-
-            imageX,
-            imageY,
-            imageWidth * 1,
-            rows * 0.4
-
-        );
-
-
-    } else {
-
-        ctx.drawImage(
-
-            image,
-
-            0,
-            0,
-
-            imageWidth,
-            rows
-
-        );
+        imageX = 20;
+        imageY = 80;
 
     }
 
+
+    ctx.drawImage(
+
+        image,
+
+        0,
+        sourceY,
+        image.width,
+        sourceHeight,
+
+        imageX,
+        imageY,
+        imageWidth,
+        rows * 0.2
+
+    );
+
 }
-
-
-
-
 
 /* =========================================================
    LIRE LES PIXELS
@@ -919,10 +873,6 @@ function createParticles(imageData) {
                 imageData.data[index + 3];
 
 
-            /* =============================================
-               LUMINOSITÉ
-               ============================================= */
-
             const brightness =
                 (
                     red +
@@ -931,19 +881,10 @@ function createParticles(imageData) {
                 ) / 3;
 
 
-            /* =============================================
-               TRANSPARENCE
-               ============================================= */
-
             if (
                 alpha > 20
             ) {
 
-
-                /*
-                   Les pixels sombres
-                   deviennent moins présents.
-                */
 
                 if (
                     brightness < 80
@@ -954,14 +895,8 @@ function createParticles(imageData) {
                 }
 
 
-                const isMobile =
-                    window.innerWidth <= 600;
-
-
                 const scale =
-                    isMobile
-                        ? 1
-                        : 0.78;
+                    0.78;
 
 
                 const px =
@@ -969,11 +904,7 @@ function createParticles(imageData) {
                         x /
                         (columns - 1)
                     ) * 2 -
-                    (
-                        isMobile
-                            ? 1
-                            : 1.35
-                    );
+                    1.35;
 
 
                 const py =
@@ -981,11 +912,7 @@ function createParticles(imageData) {
                         y /
                         (rows - 1)
                     ) * 2 -
-                    (
-                        isMobile
-                            ? 0.8
-                            : 0.88
-                    );
+                    0.88;
 
 
                 particles.push(
@@ -1008,7 +935,6 @@ function createParticles(imageData) {
     return particles;
 
 }
-
 
 
 /* =========================================================
@@ -1309,6 +1235,81 @@ function setupMouse(
     );
 
 }
+
+
+function setupMobileAutoHover(
+    particleContainer,
+    mouse
+) {
+
+    if (window.innerWidth > 600) {
+        return;
+    }
+
+
+    let targetX = 0;
+    let targetY = 0;
+
+
+    function chooseTarget() {
+
+        targetX =
+            Math.random() * 1.6 -
+            0.8;
+
+
+        targetY =
+            Math.random() * 1.4 -
+            0.7;
+
+    }
+
+
+    chooseTarget();
+
+
+    setInterval(() => {
+
+        if (window.innerWidth <= 600) {
+
+            chooseTarget();
+
+        }
+
+    }, 1800);
+
+
+    function animateMobileHover() {
+
+        if (window.innerWidth <= 600) {
+
+            mouse.x +=
+                (
+                    targetX -
+                    mouse.x
+                ) * 0.04;
+
+
+            mouse.y +=
+                (
+                    targetY -
+                    mouse.y
+                ) * 0.04;
+
+        }
+
+
+        requestAnimationFrame(
+            animateMobileHover
+        );
+
+    }
+
+
+    animateMobileHover();
+
+}
+
 
 
 /* =========================================================
@@ -1856,6 +1857,13 @@ function setupParticlePortrait(
         mouse
     );
 
+    setupMobileAutoHover(
+        particleContainer,
+        mouse
+    );
+
+
+
 
     /* =====================================================
        MATERIAL
@@ -1948,110 +1956,6 @@ function updateParticlePortraitPosition(
     /*
        MOBILE
     */
-
-    if (window.innerWidth <= 600) {
-
-        /*
-           Le crop de l'image est :
-
-           sourceY =
-               image.height / 3
-
-           sourceHeight =
-               image.height / 5
-
-           Il est ensuite dessiné
-           sur une hauteur de :
-
-           rows * 0.2
-        */
-
-        const portraitHeight =
-            rows * 0.2;
-
-
-        /*
-           Dans createParticles(),
-           le système mobile utilise :
-
-           py =
-               (y / (rows - 1)) * 2
-               - 0.8
-
-           puis :
-
-           -py
-
-           Pour la dernière ligne
-           du crop :
-
-           y ≈ rows * 0.2
-
-           La position correspondante
-           dans le canvas est donc
-           calculée ici.
-        */
-
-        const lastY =
-            portraitHeight /
-            (rows - 1);
-
-
-        const portraitNDCY =
-            -(
-                lastY * 2 -
-                0.8
-            );
-
-
-        /*
-           Conversion NDC → écran
-
-           +1 = haut
-           -1 = bas
-        */
-
-        const portraitBottomRatio =
-            (
-                1 -
-                portraitNDCY
-            ) / 2;
-
-
-        const portraitBottom =
-            rect.top +
-            (
-                rect.height *
-                portraitBottomRatio
-            );
-
-
-        window.particlePortraitPosition = {
-
-            top:
-                rect.top,
-
-            bottom:
-                portraitBottom,
-
-            left:
-                rect.left,
-
-            right:
-                rect.right,
-
-            width:
-                rect.width,
-
-            height:
-                rect.height
-
-        };
-
-
-        return;
-
-    }
 
 
     /*
