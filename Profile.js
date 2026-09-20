@@ -765,7 +765,7 @@ function drawImageToCanvas(
 
 
     let imageX = 0;
-    let imageY = 0;
+    let imageY = 95;
 
 
     /* =====================================================
@@ -774,7 +774,7 @@ function drawImageToCanvas(
 
     if (window.innerWidth <= 600) {
 
-        imageX = 0;
+        imageX = 15;
         imageY = 0;
 
     } else if (
