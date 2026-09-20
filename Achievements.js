@@ -330,11 +330,22 @@ function enhanceNavLinks() {
 
       if (oldActive) oldActive.classList.remove("active-page");
 
-      // === NOUVEAU : appeler toutes les fonctions leaveEffect ===
-      await leaveAllEffects();
+// === DISPARITION DES PARTICULES ===
+const particleLeavePromise =
+  window.innerWidth <= 600 && window.leaveMobilePage
+    ? window.leaveMobilePage()
+    : window.innerWidth > 600 && window.leaveDesktopPage
+      ? window.leaveDesktopPage()
+      : Promise.resolve();
 
-      // Cooldown avant redirection
-      setTimeout(() => {
+// === AUTRES ANIMATIONS DE DISPARITION ===
+await Promise.all([
+  particleLeavePromise,
+  leaveAllEffects()
+]);
+
+// Cooldown avant redirection
+setTimeout(() => {
         if (linkUrl === "#home") window.location.href = "index.html";
         if (linkUrl === "#about") window.location.href = "Profile.html";
         if (linkUrl === "#track") window.location.href = "Achievements.html";
@@ -3162,7 +3173,9 @@ function updateAutoReaction(
     const radius = 2;
     const force = 0.30;
     const returnSpeed = 0.12;
-
+    const borderChance = 0.013;
+    const borderDurationMin = 1000;
+    const borderDurationMax = 4000;
 
     squares.forEach((square) => {
 
