@@ -1548,9 +1548,8 @@ function startDisappearance(squares) {
 }
 
 
-
 /* ==========================
-    BOUCLE MOBILE
+    BOUCLE MOBILE + SWIPE
 ========================== */
 
 function startMobileLoop() {
@@ -1566,8 +1565,205 @@ function startMobileLoop() {
 
     let currentIndex = 0;
 
+    let isTransitioning = false;
+
+
+    /* ==========================
+        TOUCH
+    ========================== */
+
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    const swipeThreshold = 50;
+
+
+    /* ==========================
+        TIMERS
+    ========================== */
+
+    let disappearanceTimeout = null;
+
+    let autoChangeTimeout = null;
+
+    let reactionTimer = null;
+
+    let reactionMoveTimer = null;
+
+    let autoReactionTimeout = null;
+
+
+    /* ==========================
+        NETTOYAGE DES TIMERS
+    ========================== */
+
+    function clearMobileTimers() {
+
+        if (disappearanceTimeout !== null) {
+
+            clearTimeout(
+                disappearanceTimeout
+            );
+
+            disappearanceTimeout = null;
+
+        }
+
+
+        if (autoChangeTimeout !== null) {
+
+            clearTimeout(
+                autoChangeTimeout
+            );
+
+            autoChangeTimeout = null;
+
+        }
+
+
+        if (autoReactionTimeout !== null) {
+
+            clearTimeout(
+                autoReactionTimeout
+            );
+
+            autoReactionTimeout = null;
+
+        }
+
+
+        if (reactionTimer !== null) {
+
+            clearInterval(
+                reactionTimer
+            );
+
+            reactionTimer = null;
+
+        }
+
+
+        if (reactionMoveTimer !== null) {
+
+            clearInterval(
+                reactionMoveTimer
+            );
+
+            reactionMoveTimer = null;
+
+        }
+
+    }
+
+
+    /* ==========================
+        CHANGER D'IMAGE
+    ========================== */
+
+    function changeImage(direction) {
+
+        if (isTransitioning) {
+            return;
+        }
+
+
+        isTransitioning = true;
+
+
+        /* ==========================
+            NETTOYER ANCIENS TIMERS
+        ========================== */
+
+        clearMobileTimers();
+
+
+        /* ==========================
+            IMAGE ACTUELLE
+        ========================== */
+
+        const currentBox =
+            mobileBoxes[currentIndex];
+
+
+        const currentCanvas =
+            currentBox.querySelector(
+                '.particle-canvas'
+            );
+
+
+        const currentSquares =
+            currentCanvas.userData.squares;
+
+
+        /* ==========================
+            DÉSACTIVER RÉACTION
+        ========================== */
+
+        currentSquares.forEach((square) => {
+
+            square.userData.autoBorder = false;
+
+            square.userData.autoWhite = false;
+
+        });
+
+
+        /* ==========================
+            DISPARITION
+        ========================== */
+
+        startDisappearance(
+            currentSquares
+        );
+
+
+        /* ==========================
+            ATTENDRE LA DISPARITION
+        ========================== */
+
+        disappearanceTimeout =
+            setTimeout(() => {
+
+                disappearanceTimeout = null;
+
+
+                /* ==========================
+                    NOUVEL INDEX
+                ========================== */
+
+                currentIndex =
+                    (
+                        currentIndex +
+                        direction +
+                        mobileBoxes.length
+                    ) %
+                    mobileBoxes.length;
+
+
+                /* ==========================
+                    NOUVELLE IMAGE ACTIVE
+                ========================== */
+
+                showNextBox();
+
+
+            }, 1500);
+
+    }
+
+
+    /* ==========================
+        AFFICHER IMAGE ACTIVE
+    ========================== */
 
     function showNextBox() {
+
+        /* ==========================
+            NETTOYER LES ANCIENS TIMERS
+        ========================== */
+
+        clearMobileTimers();
+
 
         /* ==========================
             CACHER TOUTES LES BOXES
@@ -1602,18 +1798,23 @@ function startMobileLoop() {
 
 
         /* ==========================
+            IMAGE MAINTENANT ACTIVE
+        ========================== */
+
+        isTransitioning = false;
+
+
+        /* ==========================
             APPARITION
         ========================== */
 
-        startAppearance(squares);
+        startAppearance(
+            squares
+        );
 
 
         /* ==========================
-            ATTENDRE 5 SECONDES
-        ========================== */
-
-        /* ==========================
-            ATTENDRE AVEC RÉACTION
+            RÉACTION AUTOMATIQUE
         ========================== */
 
         let autoReactionActive = false;
@@ -1626,7 +1827,7 @@ function startMobileLoop() {
             DÉPLACEMENT AUTOMATIQUE
         ========================== */
 
-        const reactionTimer =
+        reactionTimer =
             setInterval(() => {
 
                 if (!autoReactionActive) {
@@ -1649,32 +1850,41 @@ function startMobileLoop() {
             ACTIVER LA RÉACTION
         ========================== */
 
-        setTimeout(() => {
+        autoReactionTimeout =
+            setTimeout(() => {
 
-            autoReactionActive = true;
-
-
-            /* ==========================
-                POSITION ALÉATOIRE
-            ========================== */
-
-            autoReactionX =
-                -0.8 +
-                Math.random() * 1.6;
-
-            autoReactionY =
-                -0.8 +
-                Math.random() * 1.6;
+                autoReactionTimeout = null;
 
 
-        }, 3000);
+                if (isTransitioning) {
+                    return;
+                }
+
+
+                autoReactionActive = true;
+
+
+                /* ==========================
+                    POSITION ALÉATOIRE
+                ========================== */
+
+                autoReactionX =
+                    -0.8 +
+                    Math.random() * 1.6;
+
+                autoReactionY =
+                    -0.8 +
+                    Math.random() * 1.6;
+
+
+            }, 3000);
 
 
         /* ==========================
             CHANGER DE POSITION
         ========================== */
 
-        const reactionMoveTimer =
+        reactionMoveTimer =
             setInterval(() => {
 
                 if (!autoReactionActive) {
@@ -1694,48 +1904,224 @@ function startMobileLoop() {
 
 
         /* ==========================
-            DISPARITION APRÈS 20 SEC
+            CHANGEMENT AUTOMATIQUE
+            APRÈS 20 SEC
         ========================== */
 
-        setTimeout(() => {
-
-            autoReactionActive = false;
-
-            clearInterval(reactionTimer);
-            clearInterval(reactionMoveTimer);
-
-
-            /* ==========================
-                DISPARITION
-            ========================== */
-
-            startDisappearance(squares);
-
-
-            /* ==========================
-                ATTENDRE LA DISPARITION
-            ========================== */
-
+        autoChangeTimeout =
             setTimeout(() => {
 
-                currentIndex =
-                    (currentIndex + 1) %
-                    mobileBoxes.length;
-
-                showNextBox();
-
-            }, 1500);
+                autoChangeTimeout = null;
 
 
-        }, 20000);
+                if (isTransitioning) {
+                    return;
+                }
+
+
+                isTransitioning = true;
+
+
+                /* ==========================
+                    ARRÊTER RÉACTION
+                ========================== */
+
+                clearInterval(
+                    reactionTimer
+                );
+
+                reactionTimer = null;
+
+
+                clearInterval(
+                    reactionMoveTimer
+                );
+
+                reactionMoveTimer = null;
+
+
+                if (autoReactionTimeout !== null) {
+
+                    clearTimeout(
+                        autoReactionTimeout
+                    );
+
+                    autoReactionTimeout = null;
+
+                }
+
+
+                autoReactionActive = false;
+
+
+                /* ==========================
+                    DÉSACTIVER EFFETS AUTO
+                ========================== */
+
+                squares.forEach((square) => {
+
+                    square.userData.autoBorder = false;
+
+                    square.userData.autoWhite = false;
+
+                });
+
+
+                /* ==========================
+                    DISPARITION
+                ========================== */
+
+                startDisappearance(
+                    squares
+                );
+
+
+                /* ==========================
+                    ATTENDRE LA DISPARITION
+                ========================== */
+
+                disappearanceTimeout =
+                    setTimeout(() => {
+
+                        disappearanceTimeout = null;
+
+
+                        /* ==========================
+                            ORDRE NATUREL
+                        ========================== */
+
+                        currentIndex =
+                            (
+                                currentIndex + 1
+                            ) %
+                            mobileBoxes.length;
+
+
+                        /* ==========================
+                            NOUVELLE IMAGE ACTIVE
+                        ========================== */
+
+                        showNextBox();
+
+
+                    }, 1500);
+
+
+            }, 20000);
 
     }
 
 
+    /* ==========================
+        SWIPE START
+    ========================== */
+
+    function handleTouchStart(event) {
+
+        if (isTransitioning) {
+            return;
+        }
+
+
+        touchStartX =
+            event.touches[0].clientX;
+
+    }
+
+
+    /* ==========================
+        SWIPE END
+    ========================== */
+
+    function handleTouchEnd(event) {
+
+        if (isTransitioning) {
+            return;
+        }
+
+
+        touchEndX =
+            event.changedTouches[0].clientX;
+
+
+        const distance =
+            touchEndX -
+            touchStartX;
+
+
+        /* ==========================
+            PAS ASSEZ LONG
+        ========================== */
+
+        if (
+            Math.abs(distance) <
+            swipeThreshold
+        ) {
+
+            return;
+
+        }
+
+
+        /* ==========================
+            GAUCHE → DROITE
+            IMAGE PRÉCÉDENTE
+        ========================== */
+
+        if (distance > 0) {
+
+            changeImage(-1);
+
+        }
+
+
+        /* ==========================
+            DROITE → GAUCHE
+            IMAGE SUIVANTE
+        ========================== */
+
+        else {
+
+            changeImage(1);
+
+        }
+
+    }
+
+
+    /* ==========================
+        ÉCOUTE DU SWIPE
+    ========================== */
+
+    mobileBoxes.forEach((box) => {
+
+        box.addEventListener(
+            'touchstart',
+            handleTouchStart,
+            {
+                passive: true
+            }
+        );
+
+
+        box.addEventListener(
+            'touchend',
+            handleTouchEnd,
+            {
+                passive: true
+            }
+        );
+
+    });
+
+
+    /* ==========================
+        PREMIÈRE IMAGE
+    ========================== */
+
     showNextBox();
 
 }
-
 
 
 /* ==========================
@@ -2937,11 +3323,6 @@ function updateAutoReaction(
 
         overlay.scale.y =
             square.scale.y;
-
-
-
-
-
 
 
         /* ==========================
