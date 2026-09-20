@@ -306,6 +306,7 @@ html, body {
 /* Tablette */
 @media (max-width: 900px) {
   .other {
+    display: none;
     font-size: 0.6rem;
   }
 }
@@ -313,6 +314,7 @@ html, body {
 /* Mobile */
 @media (max-width: 600px) {
   .other {
+    display: none;
     font-size: 0.5rem;
     margin-left: 10%;
 
@@ -336,6 +338,7 @@ html, body {
 /* Tablette */
 @media (max-width: 1000px) {
   .skills5 {
+    display: none;
     font-size: 1.7rem;
     margin-left: 20%;
     margin-top: -100%;
@@ -345,6 +348,7 @@ html, body {
 /* Mobile */
 @media (max-width: 600px) {
   .skills5 {
+    display: none;
     font-size: 1.2rem;
     margin-top: 60%;
     margin-left: 1%;
