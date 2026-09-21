@@ -24,7 +24,9 @@ body{
 
     background:#eef2f2;
 
-    overflow: auto;
+    overflow-x:hidden;
+    overflow-y:auto;
+
 }
 
 
@@ -36,11 +38,11 @@ body{
 
     display:flex;
 
-    gap:10px;
+    gap:30px;
 
-    align-items:flex-start;
+    align-items:flex-end;
 
-    padding-top: 300px;
+    padding-bottom: 50px;
 
 }
 
@@ -89,7 +91,7 @@ body{
 
     flex-direction:column;
 
-    gap:10px;
+    gap:30px;
 
 }
 
@@ -109,8 +111,8 @@ body{
 
             const grid = document.querySelector('.grid');
 
-            const columns = 15;
-            const rows = 7;
+            const columns = 10;
+            const rows = 4;
 
             for(let column = 0; column < columns; column++){
 
@@ -169,6 +171,7 @@ body{
 
                         const shadow = 14 * strength;
 
+                        
                         card.style.transform =
                             `translateY(${-lift}px)`;
 
