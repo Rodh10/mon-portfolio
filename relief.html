@@ -24,8 +24,9 @@ body{
 
     background:#eef2f2;
 
-    overflow: hidden;
+    overflow:hidden;
 }
+
 
 /* ==========================
    GRID
@@ -33,19 +34,24 @@ body{
 
 .grid{
 
-    position:relative;
+    display:grid;
 
-    width:1200px;
-    height:1200px;
+    grid-template-columns:repeat(15, 70px);
+    grid-template-rows:repeat(7, 70px);
+
+    gap:10px;
 
 }
 
+
+/* ==========================
+   CARD
+========================== */
+
 .card{
 
-    position:absolute;
-
-    width:100px;
-    height:100px;
+    width:70px;
+    height:70px;
 
     border-radius:5px;
 
@@ -56,114 +62,120 @@ body{
     transition:
         transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
         box-shadow 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+
 }
 
-.large{
 
-    width:400px;
-    height:400px;
+/* ==========================
+   HOVER
+========================== */
 
-    border-radius:10px;
+.card{
+    width:70px;
+    height:70px;
+
+    border-radius:5px;
+
+    background:#eef1f1;
 
     box-shadow:none;
+
+    transition:
+        transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
-
-
-/* ==========================
-   POSITIONNEMENT
-========================== */
-
-/* haut */
-
-.c1{
-    top: 350px;;
-    left:0;
-}
-
-.c2{
-    top: 350px;
-    left: 125px;
-}
-
-.c3{
-    top:350px;
-    left: 850px;
-}
-
-/* centre */
-
-.large{
-    top:350px;
-    left:250px;
-}
-
-/* bas */
-
-.c4{
-    top:600px;
-    left:700px;
-}
-
-.c5{
-    top:600px;
-    left:920px;
-}
-
-/* ==========================
-   INNER GLOW
-========================== */
-
-
 
 </style>
 
 </head>
 
-
-
 <body>
 
     <div class="grid">
-        <div class="card c1"></div>
-        <div class="card c2"></div>
-        <div class="card c3"></div>
 
-        <div class="card large"></div>
+        <script>
 
-        <div class="card c4"></div>
-        <div class="card c5"></div>
+            const grid = document.querySelector('.grid');
+
+            for(let i = 0; i < 105; i++){
+
+                const card = document.createElement('div');
+
+                card.className = 'card';
+
+                grid.appendChild(card);
+
+            }
+
+
+            const cards = document.querySelectorAll('.card');
+
+            const radius = 160;
+
+
+            grid.addEventListener('mousemove', (event) => {
+
+                const mouseX = event.clientX;
+                const mouseY = event.clientY;
+
+
+                cards.forEach(card => {
+
+                    const rect = card.getBoundingClientRect();
+
+                    const cardX = rect.left + rect.width / 2;
+                    const cardY = rect.top + rect.height / 2;
+
+                    const dx = mouseX - cardX;
+                    const dy = mouseY - cardY;
+
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+
+                    if(distance < radius){
+
+                        const strength = 1 - (distance / radius);
+
+                        const lift = 10 * strength;
+
+                        const shadow = 14 * strength;
+
+                        card.style.transform =
+                            `translateY(${-lift}px)`;
+
+                        card.style.boxShadow = `
+                            ${shadow}px ${shadow}px ${shadow * 2}px #cde1e6,
+                            inset ${10 * strength}px ${10 * strength}px ${50 * strength}px #d7eaf483,
+                            ${-shadow}px ${-shadow}px ${shadow * 2}px #ffffff,
+                            inset ${-10 * strength}px ${-10 * strength}px ${50 * strength}px #ffffffdf
+                        `;
+
+                    } else {
+
+                        card.style.transform = 'translateY(0)';
+                        card.style.boxShadow = 'none';
+
+                    }
+
+                });
+
+            });
+
+
+            grid.addEventListener('mouseleave', () => {
+
+                cards.forEach(card => {
+
+                    card.style.transform = 'translateY(0)';
+                    card.style.boxShadow = 'none';
+
+                });
+
+            });
+
+        </script>
+
     </div>
 
-
-    <script>
-        const cards = document.querySelectorAll('.card');
-
-        cards.forEach(card => {
-
-            card.addEventListener('mouseenter', () => {
-
-                card.style.transform = 'translateY(-8px)';
-
-                card.style.boxShadow = `
-                    10px 10px 20px #cde1e6,
-                    inset 20px 20px 100px #d7eaf483,
-                    -10px -10px 20px #ffffff,
-                    inset -20px -20px 100px #ffffffdf
-                `;
-
-            });
-
-            card.addEventListener('mouseleave', () => {
-
-                card.style.transform = 'translateY(0)';
-                card.style.boxShadow = 'none';
-
-            });
-
-        });
-    </script>
-
 </body>
-
-
 </html>
