@@ -24,7 +24,7 @@ body{
 
     background:#eef2f2;
 
-    overflow:hidden;
+    overflow: auto;
 }
 
 
@@ -34,15 +34,15 @@ body{
 
 .grid{
 
-    display:grid;
-
-    grid-template-columns:repeat(15, 70px);
-    grid-template-rows:repeat(7, 70px);
+    display:flex;
 
     gap:10px;
 
-}
+    align-items:flex-start;
 
+    padding-top: 300px;
+
+}
 
 /* ==========================
    CARD
@@ -51,7 +51,6 @@ body{
 .card{
 
     width:70px;
-    height:70px;
 
     border-radius:5px;
 
@@ -60,9 +59,8 @@ body{
     box-shadow:none;
 
     transition:
-        transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-        box-shadow 0.7s cubic-bezier(0.22, 1, 0.36, 1);
-
+        transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 
@@ -85,6 +83,20 @@ body{
         box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+.column{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:10px;
+
+}
+
+
+
+
+
 </style>
 
 </head>
@@ -97,16 +109,33 @@ body{
 
             const grid = document.querySelector('.grid');
 
-            for(let i = 0; i < 105; i++){
+            const columns = 15;
+            const rows = 7;
 
-                const card = document.createElement('div');
+            for(let column = 0; column < columns; column++){
 
-                card.className = 'card';
+                const columnElement = document.createElement('div');
 
-                grid.appendChild(card);
+                columnElement.className = 'column';
+
+                for(let row = 0; row < rows; row++){
+
+                    const card = document.createElement('div');
+
+                    card.className = 'card';
+
+                    const randomHeight =
+                        Math.floor(Math.random() * (120 - 70 + 1)) + 70;
+
+                    card.style.height = `${randomHeight}px`;
+
+                    columnElement.appendChild(card);
+
+                }
+
+                grid.appendChild(columnElement);
 
             }
-
 
             const cards = document.querySelectorAll('.card');
 
