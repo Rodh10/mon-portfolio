@@ -20,7 +20,8 @@ body{
 
     display:flex;
     justify-content: flex-end;
-    align-items:center;
+
+    align-items:flex-start;
 
     background:#eef2f2;
 
@@ -40,10 +41,10 @@ body{
 
     gap:30px;
 
-    align-items:flex-end;
+    align-items:flex-start;
 
     margin-right: 5%;    
-
+    margin-top: 5%;
 }
 
 /* ==========================
@@ -53,7 +54,7 @@ body{
 .card{
     width: 250px;
 
-    padding:5px;
+    padding: 10px;
 
     border-radius:5px;
 
@@ -149,7 +150,7 @@ body{
                     card.className = 'card';
 
                     const randomHeight =
-                        Math.floor(Math.random() * (120 - 70 + 1)) + 70;
+                        Math.floor(Math.random() * (500 - 250 + 1)) + 250;
 
                     card.style.height = `${randomHeight}px`;
 
