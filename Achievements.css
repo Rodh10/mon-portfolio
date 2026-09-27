@@ -168,6 +168,10 @@ html, body {
     pointer-events: auto;
 }
 
+.dashboard-images {
+    display: none;
+}
+
 
 .box {
     overflow: hidden;
@@ -198,6 +202,7 @@ html, body {
 
 .box img {
     opacity: 0;
+    visibility: hidden;
 }
 
 

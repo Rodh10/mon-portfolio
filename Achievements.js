@@ -1712,6 +1712,7 @@ function createDashboardSections() {
 
 
             image.style.opacity = '0';
+            image.style.visibility = 'hidden';
 
 
             const canvas =
@@ -1813,7 +1814,7 @@ function startDisappearance(squares) {
         square.material.opacity = 1;
 
         square.userData.disappearDelay =
-            1000 + Math.random() * 500;
+            Math.random() * 500;
 
         square.userData.disappearing = true;
 
@@ -2046,7 +2047,7 @@ function changeDesktopSection() {
             false;
 
 
-    }, 1500);
+    }, 500);
 
 }
 
