@@ -439,75 +439,186 @@ function animateOldActiveLeaveWheel() {
 
 
 
-
-
 window.addEventListener("DOMContentLoaded", () => {
 
-  let scrollCooldown = false;
-  let startY = 0; // position initiale du doigt sur mobile
+    let scrollCooldown = false;
+
+    /* ==========================
+       POSITION INITIALE DU DOIGT
+    ========================== */
+
+    let startY = 0;
+
+
+    /* ==========================
+       RETOUR VERS PROFILE.HTML
+    ========================== */
 
     async function handleScrollUp() {
+
         if (scrollCooldown) return;
+
         scrollCooldown = true;
+
+
+        /* ==========================
+           DISPARITION MOBILE
+        ========================== */
 
         const mobileLeavePromise =
             window.innerWidth <= 600 && window.leaveMobilePage
                 ? window.leaveMobilePage()
                 : Promise.resolve();
 
+
+        /* ==========================
+           DISPARITION DESKTOP
+        ========================== */
+
         const desktopLeavePromise =
             window.innerWidth > 600 && window.leaveDesktopPage
                 ? window.leaveDesktopPage()
                 : Promise.resolve();
 
+
+        /* ==========================
+           AUTRES EFFETS
+        ========================== */
+
         await leaveAllEffects();
+
+
+        /* ==========================
+           ATTENDRE LES ANIMATIONS
+        ========================== */
 
         await Promise.all([
             mobileLeavePromise,
             desktopLeavePromise
         ]);
 
+
+        /* ==========================
+           CHANGER DE PAGE
+        ========================== */
+
         window.location.href = "Profile.html";
     }
 
-  // === Desktop : molette ===
-  window.addEventListener('wheel', async (e) => {
-    if (scrollCooldown) return;
 
-    // Ignore scroll si on est dans un input ou textarea
-    const activeEl = document.activeElement;
-    if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) {
-      return;
-    }
+    /* ==========================
+       SCROLL SOURIS
+    ========================== */
 
-    // Scroll vers le haut uniquement
-    if (e.deltaY < 0) {
-      handleScrollUp();
-    }
-  });
+    window.addEventListener("wheel", async (e) => {
 
-  // === Mobile : swipe ===
-  window.addEventListener('touchstart', e => {
-    startY = e.touches[0].clientY;
-  });
+        if (scrollCooldown) return;
 
-  window.addEventListener('touchend', e => {
-    if (scrollCooldown) return;
 
-    const endY = e.changedTouches[0].clientY;
-    const diff = startY - endY;
+        /* ==========================
+           MOBILE
+           Le wheel est ignoré
+        ========================== */
 
-    // Swipe vers le bas (doigt glissé vers le bas) = scroll vers le haut
-    if (diff < -50) { // seuil de 50px
-      handleScrollUp();
-    }
-    // swipe vers le haut (doigt glissé vers le haut) = scroll vers le bas → ignoré
-  });
+        if (window.innerWidth <= 600) {
+            return;
+        }
+
+
+        /* ==========================
+           IGNORER INPUT / TEXTAREA
+        ========================== */
+
+        const activeEl = document.activeElement;
+
+        if (
+            activeEl &&
+            (
+                activeEl.tagName === "INPUT" ||
+                activeEl.tagName === "TEXTAREA"
+            )
+        ) {
+            return;
+        }
+
+
+        /* ==========================
+           SCROLL VERS LE BAS
+           → CHANGER DE GRILLE
+        ========================== */
+
+        if (e.deltaY > 0) {
+
+            if (
+                currentDesktopSection === 1 &&
+                !desktopSectionTransitioning
+            ) {
+                changeDesktopSection();
+            }
+
+            return;
+        }
+
+
+        /* ==========================
+           SCROLL VERS LE HAUT
+           → CHANGER DE FENÊTRE
+        ========================== */
+
+        if (e.deltaY < 0) {
+
+            handleScrollUp();
+
+        }
+
+    });
+
+
+    /* ==========================
+       MOBILE : SWIPE
+    ========================== */
+
+    window.addEventListener("touchstart", (e) => {
+
+        if (scrollCooldown) return;
+
+        startY = e.touches[0].clientY;
+
+    });
+
+
+    window.addEventListener("touchend", (e) => {
+
+        if (scrollCooldown) return;
+
+
+        const endY = e.changedTouches[0].clientY;
+
+        const diff = startY - endY;
+
+
+        /* ==========================
+           SWIPE VERS LE BAS
+           doigt vers le bas
+           → retour vers Profile
+        ========================== */
+
+        if (diff < -50) {
+
+            handleScrollUp();
+
+        }
+
+
+        /*
+           Swipe vers le haut :
+           → scroll vers le bas
+           → volontairement ignoré
+        */
+
+    });
 
 });
-
-
-
 
 
 
@@ -1487,12 +1598,50 @@ appearLinks();
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import * as THREE from 'three';
 
 
-const boxes = document.querySelectorAll('.box');
+const section01 = document.querySelector('.section-01');
+const section02 = document.querySelector('.section-02');
+
+const boxesSection01 = Array.from(
+    section01.querySelectorAll('.box')
+);
+
+const boxesSection02 = Array.from(
+    section02.querySelectorAll('.box')
+);
+
+const boxes = [
+    ...boxesSection01,
+    ...boxesSection02
+];
 
 let loadedBoxes = 0;
+let currentDesktopSection = 1;
+let desktopSectionTransitioning = false;
 
 
 /* ==========================
@@ -1504,15 +1653,20 @@ const rows = 7;
 
 const gap = 0;
 
-
-/* ==========================
-    RESIZE
-========================== */
-
 function resize(box, renderer) {
 
-    const width = box.clientWidth;
-    const height = box.clientHeight;
+    const canvas =
+        box.querySelector('.particle-canvas');
+
+    if (!canvas) return;
+
+    const width =
+        canvas.clientWidth;
+
+    const height =
+        canvas.clientHeight;
+
+    if (!width || !height) return;
 
     renderer.setSize(
         width,
@@ -1521,8 +1675,6 @@ function resize(box, renderer) {
     );
 
 }
-
-
 
 /* ==========================
     APPARITION
@@ -1612,6 +1764,131 @@ function leaveDesktopPage() {
 }
 
 window.leaveDesktopPage = leaveDesktopPage;
+
+
+function changeDesktopSection() {
+
+    if (window.innerWidth <= 600) {
+        return;
+    }
+
+    if (desktopSectionTransitioning) {
+        return;
+    }
+
+    if (currentDesktopSection >= 2) {
+        return;
+    }
+
+    desktopSectionTransitioning = true;
+
+
+    /* ==========================
+        DISPARITION GRILLE 1
+    ========================== */
+
+    boxesSection01.forEach((box) => {
+
+        const canvas =
+            box.querySelector('.particle-canvas');
+
+        if (!canvas || !canvas.userData?.squares) {
+            return;
+        }
+
+        const squares =
+            canvas.userData.squares;
+
+        squares.forEach((square) => {
+
+            square.userData.autoBorder = false;
+            square.userData.autoWhite = false;
+
+        });
+
+        startDisappearance(squares);
+
+    });
+
+
+    /* ==========================
+        AFFICHER GRILLE 2
+        APRÈS 1.5 SEC
+    ========================== */
+
+    setTimeout(() => {
+
+        /* ==========================
+            CACHER GRILLE 1
+        ========================== */
+
+        section01.style.display = 'none';
+
+
+        /* ==========================
+            AFFICHER GRILLE 2
+        ========================== */
+
+        section02.style.display = 'grid';
+        section02.style.visibility = 'visible';
+        section02.style.pointerEvents = 'none';
+
+
+        /* ==========================
+            REDIMENSIONNER + APPARAÎTRE
+        ========================== */
+
+        boxesSection02.forEach((box) => {
+
+            const canvas =
+                box.querySelector('.particle-canvas');
+
+            if (!canvas) {
+                return;
+            }
+
+            if (!canvas.userData?.squares) {
+                return;
+            }
+
+
+            /* ==========================
+                REDIMENSIONNER LE CANVAS
+            ========================== */
+
+            if (canvas.userData.renderer) {
+
+                resize(
+                    box,
+                    canvas.userData.renderer
+                );
+
+            }
+
+
+            /* ==========================
+                APPARITION
+            ========================== */
+
+            startAppearance(
+                canvas.userData.squares
+            );
+
+        });
+
+
+        /* ==========================
+            NOUVELLE SECTION ACTIVE
+        ========================== */
+
+        currentDesktopSection = 2;
+
+        desktopSectionTransitioning = false;
+
+    }, 1500);
+
+}
+
 
 
 /* ==========================
@@ -3717,7 +3994,8 @@ function initializeBox(box) {
 
 
             canvas.userData = {
-                squares: squares
+                squares: squares,
+                renderer: renderer
             };
 
 

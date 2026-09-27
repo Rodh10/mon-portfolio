@@ -126,10 +126,29 @@ html, body {
 
 
 .dashboard {
+    position: relative;
+    width: 640px;
+    height: 420px;
+}
+
+.dashboard-section {
+    position: absolute;
+    top: 0;
+    left: 0;
+
     display: grid;
     grid-template-columns: repeat(3, 200px);
     grid-template-rows: repeat(2, 200px);
     gap: 20px;
+
+    width: 640px;
+    height: 420px;
+}
+
+.dashboard-section.section-02 {
+    display: grid;
+    visibility: hidden;
+    pointer-events: none;
 }
 
 
