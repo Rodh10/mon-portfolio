@@ -114,12 +114,9 @@ html, body {
 
 
 
-
-
-
 .dashboard-wrapper {
-    top: 80px;
-    left: 20%;
+    top: 40px;
+    left: 10%;
     position: relative;
     width: fit-content;
 }
@@ -131,33 +128,56 @@ html, body {
     height: 420px;
 }
 
+
 .dashboard-section {
     position: absolute;
     top: 0;
     left: 0;
 
     display: grid;
+
     grid-template-columns: repeat(3, 200px);
     grid-template-rows: repeat(2, 200px);
+
     gap: 20px;
 
     width: 640px;
     height: 420px;
-}
 
-.dashboard-section.section-02 {
-    display: grid;
     visibility: hidden;
     pointer-events: none;
 }
 
 
-.box {
+/* ==========================
+    SECTION ACTIVE
+========================== */
+
+.dashboard-section.active-section {
+    visibility: visible;
+    pointer-events: auto;
+}
+
+
+/* ==========================
+    BOX
+========================== */
+
+.dashboard-section .box {
     position: relative;
+    pointer-events: auto;
+}
+
+
+.box {
     overflow: hidden;
     isolation: isolate;
 }
 
+
+/* ==========================
+    CANVAS
+========================== */
 
 .box .particle-canvas {
     position: absolute;
@@ -172,10 +192,12 @@ html, body {
 }
 
 
-.box img {
-  
-    opacity: 0;
+/* ==========================
+    IMAGE
+========================== */
 
+.box img {
+    opacity: 0;
 }
 
 
@@ -186,15 +208,12 @@ html, body {
         left: 110px;
     }
 
+
     .box img {
         pointer-events: none;
     }
 
-
 }
-
-
-
 
 
 

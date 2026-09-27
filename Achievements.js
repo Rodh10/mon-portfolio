@@ -1623,25 +1623,125 @@ appearLinks();
 import * as THREE from 'three';
 
 
-const section01 = document.querySelector('.section-01');
-const section02 = document.querySelector('.section-02');
+const dashboard =
+    document.querySelector('.dashboard');
 
-const boxesSection01 = Array.from(
-    section01.querySelectorAll('.box')
-);
+const imageContainer =
+    document.querySelector('.dashboard-images');
 
-const boxesSection02 = Array.from(
-    section02.querySelectorAll('.box')
-);
+const sourceImages =
+    Array.from(
+        imageContainer.querySelectorAll('img')
+    );
 
-const boxes = [
-    ...boxesSection01,
-    ...boxesSection02
-];
+const IMAGES_PER_SECTION = 6;
+
+let sections = [];
+let boxes = [];
 
 let loadedBoxes = 0;
 let currentDesktopSection = 1;
 let desktopSectionTransitioning = false;
+
+
+
+
+function createDashboardSections() {
+
+    const totalSections =
+        Math.ceil(
+            sourceImages.length /
+            IMAGES_PER_SECTION
+        );
+
+
+    for (
+        let sectionIndex = 0;
+        sectionIndex < totalSections;
+        sectionIndex++
+    ) {
+
+        const section =
+            document.createElement('div');
+
+
+        section.className =
+            `dashboard-section section-${String(sectionIndex + 1).padStart(2, '0')}`;
+
+
+        if (sectionIndex === 0) {
+
+            section.classList.add(
+                'active-section'
+            );
+
+        }
+
+
+        const start =
+            sectionIndex *
+            IMAGES_PER_SECTION;
+
+
+        const end =
+            Math.min(
+                start + IMAGES_PER_SECTION,
+                sourceImages.length
+            );
+
+
+        for (
+            let imageIndex = start;
+            imageIndex < end;
+            imageIndex++
+        ) {
+
+            const sourceImage =
+                sourceImages[imageIndex];
+
+
+            const box =
+                document.createElement('div');
+
+            box.className =
+                `box box-${String(imageIndex + 1).padStart(2, '0')}`;
+
+
+            const image =
+                sourceImage.cloneNode(true);
+
+
+            image.style.opacity = '0';
+
+
+            const canvas =
+                document.createElement('canvas');
+
+            canvas.className =
+                'particle-canvas';
+
+
+            box.appendChild(image);
+            box.appendChild(canvas);
+
+            section.appendChild(box);
+
+            boxes.push(box);
+
+        }
+
+
+        dashboard.appendChild(section);
+
+        sections.push(section);
+
+    }
+
+
+    imageContainer.remove();
+}
+
+createDashboardSections();
 
 
 /* ==========================
@@ -1765,7 +1865,6 @@ function leaveDesktopPage() {
 
 window.leaveDesktopPage = leaveDesktopPage;
 
-
 function changeDesktopSection() {
 
     if (window.innerWidth <= 600) {
@@ -1776,28 +1875,61 @@ function changeDesktopSection() {
         return;
     }
 
-    if (currentDesktopSection >= 2) {
+    /* ==========================
+        VÉRIFIER S'IL EXISTE
+        UNE SECTION SUIVANTE
+    ========================== */
+
+    if (
+        currentDesktopSection >=
+        sections.length
+    ) {
         return;
     }
+
 
     desktopSectionTransitioning = true;
 
 
     /* ==========================
-        DISPARITION GRILLE 1
+        SECTION ACTUELLE
     ========================== */
 
-    boxesSection01.forEach((box) => {
+    const currentSection =
+        sections[
+            currentDesktopSection - 1
+        ];
+
+
+    const currentBoxes =
+        Array.from(
+            currentSection.querySelectorAll('.box')
+        );
+
+
+    /* ==========================
+        DISPARITION
+    ========================== */
+
+    currentBoxes.forEach((box) => {
 
         const canvas =
-            box.querySelector('.particle-canvas');
+            box.querySelector(
+                '.particle-canvas'
+            );
 
-        if (!canvas || !canvas.userData?.squares) {
+
+        if (
+            !canvas ||
+            !canvas.userData?.squares
+        ) {
             return;
         }
 
+
         const squares =
             canvas.userData.squares;
+
 
         squares.forEach((square) => {
 
@@ -1806,57 +1938,87 @@ function changeDesktopSection() {
 
         });
 
-        startDisappearance(squares);
+
+        startDisappearance(
+            squares
+        );
 
     });
 
 
     /* ==========================
-        AFFICHER GRILLE 2
-        APRÈS 1.5 SEC
+        ATTENDRE 1.5 SEC
     ========================== */
 
     setTimeout(() => {
 
-        /* ==========================
-            CACHER GRILLE 1
-        ========================== */
-
-        section01.style.display = 'none';
-
 
         /* ==========================
-            AFFICHER GRILLE 2
+            CACHER SECTION ACTUELLE
         ========================== */
 
-        section02.style.display = 'grid';
-        section02.style.visibility = 'visible';
-        section02.style.pointerEvents = 'none';
+        currentSection.style.visibility =
+            'hidden';
+
+
+        currentSection.style.pointerEvents =
+            'none';
 
 
         /* ==========================
-            REDIMENSIONNER + APPARAÎTRE
+            SECTION SUIVANTE
         ========================== */
 
-        boxesSection02.forEach((box) => {
+        const nextSection =
+            sections[
+                currentDesktopSection
+            ];
+
+
+        nextSection.style.visibility =
+            'visible';
+
+
+        nextSection.style.pointerEvents =
+            'none';
+
+
+        /* ==========================
+            BOXES SECTION SUIVANTE
+        ========================== */
+
+        const nextBoxes =
+            Array.from(
+                nextSection.querySelectorAll('.box')
+            );
+
+
+        /* ==========================
+            APPARITION
+        ========================== */
+
+        nextBoxes.forEach((box) => {
+
+            box.style.pointerEvents = 'auto';
+
 
             const canvas =
-                box.querySelector('.particle-canvas');
+                box.querySelector(
+                    '.particle-canvas'
+                );
 
-            if (!canvas) {
+
+            if (
+                !canvas ||
+                !canvas.userData?.squares
+            ) {
                 return;
             }
 
-            if (!canvas.userData?.squares) {
-                return;
-            }
 
-
-            /* ==========================
-                REDIMENSIONNER LE CANVAS
-            ========================== */
-
-            if (canvas.userData.renderer) {
+            if (
+                canvas.userData.renderer
+            ) {
 
                 resize(
                     box,
@@ -1866,10 +2028,6 @@ function changeDesktopSection() {
             }
 
 
-            /* ==========================
-                APPARITION
-            ========================== */
-
             startAppearance(
                 canvas.userData.squares
             );
@@ -1878,17 +2036,19 @@ function changeDesktopSection() {
 
 
         /* ==========================
-            NOUVELLE SECTION ACTIVE
+            PASSER À LA SECTION SUIVANTE
         ========================== */
 
-        currentDesktopSection = 2;
+        currentDesktopSection++;
 
-        desktopSectionTransitioning = false;
+
+        desktopSectionTransitioning =
+            false;
+
 
     }, 1500);
 
 }
-
 
 
 /* ==========================
@@ -2840,20 +3000,16 @@ function setupHoverReaction(
 
             hovering = true;
 
-
             const rect =
                 box.getBoundingClientRect();
-
 
             const x =
                 (event.clientX - rect.left) /
                 rect.width;
 
-
             const y =
                 (event.clientY - rect.top) /
                 rect.height;
-
 
             mouse.x =
                 x * 2 - 1;
@@ -3997,6 +4153,40 @@ function initializeBox(box) {
                 squares: squares,
                 renderer: renderer
             };
+
+
+
+
+            const boxSection =
+                box.closest('.dashboard-section');
+
+            const isFirstSection =
+                boxSection === sections[0];
+
+
+            /* ==========================
+                SECTION 2 INACTIVE
+            ========================== */
+
+            if (
+                !isFirstSection &&
+                window.innerWidth > 600
+            ) {
+
+                squares.forEach((square) => {
+
+                    square.userData.appearing = false;
+                    square.userData.disappearing = false;
+
+                    square.userData.appearOpacity = 0;
+                    square.userData.appearTarget = 0;
+
+                    square.material.opacity = 0;
+
+                });
+
+            }
+
 
 
             loadedBoxes++;
