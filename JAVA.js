@@ -1163,17 +1163,68 @@ function appearLinks() {
     playCmdEffect(300);
     el.style.pointerEvents = 'auto';
 
-    // Hover
-    el.addEventListener('mouseenter', () => {
-      playCmdEffect(0, '#000000', '#b8b8b8');
-    });
+    // Effet Hover
+    function hoverEffect() {
+      timeoutsColor1.forEach(t => clearTimeout(t));
+      timeoutsColor2.forEach(t => clearTimeout(t));
+      timeoutsColor1 = [];
+      timeoutsColor2 = [];
 
-    // Leave
-    el.addEventListener('mouseleave', () => {
-      playCmdEffectReverse(0, '#b8b8b8', '#000000');
-    });
+      const spans = el.querySelectorAll('span');
+
+      spans.forEach((span, i) => {
+        const t1 = setTimeout(() => {
+          span.style.color = '#000000';
+          span.style.backgroundColor = 'white';
+        }, i * 30);
+
+        timeoutsColor1.push(t1);
+
+        const t2 = setTimeout(() => {
+          span.style.color = '#000000';
+          span.style.backgroundColor = 'white';
+        }, i * 30 + 10);
+
+        timeoutsColor2.push(t2);
+      });
+    }
+
+    // Effet Leave
+    function leaveEffect() {
+      timeoutsColor1.forEach(t => clearTimeout(t));
+      timeoutsColor2.forEach(t => clearTimeout(t));
+      timeoutsColor1 = [];
+      timeoutsColor2 = [];
+
+      const spans = Array.from(el.querySelectorAll('span')).reverse();
+
+      spans.forEach((span, i) => {
+        const t1 = setTimeout(() => {
+          span.style.color = '#b8b8b8';
+          span.style.backgroundColor = 'white';
+        }, i * 30);
+
+        timeoutsColor1.push(t1);
+
+        const t2 = setTimeout(() => {
+          span.style.color = '#808080';
+          span.style.backgroundColor = 'transparent';
+        }, i * 30 + 10);
+
+        timeoutsColor2.push(t2);
+      });
+    }
+
+    // Événements
+    el.addEventListener('mouseenter', hoverEffect);
+    el.addEventListener('mouseleave', leaveEffect);
+
+
   });
 }
+
+
+
 
 function leaveEffectLinks() {
   const links = document.querySelectorAll('.icon-link');
