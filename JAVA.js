@@ -731,10 +731,33 @@ function initResumeAnimations() {
             el.style.pointerEvents = 'auto';
         }
 
-        // --- Hover (rejoue l'effet) ---
-        el.addEventListener('mouseenter', () => {
-            playCmdEffect(0, '#000000', '#b8b8b8ff');
-        });
+        // Effet Hover
+        function hoverEffect() {
+            timeouts.forEach(t => clearTimeout(t));
+            timeouts = [];
+
+            const spans = el.querySelectorAll('span');
+
+            spans.forEach((span, i) => {
+                const t1 = setTimeout(() => {
+                    span.style.color = '#000000';
+                    span.style.backgroundColor = 'white';
+                    span.style.border = 'none';
+                }, i * 30);
+
+                timeouts.push(t1);
+
+                const t2 = setTimeout(() => {
+                    span.style.color = '#000000';
+                    span.style.backgroundColor = 'white';
+                    span.style.border = 'none';
+                }, i * 30 + 10);
+
+                timeouts.push(t2);
+            });
+        }
+
+        el.addEventListener('mouseenter', hoverEffect);
 
         // --- Leave ---
         el.addEventListener('mouseleave', () => {
