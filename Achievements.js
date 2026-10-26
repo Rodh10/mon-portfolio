@@ -1814,6 +1814,14 @@ boxes.forEach(box => {
 });
 
 
+// === Rafraîchir le site au retour (bouton précédent / redirection) ===
+window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+        // La page a été restaurée depuis le cache : on la recharge
+        // pour relancer toutes les animations à l'état initial.
+        window.location.reload();
+    }
+});
 
 
 
