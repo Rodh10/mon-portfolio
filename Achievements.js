@@ -856,7 +856,8 @@ const descriptions = [
   document.querySelector('.description3'),
   document.querySelector('.description4'),
   document.querySelector('.description5'),
-  document.querySelector('.description6')
+  document.querySelector('.description6'),
+  document.querySelector('.description7')
 ];
 
 const blokys = document.querySelectorAll('.conteneur .bloky');
