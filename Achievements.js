@@ -672,7 +672,7 @@ window.addEventListener("DOMContentLoaded", enhanceNavLinks);
 
 
 const yearElement = document.querySelector('.year');
-const yearWords = ["2026", "2024", "2024", "2024", "2023", "2022"];
+const yearWords = ["2026", "2026", "2024", "2024", "2024", "2023", "2022"];
 let yearIndex = 0;
 
 // Délais pour l'animation CMD des lettres (apparition, passage, disparition)
