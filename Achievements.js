@@ -1722,8 +1722,15 @@ function createDashboardSections() {
                 'particle-canvas';
 
 
+            const title = document.createElement('div');
+
+            title.className = 'box-title';
+            title.textContent =
+                sourceImage.dataset.title || sourceImage.alt || '';
+
             box.appendChild(image);
             box.appendChild(canvas);
+            box.appendChild(title);
 
             section.appendChild(box);
 
@@ -1743,6 +1750,84 @@ function createDashboardSections() {
 }
 
 createDashboardSections();
+
+
+// === Anti-blink sur les images particules ===
+boxes.forEach(box => {
+    box.addEventListener('mouseenter', hideCursor);
+    box.addEventListener('mouseleave', delayedShowCursor);
+});
+
+
+
+
+
+/* =========================
+   ANIMATION DES TITRES
+   PILOTÉE PAR THREE.JS
+   ========================= */
+
+function animateTitles(deltaTime) {
+
+    boxes.forEach(box => {
+
+        const title = box.querySelector('.box-title');
+
+        if (!title) return;
+
+        // État initial de chaque titre
+        if (!title.userData) {
+            title.userData = {
+                opacity: 0,
+                translateY: 20
+            };
+        }
+
+        const state = title.userData;
+
+        // Cible selon le survol
+        const isHovered = box.matches(':hover');
+        
+        const canvas = box.querySelector('.particle-canvas');
+
+        if (canvas) {
+            canvas.style.position = canvas.style.position || 'absolute';
+            canvas.style.zIndex = isHovered ? '3' : '1';
+        }
+
+        title.style.zIndex = isHovered ? '1' : '3';
+
+
+
+
+        const targetOpacity = isHovered ? 1 : 0;
+        const targetY = isHovered ? 0 : 20;
+
+        // Progression indépendante du nombre d'images par seconde
+        const progress = 1 - Math.exp(-deltaTime / 100);
+
+        state.opacity +=
+            (targetOpacity - state.opacity) * progress;
+
+        state.translateY +=
+            (targetY - state.translateY) * progress;
+
+        // Application des valeurs animées
+        title.style.opacity = state.opacity;
+
+        title.style.transform =
+            `translateY(${state.translateY}%)`;
+
+    });
+}
+
+
+
+
+
+
+
+
 
 
 /* ==========================
@@ -4241,23 +4326,28 @@ function initializeBox(box) {
             );
 
 
+            let previousTime = performance.now();
+
             function render() {
 
-                requestAnimationFrame(
-                    render
-                );
+                requestAnimationFrame(render);
 
+                const currentTime = performance.now();
 
+                const deltaTime = currentTime - previousTime;
+
+                previousTime = currentTime;
+
+                // Réaction des particules
                 update();
 
+                // Animation des titres
+                animateTitles(deltaTime);
 
-                renderer.render(
-                    scene,
-                    camera
-                );
+                // Rendu Three.js
+                renderer.render(scene, camera);
 
             }
-
 
             render();
 
