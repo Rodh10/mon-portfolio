@@ -1700,11 +1700,66 @@ function createDashboardSections() {
                 sourceImages[imageIndex];
 
 
-            const box =
-                document.createElement('div');
+            const sourceLink = sourceImage.closest('a[href]');
+
+            const box = document.createElement(sourceLink ? 'a' : 'div');
+
+            if (sourceLink) {
+                box.setAttribute('href', sourceLink.getAttribute('href'));
+
+                if (sourceLink.hasAttribute('target')) {
+                    box.setAttribute('target', sourceLink.getAttribute('target'));
+                }
+
+                if (sourceLink.hasAttribute('rel')) {
+                    box.setAttribute('rel', sourceLink.getAttribute('rel'));
+                }
+            }
 
             box.className =
                 `box box-${String(imageIndex + 1).padStart(2, '0')}`;
+
+
+            if (sourceLink) {
+                box.addEventListener('click', async (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    const href = box.getAttribute('href')?.trim();
+                    if (!href || dashboard.dataset.leaving === 'true') return;
+
+                    dashboard.dataset.leaving = 'true';
+
+                    try {
+                        // Même sortie des particules que par défilement.
+                        const mobileLeavePromise =
+                            window.innerWidth <= 600 && window.leaveMobilePage
+                                ? window.leaveMobilePage()
+                                : Promise.resolve();
+
+                        const desktopLeavePromise =
+                            window.innerWidth > 600 && window.leaveDesktopPage
+                                ? window.leaveDesktopPage()
+                                : Promise.resolve();
+
+                        // Titres, ancien menu actif et année.
+                        await leaveAllEffects();
+
+                        // Attendre aussi la disparition des particules.
+                        await Promise.all([
+                            mobileLeavePromise,
+                            desktopLeavePromise
+                        ]);
+
+                        window.location.assign(href);
+                    } catch (error) {
+                        delete dashboard.dataset.leaving;
+                        console.error('Erreur pendant la sortie :', error);
+                    }
+                });
+            }
+
+
 
 
             const image =
