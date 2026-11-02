@@ -307,12 +307,6 @@ function animateOldActiveLeaveWheel() {
 
 
 
-
-
-
-
-
-
 window.addEventListener("DOMContentLoaded", () => {
 
   let scrollCooldown = false;
@@ -355,6 +349,1767 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
 });
+
+
+
+
+
+
+
+
+
+
+
+const yearElement = document.querySelector('.year');
+const yearWords = ["2026", "2026", "2024", "2024", "2024", "2023", "2022"];
+let yearIndex = 0;
+
+// Délais pour l'animation CMD des lettres (apparition, passage, disparition)
+const yearDelays = {
+  appearDelay: 200,  // temps entre chaque lettre lors de l'apparition
+  passedDelay: 200,  // temps avant de passer la couleur finale
+  leaveDelay: 200     // temps entre les lettres lors de la disparition
+};
+
+// --- Fonction pour passer à l'année suivante dans la boucle ---
+
+function nextYear(index) {
+  if (!yearElement || cycleArrete) return;
+
+  const oldSpans = Array.from(yearElement.querySelectorAll("span"));
+
+  // --- 1. Animation de disparition avec curseur correct ---
+  if (oldSpans.length) {
+    const lastIndex = oldSpans.length - 1;
+
+    oldSpans.forEach((span, i) => {
+      const delay = (lastIndex - i) * yearDelays.leaveDelay;
+
+      const t1 = setTimeout(() => {
+        // reset curseurs
+        oldSpans.forEach(s => {
+          s.style.borderRight = '2px solid transparent';
+          s.style.borderLeft = '2px solid transparent';
+        });
+
+        // curseur placé JUSTE APRÈS la lettre qui va disparaître
+        span.style.borderRight = '2px solid white';
+
+        span.style.color = '#ffffff';
+        span.style.backgroundColor = 'transparent';
+      }, delay);
+
+      const t2 = setTimeout(() => {
+        span.style.opacity = '0';
+
+        // une fois la lettre supprimée, on enlève son curseur
+        span.style.borderRight = '2px solid transparent';
+      }, delay + yearDelays.leaveDelay * 0.8);
+
+      if (!yearElement.timeouts) yearElement.timeouts = [];
+      yearElement.timeouts.push(t1, t2);
+    });
+  }
+
+
+  // --- 2. Attendre la fin de la disparition avant de recréer ---
+  const waitTime = oldSpans.length * yearDelays.leaveDelay + 50;
+
+  setTimeout(() => {
+
+    if (cycleArrete) return;
+
+    // === TON CODE ORIGINAL ICI, INCHANGÉ ===
+
+    if (yearElement.timeouts) {
+      yearElement.timeouts.forEach(t => {
+        if (t.interval) clearInterval(t);
+        else clearTimeout(t);
+      });
+    }
+    yearElement.timeouts = [];
+
+    const word = yearWords[index];
+    yearElement.innerHTML = '';
+
+    for (const ch of word) {
+      const span = document.createElement('span');
+      span.textContent = ch;
+      span.style.display = 'inline-block';
+      span.style.color = 'transparent';
+      span.style.borderRight = '2px solid transparent';
+      yearElement.appendChild(span);
+    }
+
+    const spans = Array.from(yearElement.querySelectorAll('span'));
+    yearElement.isAppeared = true;
+
+    spans.forEach((span, i) => {
+      const t1 = setTimeout(() => {
+        spans.forEach(s => s.style.borderRight = '2px solid transparent');
+        span.style.color = '#000000';
+        if (i === 0) span.style.borderLeft = '2px solid white';
+        else spans[i - 1].style.borderRight = '2px solid white';
+      }, i * yearDelays.appearDelay);
+      yearElement.timeouts.push(t1);
+
+      const t2 = setTimeout(() => {
+        span.style.color = '#ffffff';
+        if (i > 0) spans[i - 1].style.borderRight = '2px solid transparent';
+        if (i === 0) span.style.borderLeft = '2px solid transparent';
+      }, i * yearDelays.appearDelay + yearDelays.passedDelay);
+      yearElement.timeouts.push(t2);
+    });
+
+    const tBlinkStart = setTimeout(() => {
+      let blinkVisible = true;
+      if (spans.length) {
+        spans.forEach(s => s.style.borderRight = '2px solid transparent');
+        const last = spans[spans.length - 1];
+        last.style.borderRight = '2px solid white';
+
+        const blinkInterval = setInterval(() => {
+          last.style.borderRight = blinkVisible ? '2px solid transparent' : '2px solid white';
+          blinkVisible = !blinkVisible;
+        }, 500);
+
+        yearElement.timeouts.push({ interval: blinkInterval });
+      }
+    }, spans.length * yearDelays.appearDelay + yearDelays.passedDelay);
+    yearElement.timeouts.push(tBlinkStart);
+
+
+  }, waitTime);
+}
+
+
+function leaveEffectYear(speed = 15) {
+  return new Promise(resolve => {
+    const el = document.querySelector('.year');
+    if (!el || !el.isAppeared) return resolve();
+
+    if (el.timeouts) el.timeouts.forEach(t => clearTimeout(t));
+    el.timeouts = [];
+
+    const spans = Array.from(el.querySelectorAll('span'));
+    const lastIndex = spans.length - 1;
+
+    spans.forEach(span => {
+      span.style.color = 'white';
+      span.style.backgroundColor = 'transparent';
+      span.style.border = 'none';
+    });
+
+    spans.forEach((span, i) => {
+      const delay = (lastIndex - i) * speed;
+
+      const t1 = setTimeout(() => {
+        spans.forEach(s => {
+          s.style.backgroundColor = 'none';
+          s.style.borderBottomColor = 'transparent';
+        });
+
+        span.style.color = 'transparent';
+        span.style.borderBottom = '20px solid white';
+      }, delay);
+
+      el.timeouts.push(t1);
+
+      const t2 = setTimeout(() => {
+        span.style.backgroundColor = '#000000ff';
+        span.style.border = 'none';
+
+        if (i === lastIndex) {
+          el.isAppeared = false;
+          resolve();
+        }
+      }, delay + speed);
+
+      el.timeouts.push(t2);
+    });
+  });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+const descriptions = [
+  document.querySelector('.description1'),
+  document.querySelector('.description2'),
+  document.querySelector('.description3'),
+  document.querySelector('.description4'),
+  document.querySelector('.description5'),
+  document.querySelector('.description6'),
+  document.querySelector('.description7')
+];
+
+const blokys = document.querySelectorAll('.conteneur .bloky');
+
+
+/* transforme un blok en spans si nécessaire */
+function prepareCMDEffect(blok) {
+  if (!blok.querySelector('span')) {
+    const text = blok.textContent;
+    blok.textContent = '';
+    text.split('').forEach(ch => {
+      const span = document.createElement('span');
+      span.textContent = ch;
+      // style de base (on laisse la transition CSS gérer l'apparition)
+      span.style.color = 'transparent';
+      span.style.backgroundColor = 'transparent';
+      span.style.opacity = '0';
+      blok.appendChild(span);
+    });
+  }
+}
+
+/* showBlokCMD : apparition lettre par lettre (barre CMD -> couleur finale)
+   conserve ton nom de fonction */
+function showBlokCMD(blok, speed = 30, finalColor = '#808080', activeColor = '#808080') {
+  prepareCMDEffect(blok);
+  const spans = Array.from(blok.querySelectorAll('span'));
+
+  spans.forEach(span => {
+    span.style.transition = '';
+    span.style.color = '#808080';
+    span.style.backgroundColor = 'transparent';
+    span.style.opacity = '0';
+  });
+
+  spans.forEach((span, i) => {
+    // 1) barre CMD : texte sombre sur fond actif
+    setTimeout(() => {
+      span.style.color = '#808080';
+      span.style.backgroundColor = activeColor; // couleur spécifique titre actif
+      span.style.opacity = '1';
+    }, i * speed);
+
+    // 2) couleur finale : texte gris, fond transparent
+    setTimeout(() => {
+      span.style.color = finalColor;
+      span.style.backgroundColor = 'transparent';
+      span.style.opacity = '1';
+    }, i * speed + Math.max(Math.floor(speed * 0.8), 20));
+  });
+
+  blok.isAppeared = true;
+}
+
+function removeActiveColor(blok, speed = 20, activeColor = '#ff0000ff') {
+  if (!blok.querySelector('span')) return;
+  const spans = Array.from(blok.querySelectorAll('span'));
+  const lastIndex = spans.length - 1;
+
+  spans.forEach((span, i) => {
+    const delay = (lastIndex - i) * speed;
+    setTimeout(() => {
+      // animation CMD inverse pour “effacer” la couleur active
+      span.style.color = '#ff0000ff';
+      span.style.backgroundColor = activeColor;
+      span.style.opacity = '1';
+    }, delay);
+
+    setTimeout(() => {
+      span.style.opacity = '1';
+      span.style.color = '#808080';
+      span.style.backgroundColor = 'transparent';
+    }, delay + Math.max(Math.floor(speed * 0.6), 15));
+  });
+
+  blok.isAppeared = false; // le titre n’est plus actif
+}
+
+
+// Faire apparaître tous les blocs en même temps
+function showAllBlokCMD(speed = 25) {
+  blokys.forEach(blok => showBlokCMD(blok, speed));
+}
+
+
+
+/* hideActiveDescriptionCMD : annule toutes les animations et fait disparaître la description actuelle en inversé */
+function hideActiveDescriptionCMD(speed = 5) {
+  return new Promise(resolve => { // on retourne une promesse pour attendre la fin
+    const activeDesc = descriptions.find(d => d.classList.contains('visible'));
+    if (!activeDesc) return resolve(); // rien à faire
+
+    // annuler toutes les animations en cours
+    descriptionTimers.forEach(t => clearTimeout(t));
+    descriptionTimers = [];
+
+    const spans = Array.from(activeDesc.querySelectorAll('span'));
+
+    // --- Calcul des lignes comme dans montrerDescription ---
+    const lignes = [];
+    let currentTop = null;
+    let currentLine = [];
+
+    spans.forEach(span => {
+      const top = span.getBoundingClientRect().top;
+      if (currentTop === null) currentTop = top;
+
+      if (Math.abs(top - currentTop) < 1) {
+        currentLine.push(span);
+      } else {
+        lignes.push(currentLine);
+        currentLine = [span];
+        currentTop = top;
+      }
+    });
+    if (currentLine.length) lignes.push(currentLine);
+
+    // --- Disparition ligne par ligne en parallèle, lettres inversées ---
+    lignes.forEach(ligne => {
+      const lastIndex = ligne.length - 1;
+      ligne.forEach((span, i) => {
+        const delay = (lastIndex - i) * speed; // inverse l’ordre des lettres
+        const t1 = setTimeout(() => {
+          span.style.color = '#000000';
+          span.style.backgroundColor = '#ffffff';
+          span.style.opacity = '1';
+        }, delay);
+        const t2 = setTimeout(() => {
+          span.style.opacity = '0';
+          span.style.color = 'transparent';
+          span.style.backgroundColor = 'transparent';
+        }, delay + Math.max(Math.floor(speed * 0.6), 15));
+        descriptionTimers.push(t1, t2);
+      });
+    });
+
+    // --- cacher la description après disparition ---
+    const maxLength = Math.max(...lignes.map(l => l.length));
+    const totalDelay = maxLength * speed + 30;
+    const t3 = setTimeout(() => {
+      activeDesc.classList.remove('visible');
+      activeDesc.classList.add('hidden');
+      activeDesc.style.top = `${100 + offsetY}px`;
+      resolve(); // on indique que c'est terminé
+    }, totalDelay);
+
+    descriptionTimers.push(t3);
+  });
+}
+
+/* hideAllBlokCMD : disparition inverse (de la fin vers le début), attend d'abord hideActiveDescriptionCMD */
+/* hideAllBlokCMD : disparition inverse CMD pour tous les blocs, background exact selon actif ou non */
+async function hideAllBlokCMD(speed = 10) {
+  if (!blokys || blokys.length === 0) return;
+
+  // 1) d'abord faire disparaître la description active
+  await hideActiveDescriptionCMD();
+
+  // 2) Annulation de toute descente et remontée instantanée
+  blokys.forEach(b => {
+    b.style.transition = "transform 0.15s ease-out";
+    b.style.transform = "translateY(0)";
+  });
+
+  setTimeout(() => {
+    // 3) Appliquer l’effet CMD inverse
+    blokys.forEach(blok => {
+      const spans = blok.querySelectorAll('span');
+      if (!spans || spans.length === 0) return;
+
+      const lastIndex = spans.length - 1;
+
+      spans.forEach((span, i) => {
+        const delay = (lastIndex - i) * speed;
+
+        // Déterminer le background selon la couleur actuelle du span
+        const currentColor = window.getComputedStyle(span).color;
+        let bgColor = '#808080'; // gris par défaut
+
+        // Si la couleur est rouge (titre actif) → background rouge
+        if (currentColor === 'rgb(255, 0, 0)') {
+          bgColor = 'rgb(255, 0, 0)';
+        }
+
+        setTimeout(() => {
+          // Phase “barre CMD” inversée : texte sur fond correspondant
+          span.style.color = currentColor;   // conserve la couleur actuelle du texte
+          span.style.backgroundColor = bgColor;
+          span.style.opacity = '1';
+        }, delay);
+
+        setTimeout(() => {
+          // Phase disparition finale
+          span.style.opacity = '0';
+          span.style.color = 'transparent';
+          span.style.backgroundColor = 'transparent';
+        }, delay + Math.max(Math.floor(speed * 0.6), 15));
+      });
+
+      // Reset pour le prochain run
+      blok.isAppeared = false;
+    });
+  }, 180);
+}
+
+
+// === Remet tout à zéro avec attente ===
+function phaseRepos(delay = 1000) {
+  return new Promise(resolve => {
+    blokys.forEach(b => {
+      b.style.transform = 'translateY(0px)';
+      b.style.marginBottom = '5px';
+    });
+
+    descriptions.forEach(d => {
+      if (d) {
+        d.style.position = 'absolute';
+        d.style.top = '100%';
+        d.style.left = '0px';
+      }
+    });
+
+    // Attente avant de continuer
+    setTimeout(resolve, delay);
+  });
+}
+
+let offsetY = 0; // position verticale cumulée des descriptions
+
+// tableau global pour stocker les timers de descriptions
+let descriptionTimers = [];
+
+// --- montrerDescription corrigé pour stocker les timers et gérer offsetY ---
+
+function montrerDescription(index, pause = 15000, waitBeforeAppear = 500) { // 👈 pause avant apparition
+  const desc = descriptions[index];
+  if (!desc) return Promise.resolve();
+
+  // Découper en spans si nécessaire
+  if (!desc.querySelector('span')) {
+    const text = desc.textContent;
+    desc.textContent = '';
+    text.split('').forEach(ch => {
+      const span = document.createElement('span');
+      span.textContent = ch;
+      span.style.opacity = '0';
+      desc.appendChild(span);
+    });
+  }
+
+  const spans = [...desc.querySelectorAll('span')];
+  const blok = blokys[index];
+  const rect = blok.getBoundingClientRect();
+  const spacing = 10;
+
+  desc.style.position = 'absolute';
+  desc.style.left = `${rect.left}px`;
+  desc.style.top = `${rect.bottom + spacing}px`;
+  desc.style.width = "40%";
+
+  desc.classList.add('visible');
+  desc.classList.remove('hidden');
+
+  // Active la descente dépendante
+  suivreDescenteTitres(index, spacing);
+
+  // --- Découpage des spans par lignes ---
+  const lignes = [];
+  let currentTop = null;
+  let currentLine = [];
+
+  spans.forEach(span => {
+    const top = span.getBoundingClientRect().top;
+    if (currentTop === null) currentTop = top;
+
+    if (Math.abs(top - currentTop) < 1) {
+      currentLine.push(span);
+    } else {
+      lignes.push(currentLine);
+      currentLine = [span];
+      currentTop = top;
+    }
+  });
+  if (currentLine.length) lignes.push(currentLine);
+
+  // --- Animation CMD avec délai entre les lignes ---
+  return new Promise(resolve => {
+    const lineDelay = 100;
+    const charDelay = 15;
+
+    lignes.forEach((ligne, lineIndex) => {
+      ligne.forEach((span, charIndex) => {
+        
+        const appearDelay = waitBeforeAppear + lineIndex * lineDelay + charIndex * charDelay;
+
+        // 1) Phase apparition
+        setTimeout(() => {
+          span.style.opacity = '1';
+          span.style.color = '#000';
+          span.style.backgroundColor = '#ffffff'; // style pendant apparition
+        }, appearDelay);
+
+        // 2) Phase après apparition
+        setTimeout(() => {
+          span.style.color = '#fff';
+          span.style.backgroundColor = 'transparent'; // style une fois apparu
+        }, appearDelay + 10);
+
+      });
+    });
+
+    // temps total d'apparition + pause
+    const totalTime =
+      waitBeforeAppear + // 👈 prend en compte le délai avant apparition
+      lignes.length * lineDelay +
+      Math.max(...lignes.map(l => l.length)) * charDelay +
+      300;
+
+    setTimeout(resolve, totalTime + pause);
+  });
+}
+
+
+// Disparition description CMD inverse (ligne par ligne)
+function cacherDescription(index, speed = 20) {
+  const desc = descriptions[index];
+  if (!desc) return Promise.resolve();
+
+  const spans = Array.from(desc.querySelectorAll('span'));
+
+  return new Promise(resolve => {
+    // --- calcul des lignes ---
+    const lignes = [];
+    let currentTop = null;
+    let currentLine = [];
+
+    spans.forEach(span => {
+      const top = span.getBoundingClientRect().top;
+      if (currentTop === null) currentTop = top;
+
+      if (Math.abs(top - currentTop) < 1) {
+        currentLine.push(span);
+      } else {
+        lignes.push(currentLine);
+        currentLine = [span];
+        currentTop = top;
+      }
+    });
+    if (currentLine.length) lignes.push(currentLine);
+
+    // --- disparition CMD sur toutes les lignes en parallèle ---
+    const totalTimers = [];
+
+    lignes.forEach(ligne => {
+      const lastIndex = ligne.length - 1;
+      ligne.forEach((span, i) => {
+        const delay = (lastIndex - i) * speed;
+
+        const t1 = setTimeout(() => {
+          span.style.color = 'black';
+          span.style.backgroundColor = 'white';
+        }, delay);
+
+        const t2 = setTimeout(() => {
+          span.style.opacity = '0';
+          span.style.color = 'transparent';
+          span.style.backgroundColor = 'transparent';
+        }, delay + Math.max(Math.floor(speed * 0.6), 15));
+
+        totalTimers.push(t1, t2);
+      });
+    });
+
+    // --- résolution après le dernier span ---
+    const maxDelay = lignes.reduce((max, ligne) => Math.max(max, ligne.length * speed), 0) + 30;
+    setTimeout(() => {
+      desc.classList.remove('visible');
+      desc.classList.add('hidden');
+      resolve();
+    }, maxDelay);
+  });
+}
+
+
+function suivreDescenteTitres(activeIndex, spacing = 10) {
+  const desc = descriptions[activeIndex];
+  const titres = Array.from(blokys).slice(activeIndex + 1);
+
+  if (!desc || titres.length === 0) return;
+
+  const step = 9;      // pixels par saut
+  const interval = 90; // ms entre chaque saut
+
+  // Stocke la position actuelle de chaque titre
+  const positions = titres.map(b => parseInt(b.style.transform.replace('translateY(', '')) || 0);
+
+  const timer = setInterval(() => {
+    const descRect = desc.getBoundingClientRect();
+
+    let anyMoved = false;
+
+    titres.forEach((b, i) => {
+      const blokRect = b.getBoundingClientRect();
+
+      // hauteur cumulée des titres précédents
+      let offset = 0;
+      for (let j = 0; j < i; j++) {
+        const prevRect = titres[j].getBoundingClientRect();
+        offset += prevRect.height + 4; // 4px = espace entre titres
+      }
+
+      const targetTop = descRect.bottom + spacing + offset;
+      const needed = targetTop - blokRect.top;
+
+      if (needed > 0) {
+        anyMoved = true;
+        positions[i] += Math.min(step, needed);
+        b.style.transform = `translateY(${positions[i]}px)`;
+      }
+    });
+
+
+    if (!anyMoved) clearInterval(timer); // stop quand tous sont arrivés
+  }, interval);
+}
+
+// === Remontée ===
+function remonterTitres(activeIndex) {
+  return new Promise(resolve => {
+    const step = 17;       // nombre de pixels par “saccade” vers le haut
+    const delay = 150;     // temps entre chaque saccade en ms
+
+
+    const titres = Array.from(blokys).slice(activeIndex + 1);
+    let completed = 0;
+
+    titres.forEach(b => {
+      let pos = parseInt(b.style.transform.replace('translateY(', '')) || 0;
+
+      const timer = setInterval(() => {
+        pos -= step;
+        if (pos <= 0) {
+          pos = 0;
+          clearInterval(timer);
+          completed++;
+          if (completed === titres.length) resolve();
+        }
+        b.style.transform = `translateY(${pos}px)`;
+      }, delay);
+    });
+
+    if (titres.length === 0) resolve();
+  });
+}
+
+
+function descendreTitres(activeIndex) {
+  return new Promise(resolve => {
+    const step = 25;       
+    const delay = 400;     
+    let completed = 0;
+
+    const titres = Array.from(blokys).slice(activeIndex + 1);
+
+    titres.forEach((b, idx) => {
+      let pos = 0;
+
+      // Calcul dynamique : vérifier si la description précédente existe
+      const desc = descriptions[activeIndex];
+      let offset = 90; // valeur par défaut
+      if (desc && desc.classList.contains('visible')) {
+        const descRect = desc.getBoundingClientRect();
+        const blokRect = b.getBoundingClientRect();
+        offset = (descRect.bottom - blokRect.top) + 8; // 8px margin
+      }
+
+      const timer = setInterval(() => {
+        pos += step;
+        if (pos >= offset) {
+          pos = offset;
+          clearInterval(timer);
+          completed++;
+          if (completed === titres.length) resolve();
+        }
+        b.style.transform = `translateY(${pos}px)`;
+      }, delay);
+    });
+
+    if (titres.length === 0) resolve();
+  });
+}
+
+
+// === Fonction qui lie Titre ↔ Description avec phases de repos ===
+async function lierTitreEtDescription(i, token) {
+  const blok = blokys[i];
+  const spans = Array.from(blok.querySelectorAll("span"));
+  const speed = 30;
+
+  nextYear(i);
+
+  // 🛑 STOP si annulé
+  if (token !== animationToken) return;
+
+  await phaseRepos();
+
+  if (token !== animationToken) return;
+
+  spans.forEach(span => {
+    span.style.transition = '';
+    span.style.color = '#808080';
+    span.style.backgroundColor = 'transparent';
+    span.style.opacity = '1';
+  });
+
+  spans.forEach((span, index) => {
+
+    setTimeout(() => {
+      if (token !== animationToken) return;
+      span.style.color = '#ff0000ff';
+      span.style.backgroundColor = '#ff0000ff';
+      span.style.opacity = '1';
+    }, index * speed);
+
+    setTimeout(() => {
+      if (token !== animationToken) return;
+      span.style.color = '#ff0000ff';
+      span.style.backgroundColor = 'transparent';
+    }, index * speed + Math.max(Math.floor(speed * 0.8), 20));
+  });
+
+  const totalCMD = spans.length * speed + 80;
+
+  await new Promise(resolve => setTimeout(resolve, totalCMD));
+
+  if (token !== animationToken) return;
+
+  await montrerDescription(i);
+
+  if (token !== animationToken) return;
+
+  await cacherDescription(i);
+
+  if (token !== animationToken) return;
+
+  // 🔥 LA PARTIE QUI POSAIT PROBLÈME
+  removeActiveColor(blok, 20, "#ff0000ff");
+
+  if (token !== animationToken) return;
+
+  await remonterTitres(i);
+}
+
+function getActiveIndex() {
+  return descriptions.findIndex(d => d.classList.contains('visible'));
+}
+
+
+
+// === Arrêt définitif du cycle titres / descriptions ===
+let cycleArrete = false;
+
+async function arreterCycleTitres() {
+  if (cycleArrete) return;
+  cycleArrete = true;
+
+  // titre actif : celui dont la description est visible, sinon celui en cours
+  let activeIndex = getActiveIndex();
+  if (activeIndex === -1) activeIndex = currentIndex;
+
+  // 1) couper la boucle et toutes les étapes en attente
+  boucleCase3 = false;
+  animationToken++;
+
+
+  // Arrêter les animations et le clignotement de l'année
+  if (yearElement?.timeouts) {
+
+    yearElement.timeouts.forEach(t => {
+
+        if (t.interval) clearInterval(t.interval);
+        else clearTimeout(t);
+
+    });
+
+    yearElement.timeouts = [];
+
+  }
+
+
+
+  // 2) animation de retour du paragraphe actif
+  await hideActiveDescriptionCMD();
+
+  // 3) le titre actif repasse en gris
+  if (blokys[activeIndex]) {
+    removeActiveColor(blokys[activeIndex], 20, "#ff0000ff");
+  }
+
+  // 4) remontée des titres, puis tout reste en place
+  await remonterTitres(activeIndex);
+}
+
+
+
+
+
+// === Animation principale en boucle ===
+let boucleCase3 = true;  // mettre à false pour arrêter la boucle
+
+let currentIndex = 0;
+let isManuallyTriggered = false;
+
+
+let animationToken = 0;
+
+
+async function startAnimationSequence() {
+  const myToken = ++animationToken; // 👈 nouveau cycle
+
+  while (boucleCase3 && myToken === animationToken) {
+
+    for (let i = currentIndex; i < blokys.length; i++) {
+
+      if (!boucleCase3 || myToken !== animationToken) return;
+
+      currentIndex = i;
+      await lierTitreEtDescription(i, myToken);
+
+      // 🔴 check après chaque étape importante
+      if (myToken !== animationToken) return;
+    }
+
+    currentIndex = 0;
+
+    await new Promise(resolve => setTimeout(resolve, 3000));
+
+    if (myToken !== animationToken) return;
+  }
+}
+
+
+blokys.forEach((blok, i) => {
+  blok.style.cursor = "pointer";
+
+  blok.addEventListener("click", async () => {
+    if (cycleArrete) return;
+    const activeIndex = getActiveIndex();
+
+    // ✅ 1. IGNORER complètement si déjà actif
+    if (i === activeIndex) return;
+
+    // 🔥 2. kill instant tous les cycles
+    boucleCase3 = false;
+    animationToken++;
+
+    // 3. disparition description active
+    await hideActiveDescriptionCMD();
+
+    // 4. reset couleur ancien actif
+    if (activeIndex !== -1) {
+      removeActiveColor(blokys[activeIndex], 20, "#ff0000ff");
+    }
+
+    // 5. remontée
+    if (activeIndex !== -1) {
+      await remonterTitres(activeIndex);
+    }
+
+    // 6. nouveau point de départ
+    currentIndex = i;
+
+    // 7. relancer proprement
+    boucleCase3 = true;
+    startAnimationSequence();
+  });
+});
+
+// === Anti-blink sur titres ===
+blokys.forEach(blok => {
+  // sur le blok principal
+  blok.addEventListener('mouseenter', hideCursor);
+  blok.addEventListener('mouseleave', delayedShowCursor);
+
+  // sur tous les spans enfants pour être sûr que le hover fonctionne
+  blok.querySelectorAll('span').forEach(span => {
+    span.addEventListener('mouseenter', hideCursor);
+    span.addEventListener('mouseleave', delayedShowCursor);
+  });
+});
+
+
+// === Effets Hover / Leave sur titres (.bloky)
+blokys.forEach((blok, index) => {
+
+  // --- hover (mouseenter) ---
+  blok.addEventListener('mouseenter', () => {
+
+    // ❌ IGNORER si CE titre est actif (description visible)
+    if (descriptions[index]?.classList.contains('visible')) return;
+
+    prepareCMDEffect(blok);
+    const spans = Array.from(blok.querySelectorAll('span'));
+    let timeouts = [];
+
+    spans.forEach((span, i) => {
+      const t1 = setTimeout(() => {
+        span.style.color = '#ff0000ff';
+        span.style.backgroundColor = '#ff0000ff';
+        span.style.opacity = '1';
+      }, i * 15);
+
+      const t2 = setTimeout(() => {
+        span.style.color = '#000000';
+        span.style.backgroundColor = '#ff0000ff';
+      }, i * 15 + 10);
+
+      const t3 = setTimeout(() => {
+        span.style.color = '#000000';
+      }, i * 15 + 20);
+
+      timeouts.push(t1, t2, t3);
+    });
+
+    blok.hoverTimeouts = timeouts;
+  });
+
+  // --- leave (mouseleave) ---
+  blok.addEventListener('mouseleave', () => {
+
+    // ❌ IGNORER si CE titre est actif
+    if (descriptions[index]?.classList.contains('visible')) return;
+
+    const spans = Array.from(blok.querySelectorAll('span'));
+
+    if (blok.hoverTimeouts) {
+      blok.hoverTimeouts.forEach(t => clearTimeout(t));
+      blok.hoverTimeouts = [];
+    }
+
+    const last = spans.length - 1;
+
+    spans.forEach((span, i) => {
+      const delay = (last - i) * 15;
+
+      setTimeout(() => {
+        span.style.color = '#ff0000ff';
+        span.style.backgroundColor = '#ff0000ff';
+      }, delay);
+
+      setTimeout(() => {
+        span.style.color = '#808080';
+        span.style.backgroundColor = 'transparent';
+      }, delay + 10);
+    });
+  });
+
+});
+
+
+
+
+
+
+
+
+/* ==========================
+   APPARITION CMD — __>
+   ========================== */
+
+function appearCMDArrow(element) {
+
+    if (!element) return;
+
+    const text = '__>';
+
+    element.innerHTML = '';
+    element.style.opacity = '1';
+
+    const spans = [];
+
+    /* ==========================
+       CRÉATION DES LETTRES
+       ========================== */
+
+    text.split('').forEach(char => {
+
+        const span =
+            document.createElement('span');
+
+        span.textContent =
+            char;
+
+        span.style.color =
+            'transparent';
+
+        span.style.backgroundColor =
+            'transparent';
+
+        element.appendChild(span);
+
+        spans.push(span);
+
+    });
+
+
+    /* ==========================
+       APPARITION CMD
+       ========================== */
+
+    spans.forEach((span, i) => {
+
+        const delay =
+            i * 30;
+
+
+        /* Passage blanc */
+
+        setTimeout(() => {
+
+            span.style.color =
+                '#050505';
+
+            span.style.backgroundColor =
+                '#666666';
+
+        }, delay);
+
+
+        /* État final */
+
+        setTimeout(() => {
+
+            span.style.color =
+                '#666666';
+
+            span.style.backgroundColor =
+                'transparent';
+
+        }, delay + 10);
+
+    });
+
+}
+
+
+/* ==========================
+   DISPARITION CMD — __>
+   ========================== */
+
+function disappearCMDArrow(element) {
+
+    if (!element) return;
+
+    const spans =
+        element.querySelectorAll('span');
+
+
+    /* ==========================
+       DISPARITION CMD
+       ========================== */
+
+    [...spans].reverse().forEach((span, i) => {
+
+        const delay =
+            i * 30;
+
+
+        /* Passage gris */
+
+        setTimeout(() => {
+
+            span.style.color =
+                '#050505';
+
+            span.style.backgroundColor =
+                '#666666';
+
+        }, delay);
+
+
+        /* État final */
+
+        setTimeout(() => {
+
+            span.style.color =
+                'transparent';
+
+            span.style.backgroundColor =
+                'transparent';
+
+        }, delay + 10);
+
+    });
+
+}
+
+
+
+
+
+function insertProfileText() {
+
+    const perso = document.querySelector('.perso');
+    const focus = document.querySelector('.focus');
+    const titleMoi = document.querySelector('.i');
+    const titleExpertise = document.querySelector('.do');
+
+
+
+    if (!perso || !focus || !titleMoi || !titleExpertise) return;
+    titleMoi.textContent = 'Moi';
+    titleExpertise.textContent = 'Mon expertise';
+
+    const persoLines = [
+        "Développeur,designer et photographe malgache,",
+        "originaire du sud-est de Madagascar.",
+        "Mon parcours se construit à la croisée",
+        "de la création visuelle, du numérique",
+        "et de l'art",
+        
+    ];
+
+
+
+    const focusLines = [
+
+
+        "J'exploite au maximum toute ma créativité",
+        "en créant des interfaces web très modernes,",
+        "en touchant à peu près tout ce qui concerne",
+        "la conception visuelle, de la typographie",
+        "au motion design et au web design,",
+        "en offrant un service ultra-personnalisé",
+        "et moderne.",
+
+        "",
+        "",
+
+        "Aussi multidisciplinaire qu'un patient",
+        "atteint du syndrome de Vinci.",
+
+        "",
+        "",
+
+        "Pendant mon temps libre, je photographie",
+        "mon environnement et mon entourage.",
+
+        "",
+        "",
+
+        "En rassemblant l'ensemble de mes compétences,",
+        "j'ai pour ferme objectif de mener une équipe",
+        "créative qui pourrait mettre en œuvre",
+        "mes idées créatives et assez folles."
+    ];
+
+
+
+    perso.innerHTML =
+        persoLines.join("<br>");
+
+
+    focus.innerHTML =
+        focusLines.join("<br>");
+}
+
+
+
+function initMobileParagraphs() {
+
+    if (window.innerWidth > 600) return;
+
+    const focus = document.querySelector('.focus');
+    const titleExpertise = document.querySelector('.do');
+
+    if (!focus || !titleExpertise) return;
+    if (focus.querySelector('.see-more')) return;
+
+    /* ==========================
+       RÉCUPÉRATION DES PARAGRAPHES
+       ========================== */
+
+    const focusLines = Array.from(
+        focus.querySelectorAll(':scope > .line-container')
+    );
+
+    function splitParagraphs(lines) {
+        const paragraphs = [];
+        let current = [];
+
+        lines.forEach(line => {
+            if (line.textContent.trim() === '') {
+                if (current.length) {
+                    paragraphs.push(current);
+                    current = [];
+                }
+            } else {
+                current.push(line);
+            }
+        });
+
+        if (current.length) paragraphs.push(current);
+
+        return paragraphs;
+    }
+
+    const focusParagraphs = splitParagraphs(focusLines);
+
+    if (focusParagraphs.length < 2) return;
+
+    const firstParagraph = focusParagraphs[0];
+    const additionalParagraphs = focusParagraphs.slice(1);
+
+    const lastFirstLine = firstParagraph[firstParagraph.length - 1];
+
+    const lastLine = additionalParagraphs[
+        additionalParagraphs.length - 1
+    ][additionalParagraphs[additionalParagraphs.length - 1].length - 1];
+
+    const lastIndex = focusLines.indexOf(lastFirstLine);
+    const hiddenLines = focusLines.slice(lastIndex + 1);
+
+    /* ==========================
+       CRÉATION DES FLÈCHES
+       ========================== */
+
+    function createArrow(className) {
+
+        const arrow = document.createElement('span');
+
+        arrow.className = className;
+        arrow.style.display = 'block';
+        arrow.style.width = 'max-content';
+        arrow.style.cursor = 'pointer';
+        arrow.style.fontSize = '1rem';
+
+        appearCMDArrow(arrow);
+
+        return arrow;
+    }
+
+    const seeMore = createArrow('see-more');
+    const seeLess = createArrow('see-less');
+
+    // Première flèche sous le premier paragraphe
+    lastFirstLine.after(seeMore);
+
+    // Deuxième flèche sous les paragraphes supplémentaires
+    lastLine.after(seeLess);
+
+    seeLess.style.display = 'none';
+
+    /* ==========================
+       ÉTAT INITIAL
+       ========================== */
+
+    let isExpanded = false;
+    let animationRunning = false;
+
+    hiddenLines.forEach(line => {
+        line.style.display = 'none';
+    });
+
+    seeLess.style.display = 'none';
+
+    /* ==========================
+       APPARITION DES PARAGRAPHES
+       ========================== */
+
+    function showExpertiseParagraphs() {
+
+        return new Promise(resolve => {
+
+            const lines = additionalParagraphs.flat();
+
+            let totalDuration = 0;
+
+            hiddenLines.forEach(line => {
+                line.style.display = 'block';
+            });
+
+            lines.forEach((line, lineIndex) => {
+
+                const spans = Array.from(
+                    line.querySelectorAll(':scope > span')
+                );
+
+                spans.forEach((span, charIndex) => {
+
+                    const delay =
+                        lineIndex * 100 +
+                        charIndex * 15;
+
+                    span.style.opacity = '0';
+                    span.style.color = 'transparent';
+                    span.style.backgroundColor = 'transparent';
+
+                    setTimeout(() => {
+                        span.style.opacity = '1';
+                        span.style.color = '#000000';
+                        span.style.backgroundColor = '#ffffff';
+                    }, delay);
+
+                    setTimeout(() => {
+                        span.style.color = '#ffffff';
+                        span.style.backgroundColor = 'transparent';
+                    }, delay + 15);
+
+                    totalDuration = Math.max(
+                        totalDuration,
+                        delay + 15
+                    );
+
+                });
+            });
+
+            setTimeout(resolve, totalDuration + 150);
+
+        });
+    }
+
+    /* ==========================
+       DISPARITION DES PARAGRAPHES
+       ========================== */
+
+    function hideExpertiseParagraphs() {
+
+        return new Promise(resolve => {
+
+            const lines = additionalParagraphs.flat();
+
+            let totalDuration = 0;
+
+            lines.forEach((line, lineIndex) => {
+
+                const spans = Array.from(
+                    line.querySelectorAll(':scope > span')
+                );
+
+                const last = spans.length - 1;
+
+                spans.forEach((span, charIndex) => {
+
+                    const delay =
+                        lineIndex * 100 +
+                        (last - charIndex) * 15;
+
+                    setTimeout(() => {
+                        span.style.color = '#000000';
+                        span.style.backgroundColor = '#ffffff';
+                        span.style.opacity = '1';
+                    }, delay);
+
+                    setTimeout(() => {
+                        span.style.opacity = '0';
+                        span.style.color = 'transparent';
+                        span.style.backgroundColor = 'transparent';
+                    }, delay + 15);
+
+                    totalDuration = Math.max(
+                        totalDuration,
+                        delay + 15
+                    );
+
+                });
+            });
+
+            setTimeout(() => {
+
+                hiddenLines.forEach(line => {
+                    line.style.display = 'none';
+                });
+
+                resolve();
+
+            }, totalDuration + 150);
+
+        });
+    }
+
+    /* ==========================
+       PREMIÈRE FLÈCHE : DÉVELOPPER
+       ========================== */
+
+    seeMore.addEventListener('click', async () => {
+
+        if (animationRunning || isExpanded) return;
+
+        animationRunning = true;
+
+        // Arrêter le cycle des titres
+        await arreterCycleTitres();
+
+        // Afficher les paragraphes supplémentaires
+        await showExpertiseParagraphs();
+
+        // Faire disparaître la première flèche
+        disappearCMDArrow(seeMore);
+
+        seeMore.style.display = 'none';
+
+        // Afficher la deuxième flèche
+        seeLess.style.display = 'block';
+        appearCMDArrow(seeLess);
+
+        isExpanded = true;
+        animationRunning = false;
+
+    });
+
+    /* ==========================
+       DEUXIÈME FLÈCHE : RÉDUIRE
+       ========================== */
+
+    seeLess.addEventListener('click', async () => {
+
+        if (animationRunning || !isExpanded) return;
+
+        animationRunning = true;
+
+        // Faire disparaître les paragraphes supplémentaires
+        await hideExpertiseParagraphs();
+
+        // Faire disparaître la deuxième flèche
+        disappearCMDArrow(seeLess);
+
+        seeLess.style.display = 'none';
+
+        // Réafficher la première flèche
+        seeMore.style.display = 'block';
+        appearCMDArrow(seeMore);
+
+        isExpanded = false;
+
+        // Réinitialiser les titres et descriptions
+        currentIndex = 0;
+        cycleArrete = false;
+        boucleCase3 = true;
+
+        // Relancer le cycle des animations
+        startAnimationSequence();
+
+        animationRunning = false;
+
+    });
+
+}
+
+
+
+
+
+
+// === Fonction utilitaire pour transformer chaque <p> en spans ===
+function prepareParagraphs(container, selectors) {
+  const paragraphs = container.querySelectorAll(selectors);
+
+  paragraphs.forEach(p => {
+    if (!p.querySelector('span')) {
+      const text = p.textContent;
+      p.textContent = ''; // vider
+      const lineContainer = document.createElement('span');
+      lineContainer.style.display = 'block';
+
+      text.split('').forEach(ch => {
+        const span = document.createElement('span');
+        span.textContent = ch;
+        span.style.color = 'transparent';
+        span.style.backgroundColor = 'transparent';
+        span.style.display = 'inline-block';
+        lineContainer.appendChild(span);
+      });
+
+      p.appendChild(lineContainer);
+    }
+  });
+
+  return paragraphs;
+}
+
+
+
+
+
+
+
+// ===================== //
+//   ANIMATION - PARA    //
+// ===================== //
+
+function appearPara() {
+  const container = document.querySelector('.para');
+  if (!container) return;
+
+  container.timeouts = [];
+  const paragraphs = container.querySelectorAll('p');
+
+  paragraphs.forEach(p => {
+
+    // Préparation du texte une seule fois
+    if (!p.querySelector('.line-container')) {
+
+      const nodes = Array.from(p.childNodes);
+      p.textContent = '';
+
+      let lineContainer = document.createElement('span');
+      lineContainer.className = 'line-container';
+      lineContainer.style.display = 'block';
+      lineContainer.style.minHeight = '1em';
+
+      nodes.forEach(node => {
+
+        // Texte
+        if (node.nodeType === Node.TEXT_NODE) {
+
+            if (node.textContent.trim() === '') {
+                return;
+            }
+
+            node.textContent.split('').forEach(ch => {
+
+                const span = document.createElement('span');
+
+                span.textContent =
+                    ch === ' ' ? '\u00A0' : ch;
+
+                span.style.color = 'transparent';
+                span.style.backgroundColor = 'transparent';
+                span.style.display = 'inline-block';
+
+                lineContainer.appendChild(span);
+            });
+
+        }
+
+        // <br>
+        else if (
+          node.nodeType === Node.ELEMENT_NODE &&
+          node.tagName === 'BR'
+        ) {
+
+          // On termine la ligne actuelle
+          p.appendChild(lineContainer);
+
+          // Nouvelle ligne
+          lineContainer = document.createElement('span');
+          lineContainer.className = 'line-container';
+          lineContainer.style.display = 'block';
+          lineContainer.style.minHeight = '1em';
+        }
+      });
+
+      // Ajouter la dernière ligne
+      p.appendChild(lineContainer);
+    }
+
+
+    // =========================
+    // ANIMATION
+    // =========================
+
+    const lineContainers = Array.from(
+      p.querySelectorAll('.line-container')
+    );
+
+    lineContainers.forEach(line => {
+
+      const spans = Array.from(line.querySelectorAll(':scope > span'));
+
+      spans.forEach(span => {
+        span.style.color = 'transparent';
+        span.style.backgroundColor = 'transparent';
+      });
+
+      // Chaque ligne commence son animation indépendamment
+      spans.forEach((span, i) => {
+
+        const t1 = setTimeout(() => {
+          span.style.color = '#ffffff';
+          span.style.backgroundColor = '#ffffff';
+        }, i * 20);
+
+        container.timeouts.push(t1);
+
+
+        const t2 = setTimeout(() => {
+          span.style.color = '#ffffffff';
+          span.style.backgroundColor = '#000000ff';
+        }, i * 20 + 10);
+
+        container.timeouts.push(t2);
+      });
+    });
+  });
+
+  container.isAppeared = true;
+}
+
+const leaveEffectTimersPara = new WeakMap();
+
+function leaveEffectPara() {
+  const container = document.querySelector('.para');
+  if (!container || !container.isAppeared) return Promise.resolve();
+
+  return new Promise(resolve => {
+
+    const paragraphs = container.querySelectorAll('p');
+
+    let totalDuration = 0;
+
+    paragraphs.forEach(p => {
+
+      const lineContainers = Array.from(p.children);
+
+      lineContainers.forEach(line => {
+
+        const spans = Array.from(line.children);
+
+        // Mettre toutes les lettres visibles au départ
+        spans.forEach(span => {
+          span.style.color = '#ffffff';
+          span.style.backgroundColor = 'transparent';
+        });
+
+        const lastIndex = spans.length - 1;
+
+        // Disparition de droite à gauche
+        spans.forEach((span, i) => {
+
+          const delay = (lastIndex - i) * 20;
+
+          const t1 = setTimeout(() => {
+            span.style.color = '#ffffff';
+            span.style.backgroundColor = '#ffffff';
+          }, delay);
+
+          const t2 = setTimeout(() => {
+            span.style.color = 'transparent';
+            span.style.backgroundColor = 'transparent';
+          }, delay + 20);
+
+          totalDuration = Math.max(
+            totalDuration,
+            delay + 20
+          );
+
+        });
+
+      });
+
+    });
+
+
+  });
+}
+
+
+
+
+
+
+// ===================== //
+//   ANIMATION - TITLED  //
+// ===================== //
+
+
+
+
+const leaveEffectTimersProfileTitled = new WeakMap();
+
+function leaveEffectTitled() {
+  const el = document.querySelector('.titled');
+  if (!el || !el.isAppeared) return;
+
+  const oldTimers = leaveEffectTimersProfileTitled.get(el);
+  if (oldTimers) {
+    oldTimers.forEach(t => clearTimeout(t));
+    leaveEffectTimersProfileTitled.delete(el);
+  }
+
+  if (!el.querySelector('span')) {
+    const paragraphs = el.querySelectorAll('p');
+    paragraphs.forEach(p => {
+      const nodes = Array.from(p.childNodes);
+      p.textContent = '';
+      nodes.forEach(node => {
+        if (node.nodeType === Node.TEXT_NODE) {
+          node.textContent.split('').forEach(ch => {
+            const span = document.createElement('span');
+            span.textContent = ch;
+            p.appendChild(span);
+          });
+        } else if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'BR') {
+          p.appendChild(document.createElement('br'));
+        }
+      });
+    });
+  }
+
+  const paragraphs = el.querySelectorAll('p');
+  const timers = [];
+
+  paragraphs.forEach(p => {
+    const spans = p.querySelectorAll('span');
+
+    spans.forEach(span => {
+      span.style.color = 'white';
+      span.style.backgroundColor = 'transparent';
+      span.style.border = 'none';
+      span.style.opacity = '1';
+    });
+
+    const lastIndex = spans.length - 1;
+
+    spans.forEach((span, i) => {
+      const delay = (lastIndex - i) * 20; // sortie plus lente
+
+      const t1 = setTimeout(() => {
+        span.style.color = 'black';
+        span.style.backgroundColor = 'white';
+        span.style.border = 'none';
+        span.style.opacity = '1';
+      }, delay);
+      timers.push(t1);
+
+      const t2 = setTimeout(() => {
+        span.style.opacity = '0';
+        span.style.color = '#000000';
+        span.style.backgroundColor = 'transparent';
+        span.style.border = 'none';
+      }, delay + 25);
+      timers.push(t2);
+    });
+  });
+
+  leaveEffectTimersProfileTitled.set(el, timers);
+
+  el.isAppeared = false;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1964,2823 +3719,19 @@ if (particleContainer) {
 
 
 
-/* ==========================
-   APPARITION CMD — __>
-   ========================== */
 
-function appearCMDArrow(element) {
 
-    if (!element) return;
 
-    const text = '__>';
 
-    element.innerHTML = '';
-    element.style.opacity = '1';
 
-    const spans = [];
 
-    /* ==========================
-       CRÉATION DES LETTRES
-       ========================== */
 
-    text.split('').forEach(char => {
 
-        const span =
-            document.createElement('span');
 
-        span.textContent =
-            char;
 
-        span.style.color =
-            'transparent';
 
-        span.style.backgroundColor =
-            'transparent';
 
-        element.appendChild(span);
 
-        spans.push(span);
-
-    });
-
-
-    /* ==========================
-       APPARITION CMD
-       ========================== */
-
-    spans.forEach((span, i) => {
-
-        const delay =
-            i * 30;
-
-
-        /* Passage blanc */
-
-        setTimeout(() => {
-
-            span.style.color =
-                '#050505';
-
-            span.style.backgroundColor =
-                '#666666';
-
-        }, delay);
-
-
-        /* État final */
-
-        setTimeout(() => {
-
-            span.style.color =
-                '#666666';
-
-            span.style.backgroundColor =
-                'transparent';
-
-        }, delay + 10);
-
-    });
-
-}
-
-
-/* ==========================
-   DISPARITION CMD — __>
-   ========================== */
-
-function disappearCMDArrow(element) {
-
-    if (!element) return;
-
-    const spans =
-        element.querySelectorAll('span');
-
-
-    /* ==========================
-       DISPARITION CMD
-       ========================== */
-
-    [...spans].reverse().forEach((span, i) => {
-
-        const delay =
-            i * 30;
-
-
-        /* Passage gris */
-
-        setTimeout(() => {
-
-            span.style.color =
-                '#050505';
-
-            span.style.backgroundColor =
-                '#666666';
-
-        }, delay);
-
-
-        /* État final */
-
-        setTimeout(() => {
-
-            span.style.color =
-                'transparent';
-
-            span.style.backgroundColor =
-                'transparent';
-
-        }, delay + 10);
-
-    });
-
-}
-
-
-
-
-
-function insertProfileText() {
-
-    const perso = document.querySelector('.perso');
-    const focus = document.querySelector('.focus');
-    const titleMoi = document.querySelector('.i');
-    const titleExpertise = document.querySelector('.do');
-
-
-
-    if (!perso || !focus || !titleMoi || !titleExpertise) return;
-    titleMoi.textContent = 'Moi';
-    titleExpertise.textContent = 'Mon expertise';
-
-    const persoLines = [
-        "Développeur,designer et photographe malgache,",
-        "originaire du sud-est de Madagascar.",
-        "Mon parcours se construit à la croisée",
-        "de la création visuelle, du numérique",
-        "et de l'art",
-        
-    ];
-
-
-
-    const focusLines = [
-
-
-        "J'exploite au maximum toute ma créativité",
-        "en créant des interfaces web très modernes,",
-        "en touchant à peu près tout ce qui concerne",
-        "la conception visuelle, de la typographie",
-        "au motion design et au web design,",
-        "en offrant un service ultra-personnalisé",
-        "et moderne.",
-
-        "",
-        "",
-
-        "Aussi multidisciplinaire qu'un patient",
-        "atteint du syndrome de Vinci.",
-
-        "",
-        "",
-
-        "Pendant mon temps libre, je photographie",
-        "mon environnement et mon entourage.",
-
-        "",
-        "",
-
-        "En rassemblant l'ensemble de mes compétences,",
-        "j'ai pour ferme objectif de mener une équipe",
-        "créative qui pourrait mettre en œuvre",
-        "mes idées créatives et assez folles."
-    ];
-
-
-
-    perso.innerHTML =
-        persoLines.join("<br>");
-
-
-    focus.innerHTML =
-        focusLines.join("<br>");
-}
-
-
-
-function initMobileParagraphs() {
-
-    if (window.innerWidth > 600) return;
-
-    const perso = document.querySelector('.perso');
-    const focus = document.querySelector('.focus');
-    const titleMoi = document.querySelector('.i');
-    const titleExpertise = document.querySelector('.do');
-    if (!perso || !focus || !titleMoi || !titleExpertise) return;
-
-
-    /* ==========================
-       CRÉATION DE LA FLÈCHE
-       ========================== */
-
-    const seeMore =
-        document.createElement('div');
-
-    seeMore.className =
-        'see-more';
-
-    appearCMDArrow(seeMore);
-
-    seeMore.style.fontSize =
-        '1rem'; // ← change la taille ici
-
-
-    /*
-    * La flèche est créée directement
-    * dans le même conteneur que l'ancienne.
-    */
-
-    titleMoi.parentNode.appendChild(
-        seeMore
-    );
-    /* ==========================
-       RÉCUPÉRATION DES LIGNES
-       ========================== */
-
-    const persoLines =
-        Array.from(
-            perso.querySelectorAll(':scope > .line-container')
-        );
-
-    const focusLines =
-        Array.from(
-            focus.querySelectorAll(':scope > .line-container')
-        );
-
-
-    /* ==========================
-       DÉTECTION DES PARAGRAPHES
-       ========================== */
-
-    function splitParagraphs(lines) {
-
-        const paragraphs = [];
-        let current = [];
-
-        lines.forEach(line => {
-
-            if (line.textContent.trim() === '') {
-
-                if (current.length) {
-                    paragraphs.push(current);
-                    current = [];
-                }
-
-            } else {
-
-                current.push(line);
-
-            }
-
-        });
-
-        if (current.length) {
-            paragraphs.push(current);
-        }
-
-        return paragraphs;
-    }
-
-
-    const persoParagraphs =
-        splitParagraphs(persoLines);
-
-    const focusParagraphs =
-        splitParagraphs(focusLines);
-
-
-    if (
-        persoParagraphs.length < 3 ||
-        focusParagraphs.length < 3
-    ) return;
-
-
-
-
-    /* ==========================
-      ANIMATION DE LA FLÈCHE
-      ========================== */
-
-    /* ==========================
-      ANIMATION DE LA FLÈCHE
-      ========================== */
-
-    function animateArrow(reverse = false) {
-
-        return new Promise(resolve => {
-
-            const steps = 6;
-            const delay = 50;
-            const trailLength = 4;
-
-            let currentStep = 0;
-
-            seeMore.style.opacity = '1';
-            seeMore.style.color = '#666666';
-
-            seeMore.innerHTML = '';
-
-            const trail =
-                document.createElement('span');
-
-            const head =
-                document.createElement('span');
-
-            trail.className = 'arrow-trail';
-            head.className = 'arrow-head';
-
-            if (reverse) {
-
-                head.textContent = '<';
-
-                seeMore.appendChild(head);
-                seeMore.appendChild(trail);
-
-            } else {
-
-                head.textContent = '>';
-
-                seeMore.appendChild(trail);
-                seeMore.appendChild(head);
-
-            }
-
-
-            /* ==========================
-              PHASE 1
-              CONSTRUCTION DE LA FLÈCHE
-              ========================== */
-
-            function moveArrow() {
-
-                currentStep++;
-
-                if (currentStep <= steps) {
-
-                    const length =
-                        currentStep * trailLength;
-
-                    trail.innerHTML = '';
-
-                    for (let i = 0; i < length; i++) {
-
-                        const char =
-                            document.createElement('span');
-
-                        char.textContent = '_';
-                        char.style.color = '#666666';
-
-                        trail.appendChild(char);
-
-                    }
-
-                    setTimeout(
-                        moveArrow,
-                        delay
-                    );
-
-                } else {
-
-                    setTimeout(
-                        lockHead,
-                        5
-                    );
-
-                }
-
-            }
-
-
-            /* ==========================
-              VERROUILLAGE
-              ========================== */
-
-            function lockHead() {
-
-                const headRect =
-                    head.getBoundingClientRect();
-
-                const parentRect =
-                    seeMore.getBoundingClientRect();
-
-                const finalLeft =
-                    headRect.left - parentRect.left;
-
-
-                head.style.position =
-                    'absolute';
-
-                head.style.left =
-                    `${finalLeft}px`;
-
-                head.style.top =
-                    '0';
-
-
-                trail.style.position =
-                    'absolute';
-
-                if (!reverse) {
-
-                    trail.style.left =
-                        '0';
-
-                } else {
-
-                    trail.style.left =
-                        `${headRect.width}px`;
-
-                }
-
-
-                changeTrailColor();
-
-            }
-
-
-            /* ==========================
-              PHASE 2
-              LES TIRETS DEVIENNENT NOIRS
-              ========================== */
-
-            function changeTrailColor() {
-
-                const chars =
-                    Array.from(
-                        trail.children
-                    );
-
-                let index = 0;
-
-                function changeNext() {
-
-                    if (index < chars.length) {
-
-                        if (!reverse) {
-
-                            /*
-                            * Gauche → droite
-                            */
-
-                            chars[index].style.color =
-                                '#000000';
-
-                        } else {
-
-                            /*
-                            * Droite → gauche
-                            */
-
-                            chars[
-                                chars.length - 1 - index
-                            ].style.color =
-                                '#000000';
-
-                        }
-
-                        index++;
-
-                        setTimeout(
-                            changeNext,
-                            5
-                        );
-
-                    } else {
-
-                        /*
-                        * Tous les tirets sont noirs.
-                        * La tête devient noire à son tour.
-                        */
-
-                        head.style.color =
-                            '#000000';
-
-                        setTimeout(() => {
-
-                            resolve();
-
-                        }, 100);
-
-                    }
-
-                }
-
-                changeNext();
-
-            }
-
-
-            moveArrow();
-
-        });
-
-    }
-
-    /* ==========================
-      POSITION DE LA FLÈCHE
-      SOUS LE 3e PARAGRAPHE
-      ========================== */
-
-
-
-    /* ==========================
-       CRÉATION DE LA NOUVELLE FLÈCHE
-       ========================== */
-
-    function createReverseArrow() {
-
-        const newArrow =
-            seeMore.cloneNode(false);
-
-        newArrow.className =
-            'see-more reverse-arrow';
-
-        newArrow.textContent =
-            '<__';
-
-        newArrow.style.color =
-            '#000000';
-
-        newArrow.style.opacity =
-            '1';
-
-        newArrow.style.transform =
-            'none';
-
-        seeMore.parentNode.appendChild(
-            newArrow
-        );
-
-        newArrow.addEventListener(
-            'click',
-            toggleProfile
-        );
-
-        const thirdParagraph =
-            persoParagraphs[2];
-
-        const lastLine =
-            thirdParagraph?.[
-                thirdParagraph.length - 1
-            ];
-
-        if (!lastLine) return newArrow;
-
-        requestAnimationFrame(() => {
-
-            const paragraphRect =
-                lastLine.getBoundingClientRect();
-
-            const arrowRect =
-                newArrow.getBoundingClientRect();
-
-            const gap = 20;
-
-            const targetTop =
-                paragraphRect.bottom + gap;
-
-            const targetLeft =
-                paragraphRect.right - arrowRect.width + 180;
-
-            const offsetX =
-                targetLeft - arrowRect.left;
-
-            const offsetY =
-                targetTop - arrowRect.top;
-
-            newArrow.style.transform =
-                `translate(${offsetX}px, ${offsetY}px)`;
-
-        });
-
-        return newArrow;
-
-    }
-
-
-
-
-    function animateReverseArrow() {
-
-        return new Promise(resolve => {
-
-            if (!reverseArrow) {
-                resolve();
-                return;
-            }
-
-            const arrow =
-                reverseArrow;
-
-
-            /* ==========================
-            CRÉATION DE LA FLÈCHE
-            ========================== */
-
-            arrow.innerHTML = '';
-
-            arrow.style.color =
-                '#BA3A23';
-
-
-            const head =
-                document.createElement('span');
-
-            const trail =
-                document.createElement('span');
-
-
-            head.className =
-                'arrow-head';
-
-            trail.className =
-                'arrow-trail';
-
-
-            head.textContent =
-                '<';
-
-
-            /*
-            * 2 traits au départ.
-            */
-
-            for (
-                let i = 0;
-                i < 2;
-                i++
-            ) {
-
-                const char =
-                    document.createElement('span');
-
-                char.textContent =
-                    '_';
-
-                char.style.color =
-                    '#BA3A23';
-
-                trail.appendChild(
-                    char
-                );
-
-            }
-
-
-            arrow.appendChild(head);
-            arrow.appendChild(trail);
-
-
-            /* ==========================
-            POSITION DE DÉPART
-            ========================== */
-
-            head.style.position =
-                'absolute';
-
-            trail.style.position =
-                'absolute';
-
-            head.style.top =
-                '0';
-
-            trail.style.top =
-                '0';
-
-
-            const arrowRect =
-                arrow.getBoundingClientRect();
-
-            const headRect =
-                head.getBoundingClientRect();
-
-
-            const startHeadLeft =
-                headRect.left -
-                arrowRect.left;
-
-
-            const headWidth =
-                headRect.width;
-
-
-            /*
-            * Position initiale.
-            */
-
-            head.style.left =
-                `${startHeadLeft}px`;
-
-            trail.style.left =
-                `${startHeadLeft + headWidth}px`;
-
-
-            /* ==========================
-            PARAMÈTRES
-            ========================== */
-
-            const steps =
-                5;
-
-            const delay =
-                40;
-
-            const moveDistance =
-                37;
-
-            const trailLength =
-                4;
-
-
-            let currentStep =
-                0;
-
-
-            /* ==========================
-            DÉPLACEMENT + ALLONGEMENT
-            ========================== */
-
-            function moveArrow() {
-
-                currentStep++;
-
-
-                if (
-                    currentStep <=
-                    steps
-                ) {
-
-                    /*
-                    * La tête se déplace
-                    * progressivement vers la gauche.
-                    */
-
-                    const newHeadLeft =
-                        startHeadLeft -
-                        currentStep *
-                        moveDistance;
-
-
-                    head.style.left =
-                        `${newHeadLeft}px`;
-
-
-                    /*
-                    * Les traits s'allongent
-                    * pendant exactement le même
-                    * mouvement.
-                    */
-
-                    const length =
-                        2 +
-                        currentStep *
-                        trailLength;
-
-
-                    trail.innerHTML =
-                        '';
-
-
-                    for (
-                        let i = 0;
-                        i < length;
-                        i++
-                    ) {
-
-                        const char =
-                            document.createElement('span');
-
-                        char.textContent =
-                            '_';
-
-                        char.style.color =
-                            '#BA3A23';
-
-                        trail.appendChild(
-                            char
-                        );
-
-                    }
-
-
-                    /*
-                    * Les traits restent attachés
-                    * à la tête.
-                    */
-
-                    trail.style.left =
-                        `${newHeadLeft + headWidth}px`;
-
-
-                    /*
-                    * Prochaine étape.
-                    */
-
-                    setTimeout(
-                        moveArrow,
-                        delay
-                    );
-
-
-                } else {
-
-                    /* ==========================
-                    POSITION FINALE
-                    ========================== */
-
-                    const finalHeadLeft =
-                        startHeadLeft -
-                        steps *
-                        moveDistance;
-
-
-                    /*
-                    * Tête définitivement fixée.
-                    */
-
-                    head.style.left =
-                        `${finalHeadLeft}px`;
-
-
-                    /*
-                    * Les traits restent définitivement
-                    * attachés à la tête.
-                    */
-
-                    trail.style.left =
-                        `${finalHeadLeft + headWidth}px`;
-
-
-                    /*
-                    * IMPORTANT :
-                    *
-                    * On ne modifie plus ni la tête
-                    * ni la position des traits.
-                    *
-                    * On passe uniquement à la couleur.
-                    */
-
-                    changeTrailColor();
-
-                }
-
-            }
-
-
-            /* ==========================
-            COLORATION
-            DROITE → GAUCHE
-            ========================== */
-
-            function changeTrailColor() {
-
-                const chars =
-                    Array.from(
-                        trail.children
-                    );
-
-                let index =
-                    0;
-
-
-                function changeNext() {
-
-                    if (
-                        index <
-                        chars.length
-                    ) {
-
-                        /*
-                        * Le dernier trait devient noir
-                        * en premier.
-                        *
-                        * Puis l'avant-dernier,
-                        * puis le précédent...
-                        */
-
-                        chars[
-                            chars.length -
-                            1 -
-                            index
-                        ].style.color =
-                            '#000000';
-
-
-                        index++;
-
-
-                        setTimeout(
-                            changeNext,
-                            5
-                        );
-
-
-                    } else {
-
-                        /*
-                        * Tous les traits sont noirs.
-                        *
-                        * La tête devient noire
-                        * à la fin.
-                        */
-
-                        head.style.color =
-                            '#000000';
-
-
-                        setTimeout(() => {
-
-                            resolve();
-
-                        }, 100);
-
-                    }
-
-                }
-
-
-                changeNext();
-
-            }
-
-
-            /* ==========================
-            DÉMARRAGE
-            ========================== */
-
-            moveArrow();
-
-        });
-
-    }
-
-
-
-
-
-    /* ==========================
-      POSITION DE LA FLÈCHE
-      ÉTAT INITIAL
-      ========================== */
-
-    function positionInitialArrow() {
-
-        const firstMoiParagraph =
-            persoParagraphs[0];
-
-        const firstMoiLastLine =
-            firstMoiParagraph?.[
-                firstMoiParagraph.length - 1
-            ];
-
-        if (!firstMoiLastLine) return;
-
-        const moiRect =
-            firstMoiLastLine.getBoundingClientRect();
-
-        const arrowRect =
-            seeMore.getBoundingClientRect();
-
-        const arrowGapY = 2;
-
-        const targetTop =
-            moiRect.bottom + arrowGapY;
-
-        const offsetY =
-            targetTop - arrowRect.top;
-
-        /*
-        * Retour à la position horizontale initiale.
-        */
-
-        const offsetX = 0;
-
-        seeMore.style.transform =
-            `translate(${offsetX}px, ${offsetY}px)`;
-
-    }
-
-
-
-    /* ==========================
-       ÉTAT INITIAL
-       ========================== */
-
-    // Les paragraphes 2 et 3 de "Moi"
-    // sont invisibles dès le départ.
-
-    persoParagraphs.slice(1).flat().forEach(line => {
-
-        line.querySelectorAll(':scope > span').forEach(span => {
-
-            span.style.opacity = '0';
-            span.style.color = 'transparent';
-            span.style.backgroundColor = 'transparent';
-
-        });
-
-    });
-
-    /* ==========================
-       ANIMATION DISPARITION
-       ========================== */
-
-    function hideParagraphs(paragraphs, speed = 25) {
-
-        return new Promise(resolve => {
-
-            const lines = paragraphs.flat();
-
-            let totalDuration = 0;
-
-            lines.forEach(line => {
-
-                const spans =
-                    Array.from(
-                        line.querySelectorAll(':scope > span')
-                    );
-
-                const lastIndex = spans.length - 1;
-
-                spans.forEach((span, i) => {
-
-                    const delay =
-                        (lastIndex - i) * speed;
-
-                    setTimeout(() => {
-
-                        span.style.opacity = '1';
-                        span.style.color = '#000000';
-                        span.style.backgroundColor = '#ffffff';
-
-                    }, delay);
-
-                    setTimeout(() => {
-
-                        span.style.opacity = '0';
-                        span.style.color = 'transparent';
-                        span.style.backgroundColor = 'transparent';
-
-                    }, delay + 10);
-
-                    totalDuration =
-                        Math.max(
-                            totalDuration,
-                            delay + 10
-                        );
-
-                });
-
-            });
-
-            setTimeout(() => {
-                resolve();
-            }, totalDuration + 50);
-
-        });
-
-    }
-
-
-    /* ==========================
-       ANIMATION APPARITION
-       ========================== */
-
-    function showParagraphs(paragraphs, speed = 25) {
-
-        return new Promise(resolve => {
-
-            const lines = paragraphs.flat();
-
-            let totalDuration = 0;
-
-            lines.forEach(line => {
-
-                const spans =
-                    Array.from(
-                        line.querySelectorAll(':scope > span')
-                    );
-
-                spans.forEach((span, i) => {
-
-                    const delay = i * speed;
-
-                    setTimeout(() => {
-
-                        span.style.opacity = '1';
-                        span.style.color = '#ffffff';
-                        span.style.backgroundColor = '#000000';
-
-                    }, delay);
-
-                    totalDuration =
-                        Math.max(
-                            totalDuration,
-                            delay + 10
-                        );
-
-                });
-
-            });
-
-            setTimeout(() => {
-                resolve();
-            }, totalDuration + 50);
-
-        });
-
-    }
-
-
-    /* ==========================
-       DESCENTE
-       ========================== */
-
-    function moveExpertise(distance = 220, speed = 70) {
-
-        return new Promise(resolve => {
-
-            let position = initialOffset;
-
-            const step = 20;
-
-            const firstParagraph =
-                focusParagraphs[0];
-
-            const timer = setInterval(() => {
-
-                position += step;
-
-                if (position >= initialOffset + distance) {
-
-                    position = initialOffset + distance;
-
-                    clearInterval(timer);
-                    resolve();
-
-                }
-
-                titleExpertise.style.transform =
-                    `translateY(${position}px)`;
-
-                firstParagraph.forEach(line => {
-
-                    line.style.transform =
-                        `translateY(${position}px)`;
-
-                });
-
-            }, speed);
-
-        });
-
-    }
-
-
-    /* ==========================
-       REMONTÉE
-       ========================== */
-
-    function resetExpertise(distance = 200, speed = 70) {
-
-        return new Promise(resolve => {
-
-            let position = initialOffset + distance;
-
-            const step = 20;
-
-            const firstParagraph =
-                focusParagraphs[0];
-
-            const timer = setInterval(() => {
-
-                position -= step;
-
-                if (position <= initialOffset) {
-
-                    position = initialOffset;
-
-                    clearInterval(timer);
-                    resolve();
-
-                }
-
-                titleExpertise.style.transform =
-                    `translateY(${position}px)`;
-
-                firstParagraph.forEach(line => {
-
-                    line.style.transform =
-                        `translateY(${position}px)`;
-
-                });
-
-            }, speed);
-
-        });
-
-    }
-
-
-    // Position initiale de "Mon expertise"
-    // au niveau du 2e paragraphe de "Moi"
-    /* ==========================
-      POSITIONS INITIALES
-      ========================== */
-
-    let initialOffset = 0;
-
-    const firstMoiLine =
-        persoParagraphs[0]?.[
-            persoParagraphs[0].length - 1
-        ];
-
-    if (firstMoiLine) {
-
-        /* ==========================
-          POSITION DE LA FLÈCHE
-          ========================== */
-
-        /* ==========================
-          POSITION DE LA FLÈCHE
-          ========================== */
-
-        const firstMoiParagraph =
-            persoParagraphs[0];
-
-        const firstMoiLastLine =
-            firstMoiParagraph?.[firstMoiParagraph.length - 1];
-
-        if (firstMoiLastLine) {
-
-            const moiBottom =
-                firstMoiLastLine.getBoundingClientRect().bottom;
-
-            const arrowTop =
-                seeMore.getBoundingClientRect().top;
-
-            const arrowGap = 2;
-
-            const arrowOffset =
-                moiBottom + arrowGap - arrowTop;
-
-            seeMore.style.transform =
-                `translateY(${arrowOffset}px)`;
-        }
-
-
-        /* ==========================
-          POSITION DE MON EXPERTISE
-          ========================== */
-
-        const arrowBottom =
-            seeMore.getBoundingClientRect().bottom;
-
-        const expertiseTop =
-            titleExpertise.getBoundingClientRect().top;
-
-        const expertiseGap = 20;
-
-        initialOffset =
-            arrowBottom + expertiseGap - expertiseTop;
-
-        titleExpertise.style.transform =
-            `translateY(${initialOffset}px)`;
-
-        focusParagraphs.flat().forEach(line => {
-            line.style.transform =
-                `translateY(${initialOffset}px)`;
-        });
-
-    }
-
-    /* ==========================
-       ÉTAT INITIAL
-       ========================== */
-
-    let isExpanded = false;
-    let animationRunning = false;
-    let reverseArrow = null;
-
-
-    
-    /* ==========================
-    ANIMATION PRINCIPALE
-    ========================== */
-
-    async function toggleProfile() {
-
-        if (animationRunning) return;
-
-        animationRunning = true;
-
-
-
-        if (!isExpanded) {
-
-            /* ==========================
-            1. L'ANCIENNE FLÈCHE DEVIENT NOIRE
-            ========================== */
-
-            await animateArrow(false);
-
-
-            /* ==========================
-            2. DISPARITION DE L'EXPERTISE
-            ========================== */
-
-            await hideParagraphs(
-                focusParagraphs
-            );
-
-
-            /* ==========================
-            3. NOUVELLE FLÈCHE NOIRE
-               SOUS LE 3e PARAGRAPHE
-            ========================== */
-
-            reverseArrow =
-                createReverseArrow();
-
-
-            /* ==========================
-            4. DESCENTE DE L'EXPERTISE
-            ========================== */
-
-            await moveExpertise();
-
-
-            /* ==========================
-            5. APPARITION DE "MOI"
-            ========================== */
-
-            await showParagraphs(
-                persoParagraphs.slice(1)
-            );
-
-
-            /* ==========================
-            6. L'ANCIENNE FLÈCHE DISPARAÎT
-            ========================== */
-
-            seeMore.style.opacity =
-                '0';
-
-
-            /* ==========================
-            7. LA NOUVELLE FLÈCHE DEVIENT ROUGE
-            ========================== */
-
-            if (reverseArrow) {
-
-                reverseArrow.style.color =
-                    '#BA3A23';
-
-            }
-
-            isExpanded = true;
-
-        } else {
-
-            /* ==========================
-            1. ANIMATION INVERSE
-            ========================== */
-
-            await animateReverseArrow();
-
-            /* ==========================
-            2. DISPARITION DE "MOI"
-            ========================== */
-
-            await hideParagraphs(
-                persoParagraphs.slice(1)
-            );
-
-
-            /* ==========================
-            3. SUPPRESSION DE LA
-               NOUVELLE FLÈCHE
-            ========================== */
-
-            if (reverseArrow) {
-
-                reverseArrow.remove();
-
-                reverseArrow = null;
-
-            }
-
-
-            /* ==========================
-            4. REMONTÉE DE L'EXPERTISE
-            ========================== */
-
-            await resetExpertise();
-
-
-            /* ==========================
-            5. RÉAPPARITION DE L'EXPERTISE
-            ========================== */
-
-            await showParagraphs(
-                focusParagraphs
-            );
-
-            isExpanded = false;
-
-
-            /* ==========================
-            6. RETOUR À L'ÉTAT INITIAL
-            ========================== */
-
-            seeMore.innerHTML =
-                '__>';
-
-            seeMore.style.opacity =
-                '1';
-
-            seeMore.style.color =
-                '#666666';
-
-            seeMore.style.position =
-                'relative';
-
-            seeMore.style.transform =
-                'none';
-
-            positionInitialArrow();
-
-        }
-
-        animationRunning = false;
-    }
-
-
-    /* ==========================
-    CLIC SUR "MOI"
-    ========================== */
-
-    titleMoi.addEventListener(
-        'click',
-        toggleProfile
-    );
-
-
-    /* ==========================
-    CLIC SUR LA FLÈCHE
-    ========================== */
-
-    seeMore.addEventListener(
-        'click',
-        toggleProfile
-    );
-
-
-    
-}
-
-
-
-
-
-
-
-
-// === Fonction utilitaire pour transformer chaque <p> en spans ===
-function prepareParagraphs(container, selectors) {
-  const paragraphs = container.querySelectorAll(selectors);
-
-  paragraphs.forEach(p => {
-    if (!p.querySelector('span')) {
-      const text = p.textContent;
-      p.textContent = ''; // vider
-      const lineContainer = document.createElement('span');
-      lineContainer.style.display = 'block';
-
-      text.split('').forEach(ch => {
-        const span = document.createElement('span');
-        span.textContent = ch;
-        span.style.color = 'transparent';
-        span.style.backgroundColor = 'transparent';
-        span.style.display = 'inline-block';
-        lineContainer.appendChild(span);
-      });
-
-      p.appendChild(lineContainer);
-    }
-  });
-
-  return paragraphs;
-}
-
-// === APPARITION (other + passion) ===
-function appearProfileTitleFirstTwo() {
-  const container = document.querySelector('.profiletitle');
-  if (!container) return;
-
-  container.timeouts = [];
-  const paragraphs = prepareParagraphs(container, '.other p, .passion p');
-
-  let maxDelay = 0;
-
-  paragraphs.forEach(p => {
-    const spans = Array.from(p.querySelectorAll('span > span'));
-
-    spans.forEach((span, i) => {
-      const t1 = setTimeout(() => {
-        span.style.color = '#535353';
-        span.style.backgroundColor = '#ff0000';
-      }, i * 20);
-      container.timeouts.push(t1);
-
-      const t2 = setTimeout(() => {
-        span.style.color = '#ff0000';
-        span.style.backgroundColor = '#000000ff';
-      }, i * 20 + 10);
-      container.timeouts.push(t2);
-
-      if (i * 20 + 10 > maxDelay) maxDelay = i * 20 + 10;
-    });
-  });
-
-  container.isAppearedFirstTwo = true;
-}
-
-// === DISPARITION (other + passion) ===
-function leaveProfileTitleFirstTwo() {
-  const container = document.querySelector('.profiletitle');
-  if (!container || !container.isAppearedFirstTwo) return;
-
-  const paragraphs = container.querySelectorAll('.other p, .passion p');
-
-  paragraphs.forEach(p => {
-    const spans = Array.from(p.querySelectorAll('span > span'));
-
-    spans.forEach((span, i) => {
-      const delay = (spans.length - 1 - i) * 20;
-      setTimeout(() => {
-        span.style.color = '#535353';
-        span.style.backgroundColor = '#ff0000';
-      }, delay);
-      setTimeout(() => {
-        span.style.color = 'transparent';
-        span.style.backgroundColor = 'transparent';
-      }, delay + 20);
-    });
-  });
-
-  container.isAppearedFirstTwo = false;
-}
-
-// === APPARITION (craft + skills5) ===
-function appearProfileTitleLastTwo() {
-  const container = document.querySelector('.profiletitle');
-  if (!container) return;
-
-  container.timeouts = [];
-  const paragraphs = prepareParagraphs(container, '.craft p, .skills5 p');
-
-  let maxDelay = 0;
-
-  paragraphs.forEach(p => {
-    const spans = Array.from(p.querySelectorAll('span > span'));
-
-    spans.forEach((span, i) => {
-      const t1 = setTimeout(() => {
-        span.style.color = '#535353';
-        span.style.backgroundColor = '#535353';
-      }, i * 20);
-      container.timeouts.push(t1);
-
-      const t2 = setTimeout(() => {
-        span.style.color = '#535353';
-        span.style.backgroundColor = '#000000ff';
-      }, i * 20 + 10);
-      container.timeouts.push(t2);
-
-      if (i * 20 + 10 > maxDelay) maxDelay = i * 20 + 10;
-    });
-  });
-
-  container.isAppearedLastTwo = true;
-}
-
-// === DISPARITION (craft + skills5) ===
-function leaveProfileTitleLastTwo() {
-  const container = document.querySelector('.profiletitle');
-  if (!container || !container.isAppearedLastTwo) return;
-
-  const paragraphs = container.querySelectorAll('.craft p, .skills5 p');
-
-  paragraphs.forEach(p => {
-    const spans = Array.from(p.querySelectorAll('span > span'));
-
-    spans.forEach((span, i) => {
-      const delay = (spans.length - 1 - i) * 20;
-      setTimeout(() => {
-        span.style.color = '#535353';
-        span.style.backgroundColor = '#535353';
-      }, delay);
-      setTimeout(() => {
-        span.style.color = 'transparent';
-        span.style.backgroundColor = 'transparent';
-      }, delay + 20);
-    });
-  });
-
-  container.isAppearedLastTwo = false;
-}
-
-
-
-
-
-
-
-
-
-// ===================== //
-//   ANIMATION - PARA    //
-// ===================== //
-
-function appearPara() {
-  const container = document.querySelector('.para');
-  if (!container) return;
-
-  container.timeouts = [];
-  const paragraphs = container.querySelectorAll('p');
-
-  paragraphs.forEach(p => {
-
-    // Préparation du texte une seule fois
-    if (!p.querySelector('.line-container')) {
-
-      const nodes = Array.from(p.childNodes);
-      p.textContent = '';
-
-      let lineContainer = document.createElement('span');
-      lineContainer.className = 'line-container';
-      lineContainer.style.display = 'block';
-      lineContainer.style.minHeight = '1em';
-
-      nodes.forEach(node => {
-
-        // Texte
-        if (node.nodeType === Node.TEXT_NODE) {
-
-            if (node.textContent.trim() === '') {
-                return;
-            }
-
-            node.textContent.split('').forEach(ch => {
-
-                const span = document.createElement('span');
-
-                span.textContent =
-                    ch === ' ' ? '\u00A0' : ch;
-
-                span.style.color = 'transparent';
-                span.style.backgroundColor = 'transparent';
-                span.style.display = 'inline-block';
-
-                lineContainer.appendChild(span);
-            });
-
-        }
-
-        // <br>
-        else if (
-          node.nodeType === Node.ELEMENT_NODE &&
-          node.tagName === 'BR'
-        ) {
-
-          // On termine la ligne actuelle
-          p.appendChild(lineContainer);
-
-          // Nouvelle ligne
-          lineContainer = document.createElement('span');
-          lineContainer.className = 'line-container';
-          lineContainer.style.display = 'block';
-          lineContainer.style.minHeight = '1em';
-        }
-      });
-
-      // Ajouter la dernière ligne
-      p.appendChild(lineContainer);
-    }
-
-
-    // =========================
-    // ANIMATION
-    // =========================
-
-    const lineContainers = Array.from(
-      p.querySelectorAll('.line-container')
-    );
-
-    lineContainers.forEach(line => {
-
-      const spans = Array.from(line.querySelectorAll(':scope > span'));
-
-      spans.forEach(span => {
-        span.style.color = 'transparent';
-        span.style.backgroundColor = 'transparent';
-      });
-
-      // Chaque ligne commence son animation indépendamment
-      spans.forEach((span, i) => {
-
-        const t1 = setTimeout(() => {
-          span.style.color = '#ffffff';
-          span.style.backgroundColor = '#ffffff';
-        }, i * 20);
-
-        container.timeouts.push(t1);
-
-
-        const t2 = setTimeout(() => {
-          span.style.color = '#ffffffff';
-          span.style.backgroundColor = '#000000ff';
-        }, i * 20 + 10);
-
-        container.timeouts.push(t2);
-      });
-    });
-  });
-
-  container.isAppeared = true;
-}
-
-const leaveEffectTimersPara = new WeakMap();
-
-function leaveEffectPara() {
-  const container = document.querySelector('.para');
-  if (!container || !container.isAppeared) return Promise.resolve();
-
-  return new Promise(resolve => {
-
-    const paragraphs = container.querySelectorAll('p');
-
-    let totalDuration = 0;
-
-    paragraphs.forEach(p => {
-
-      const lineContainers = Array.from(p.children);
-
-      lineContainers.forEach(line => {
-
-        const spans = Array.from(line.children);
-
-        // Mettre toutes les lettres visibles au départ
-        spans.forEach(span => {
-          span.style.color = '#ffffff';
-          span.style.backgroundColor = 'transparent';
-        });
-
-        const lastIndex = spans.length - 1;
-
-        // Disparition de droite à gauche
-        spans.forEach((span, i) => {
-
-          const delay = (lastIndex - i) * 20;
-
-          const t1 = setTimeout(() => {
-            span.style.color = '#ffffff';
-            span.style.backgroundColor = '#ffffff';
-          }, delay);
-
-          const t2 = setTimeout(() => {
-            span.style.color = 'transparent';
-            span.style.backgroundColor = 'transparent';
-          }, delay + 20);
-
-          totalDuration = Math.max(
-            totalDuration,
-            delay + 20
-          );
-
-        });
-
-      });
-
-    });
-
-
-  });
-}
-
-
-
-
-
-
-// ===================== //
-//   ANIMATION - TITLED  //
-// ===================== //
-
-
-
-
-const leaveEffectTimersProfileTitled = new WeakMap();
-
-function leaveEffectTitled() {
-  const el = document.querySelector('.titled');
-  if (!el || !el.isAppeared) return;
-
-  const oldTimers = leaveEffectTimersProfileTitled.get(el);
-  if (oldTimers) {
-    oldTimers.forEach(t => clearTimeout(t));
-    leaveEffectTimersProfileTitled.delete(el);
-  }
-
-  if (!el.querySelector('span')) {
-    const paragraphs = el.querySelectorAll('p');
-    paragraphs.forEach(p => {
-      const nodes = Array.from(p.childNodes);
-      p.textContent = '';
-      nodes.forEach(node => {
-        if (node.nodeType === Node.TEXT_NODE) {
-          node.textContent.split('').forEach(ch => {
-            const span = document.createElement('span');
-            span.textContent = ch;
-            p.appendChild(span);
-          });
-        } else if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'BR') {
-          p.appendChild(document.createElement('br'));
-        }
-      });
-    });
-  }
-
-  const paragraphs = el.querySelectorAll('p');
-  const timers = [];
-
-  paragraphs.forEach(p => {
-    const spans = p.querySelectorAll('span');
-
-    spans.forEach(span => {
-      span.style.color = 'white';
-      span.style.backgroundColor = 'transparent';
-      span.style.border = 'none';
-      span.style.opacity = '1';
-    });
-
-    const lastIndex = spans.length - 1;
-
-    spans.forEach((span, i) => {
-      const delay = (lastIndex - i) * 20; // sortie plus lente
-
-      const t1 = setTimeout(() => {
-        span.style.color = 'black';
-        span.style.backgroundColor = 'white';
-        span.style.border = 'none';
-        span.style.opacity = '1';
-      }, delay);
-      timers.push(t1);
-
-      const t2 = setTimeout(() => {
-        span.style.opacity = '0';
-        span.style.color = '#000000';
-        span.style.backgroundColor = 'transparent';
-        span.style.border = 'none';
-      }, delay + 25);
-      timers.push(t2);
-    });
-  });
-
-  leaveEffectTimersProfileTitled.set(el, timers);
-
-  el.isAppeared = false;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-const yearElement = document.querySelector('.year');
-const yearWords = ["2026", "2026", "2024", "2024", "2024", "2023", "2022"];
-let yearIndex = 0;
-
-// Délais pour l'animation CMD des lettres (apparition, passage, disparition)
-const yearDelays = {
-  appearDelay: 200,  // temps entre chaque lettre lors de l'apparition
-  passedDelay: 200,  // temps avant de passer la couleur finale
-  leaveDelay: 200     // temps entre les lettres lors de la disparition
-};
-
-// --- Fonction pour passer à l'année suivante dans la boucle ---
-
-function nextYear(index) {
-  if (!yearElement) return;
-
-  const oldSpans = Array.from(yearElement.querySelectorAll("span"));
-
-  // --- 1. Animation de disparition avec curseur correct ---
-  if (oldSpans.length) {
-    const lastIndex = oldSpans.length - 1;
-
-    oldSpans.forEach((span, i) => {
-      const delay = (lastIndex - i) * yearDelays.leaveDelay;
-
-      const t1 = setTimeout(() => {
-        // reset curseurs
-        oldSpans.forEach(s => {
-          s.style.borderRight = '2px solid transparent';
-          s.style.borderLeft = '2px solid transparent';
-        });
-
-        // curseur placé JUSTE APRÈS la lettre qui va disparaître
-        span.style.borderRight = '2px solid white';
-
-        span.style.color = '#ffffff';
-        span.style.backgroundColor = 'transparent';
-      }, delay);
-
-      const t2 = setTimeout(() => {
-        span.style.opacity = '0';
-
-        // une fois la lettre supprimée, on enlève son curseur
-        span.style.borderRight = '2px solid transparent';
-      }, delay + yearDelays.leaveDelay * 0.8);
-
-      if (!yearElement.timeouts) yearElement.timeouts = [];
-      yearElement.timeouts.push(t1, t2);
-    });
-  }
-
-
-  // --- 2. Attendre la fin de la disparition avant de recréer ---
-  const waitTime = oldSpans.length * yearDelays.leaveDelay + 50;
-
-  setTimeout(() => {
-
-    // === TON CODE ORIGINAL ICI, INCHANGÉ ===
-
-    if (yearElement.timeouts) {
-      yearElement.timeouts.forEach(t => {
-        if (t.interval) clearInterval(t);
-        else clearTimeout(t);
-      });
-    }
-    yearElement.timeouts = [];
-
-    const word = yearWords[index];
-    yearElement.innerHTML = '';
-
-    for (const ch of word) {
-      const span = document.createElement('span');
-      span.textContent = ch;
-      span.style.display = 'inline-block';
-      span.style.color = 'transparent';
-      span.style.borderRight = '2px solid transparent';
-      yearElement.appendChild(span);
-    }
-
-    const spans = Array.from(yearElement.querySelectorAll('span'));
-    yearElement.isAppeared = true;
-
-    spans.forEach((span, i) => {
-      const t1 = setTimeout(() => {
-        spans.forEach(s => s.style.borderRight = '2px solid transparent');
-        span.style.color = '#000000';
-        if (i === 0) span.style.borderLeft = '2px solid white';
-        else spans[i - 1].style.borderRight = '2px solid white';
-      }, i * yearDelays.appearDelay);
-      yearElement.timeouts.push(t1);
-
-      const t2 = setTimeout(() => {
-        span.style.color = '#ffffff';
-        if (i > 0) spans[i - 1].style.borderRight = '2px solid transparent';
-        if (i === 0) span.style.borderLeft = '2px solid transparent';
-      }, i * yearDelays.appearDelay + yearDelays.passedDelay);
-      yearElement.timeouts.push(t2);
-    });
-
-    const tBlinkStart = setTimeout(() => {
-      let blinkVisible = true;
-      if (spans.length) {
-        spans.forEach(s => s.style.borderRight = '2px solid transparent');
-        const last = spans[spans.length - 1];
-        last.style.borderRight = '2px solid white';
-
-        const blinkInterval = setInterval(() => {
-          last.style.borderRight = blinkVisible ? '2px solid transparent' : '2px solid white';
-          blinkVisible = !blinkVisible;
-        }, 500);
-
-        yearElement.timeouts.push({ interval: blinkInterval });
-      }
-    }, spans.length * yearDelays.appearDelay + yearDelays.passedDelay);
-    yearElement.timeouts.push(tBlinkStart);
-
-
-  }, waitTime);
-}
-
-
-function leaveEffectYear(speed = 15) {
-  return new Promise(resolve => {
-    const el = document.querySelector('.year');
-    if (!el || !el.isAppeared) return resolve();
-
-    if (el.timeouts) el.timeouts.forEach(t => clearTimeout(t));
-    el.timeouts = [];
-
-    const spans = Array.from(el.querySelectorAll('span'));
-    const lastIndex = spans.length - 1;
-
-    spans.forEach(span => {
-      span.style.color = 'white';
-      span.style.backgroundColor = 'transparent';
-      span.style.border = 'none';
-    });
-
-    spans.forEach((span, i) => {
-      const delay = (lastIndex - i) * speed;
-
-      const t1 = setTimeout(() => {
-        spans.forEach(s => {
-          s.style.backgroundColor = 'none';
-          s.style.borderBottomColor = 'transparent';
-        });
-
-        span.style.color = 'transparent';
-        span.style.borderBottom = '20px solid white';
-      }, delay);
-
-      el.timeouts.push(t1);
-
-      const t2 = setTimeout(() => {
-        span.style.backgroundColor = '#000000ff';
-        span.style.border = 'none';
-
-        if (i === lastIndex) {
-          el.isAppeared = false;
-          resolve();
-        }
-      }, delay + speed);
-
-      el.timeouts.push(t2);
-    });
-  });
-}
-
-
-
-
-
-
-
-
-
-
-
-
-const descriptions = [
-  document.querySelector('.description1'),
-  document.querySelector('.description2'),
-  document.querySelector('.description3'),
-  document.querySelector('.description4'),
-  document.querySelector('.description5'),
-  document.querySelector('.description6'),
-  document.querySelector('.description7')
-];
-
-const blokys = document.querySelectorAll('.conteneur .bloky');
-
-
-/* transforme un blok en spans si nécessaire */
-function prepareCMDEffect(blok) {
-  if (!blok.querySelector('span')) {
-    const text = blok.textContent;
-    blok.textContent = '';
-    text.split('').forEach(ch => {
-      const span = document.createElement('span');
-      span.textContent = ch;
-      // style de base (on laisse la transition CSS gérer l'apparition)
-      span.style.color = 'transparent';
-      span.style.backgroundColor = 'transparent';
-      span.style.opacity = '0';
-      blok.appendChild(span);
-    });
-  }
-}
-
-/* showBlokCMD : apparition lettre par lettre (barre CMD -> couleur finale)
-   conserve ton nom de fonction */
-function showBlokCMD(blok, speed = 30, finalColor = '#808080', activeColor = '#808080') {
-  prepareCMDEffect(blok);
-  const spans = Array.from(blok.querySelectorAll('span'));
-
-  spans.forEach(span => {
-    span.style.transition = '';
-    span.style.color = '#808080';
-    span.style.backgroundColor = 'transparent';
-    span.style.opacity = '0';
-  });
-
-  spans.forEach((span, i) => {
-    // 1) barre CMD : texte sombre sur fond actif
-    setTimeout(() => {
-      span.style.color = '#808080';
-      span.style.backgroundColor = activeColor; // couleur spécifique titre actif
-      span.style.opacity = '1';
-    }, i * speed);
-
-    // 2) couleur finale : texte gris, fond transparent
-    setTimeout(() => {
-      span.style.color = finalColor;
-      span.style.backgroundColor = 'transparent';
-      span.style.opacity = '1';
-    }, i * speed + Math.max(Math.floor(speed * 0.8), 20));
-  });
-
-  blok.isAppeared = true;
-}
-
-function removeActiveColor(blok, speed = 20, activeColor = '#ff0000ff') {
-  if (!blok.querySelector('span')) return;
-  const spans = Array.from(blok.querySelectorAll('span'));
-  const lastIndex = spans.length - 1;
-
-  spans.forEach((span, i) => {
-    const delay = (lastIndex - i) * speed;
-    setTimeout(() => {
-      // animation CMD inverse pour “effacer” la couleur active
-      span.style.color = '#ff0000ff';
-      span.style.backgroundColor = activeColor;
-      span.style.opacity = '1';
-    }, delay);
-
-    setTimeout(() => {
-      span.style.opacity = '1';
-      span.style.color = '#808080';
-      span.style.backgroundColor = 'transparent';
-    }, delay + Math.max(Math.floor(speed * 0.6), 15));
-  });
-
-  blok.isAppeared = false; // le titre n’est plus actif
-}
-
-
-// Faire apparaître tous les blocs en même temps
-function showAllBlokCMD(speed = 25) {
-  blokys.forEach(blok => showBlokCMD(blok, speed));
-}
-
-
-
-/* hideActiveDescriptionCMD : annule toutes les animations et fait disparaître la description actuelle en inversé */
-function hideActiveDescriptionCMD(speed = 5) {
-  return new Promise(resolve => { // on retourne une promesse pour attendre la fin
-    const activeDesc = descriptions.find(d => d.classList.contains('visible'));
-    if (!activeDesc) return resolve(); // rien à faire
-
-    // annuler toutes les animations en cours
-    descriptionTimers.forEach(t => clearTimeout(t));
-    descriptionTimers = [];
-
-    const spans = Array.from(activeDesc.querySelectorAll('span'));
-
-    // --- Calcul des lignes comme dans montrerDescription ---
-    const lignes = [];
-    let currentTop = null;
-    let currentLine = [];
-
-    spans.forEach(span => {
-      const top = span.getBoundingClientRect().top;
-      if (currentTop === null) currentTop = top;
-
-      if (Math.abs(top - currentTop) < 1) {
-        currentLine.push(span);
-      } else {
-        lignes.push(currentLine);
-        currentLine = [span];
-        currentTop = top;
-      }
-    });
-    if (currentLine.length) lignes.push(currentLine);
-
-    // --- Disparition ligne par ligne en parallèle, lettres inversées ---
-    lignes.forEach(ligne => {
-      const lastIndex = ligne.length - 1;
-      ligne.forEach((span, i) => {
-        const delay = (lastIndex - i) * speed; // inverse l’ordre des lettres
-        const t1 = setTimeout(() => {
-          span.style.color = '#000000';
-          span.style.backgroundColor = '#ffffff';
-          span.style.opacity = '1';
-        }, delay);
-        const t2 = setTimeout(() => {
-          span.style.opacity = '0';
-          span.style.color = 'transparent';
-          span.style.backgroundColor = 'transparent';
-        }, delay + Math.max(Math.floor(speed * 0.6), 15));
-        descriptionTimers.push(t1, t2);
-      });
-    });
-
-    // --- cacher la description après disparition ---
-    const maxLength = Math.max(...lignes.map(l => l.length));
-    const totalDelay = maxLength * speed + 30;
-    const t3 = setTimeout(() => {
-      activeDesc.classList.remove('visible');
-      activeDesc.classList.add('hidden');
-      activeDesc.style.top = `${100 + offsetY}px`;
-      resolve(); // on indique que c'est terminé
-    }, totalDelay);
-
-    descriptionTimers.push(t3);
-  });
-}
-
-/* hideAllBlokCMD : disparition inverse (de la fin vers le début), attend d'abord hideActiveDescriptionCMD */
-/* hideAllBlokCMD : disparition inverse CMD pour tous les blocs, background exact selon actif ou non */
-async function hideAllBlokCMD(speed = 10) {
-  if (!blokys || blokys.length === 0) return;
-
-  // 1) d'abord faire disparaître la description active
-  await hideActiveDescriptionCMD();
-
-  // 2) Annulation de toute descente et remontée instantanée
-  blokys.forEach(b => {
-    b.style.transition = "transform 0.15s ease-out";
-    b.style.transform = "translateY(0)";
-  });
-
-  setTimeout(() => {
-    // 3) Appliquer l’effet CMD inverse
-    blokys.forEach(blok => {
-      const spans = blok.querySelectorAll('span');
-      if (!spans || spans.length === 0) return;
-
-      const lastIndex = spans.length - 1;
-
-      spans.forEach((span, i) => {
-        const delay = (lastIndex - i) * speed;
-
-        // Déterminer le background selon la couleur actuelle du span
-        const currentColor = window.getComputedStyle(span).color;
-        let bgColor = '#808080'; // gris par défaut
-
-        // Si la couleur est rouge (titre actif) → background rouge
-        if (currentColor === 'rgb(255, 0, 0)') {
-          bgColor = 'rgb(255, 0, 0)';
-        }
-
-        setTimeout(() => {
-          // Phase “barre CMD” inversée : texte sur fond correspondant
-          span.style.color = currentColor;   // conserve la couleur actuelle du texte
-          span.style.backgroundColor = bgColor;
-          span.style.opacity = '1';
-        }, delay);
-
-        setTimeout(() => {
-          // Phase disparition finale
-          span.style.opacity = '0';
-          span.style.color = 'transparent';
-          span.style.backgroundColor = 'transparent';
-        }, delay + Math.max(Math.floor(speed * 0.6), 15));
-      });
-
-      // Reset pour le prochain run
-      blok.isAppeared = false;
-    });
-  }, 180);
-}
-
-
-// === Remet tout à zéro avec attente ===
-function phaseRepos(delay = 1000) {
-  return new Promise(resolve => {
-    blokys.forEach(b => {
-      b.style.transform = 'translateY(0px)';
-      b.style.marginBottom = '5px';
-    });
-
-    descriptions.forEach(d => {
-      if (d) {
-        d.style.position = 'absolute';
-        d.style.top = '100%';
-        d.style.left = '0px';
-      }
-    });
-
-    // Attente avant de continuer
-    setTimeout(resolve, delay);
-  });
-}
-
-let offsetY = 0; // position verticale cumulée des descriptions
-
-// tableau global pour stocker les timers de descriptions
-let descriptionTimers = [];
-
-// --- montrerDescription corrigé pour stocker les timers et gérer offsetY ---
-
-function montrerDescription(index, pause = 15000, waitBeforeAppear = 500) { // 👈 pause avant apparition
-  const desc = descriptions[index];
-  if (!desc) return Promise.resolve();
-
-  // Découper en spans si nécessaire
-  if (!desc.querySelector('span')) {
-    const text = desc.textContent;
-    desc.textContent = '';
-    text.split('').forEach(ch => {
-      const span = document.createElement('span');
-      span.textContent = ch;
-      span.style.opacity = '0';
-      desc.appendChild(span);
-    });
-  }
-
-  const spans = [...desc.querySelectorAll('span')];
-  const blok = blokys[index];
-  const rect = blok.getBoundingClientRect();
-  const spacing = 10;
-
-  desc.style.position = 'absolute';
-  desc.style.left = `${rect.left}px`;
-  desc.style.top = `${rect.bottom + spacing}px`;
-  desc.style.width = "40%";
-
-  desc.classList.add('visible');
-  desc.classList.remove('hidden');
-
-  // Active la descente dépendante
-  suivreDescenteTitres(index, spacing);
-
-  // --- Découpage des spans par lignes ---
-  const lignes = [];
-  let currentTop = null;
-  let currentLine = [];
-
-  spans.forEach(span => {
-    const top = span.getBoundingClientRect().top;
-    if (currentTop === null) currentTop = top;
-
-    if (Math.abs(top - currentTop) < 1) {
-      currentLine.push(span);
-    } else {
-      lignes.push(currentLine);
-      currentLine = [span];
-      currentTop = top;
-    }
-  });
-  if (currentLine.length) lignes.push(currentLine);
-
-  // --- Animation CMD avec délai entre les lignes ---
-  return new Promise(resolve => {
-    const lineDelay = 100;
-    const charDelay = 15;
-
-    lignes.forEach((ligne, lineIndex) => {
-      ligne.forEach((span, charIndex) => {
-        
-        const appearDelay = waitBeforeAppear + lineIndex * lineDelay + charIndex * charDelay;
-
-        // 1) Phase apparition
-        setTimeout(() => {
-          span.style.opacity = '1';
-          span.style.color = '#000';
-          span.style.backgroundColor = '#ffffff'; // style pendant apparition
-        }, appearDelay);
-
-        // 2) Phase après apparition
-        setTimeout(() => {
-          span.style.color = '#fff';
-          span.style.backgroundColor = 'transparent'; // style une fois apparu
-        }, appearDelay + 10);
-
-      });
-    });
-
-    // temps total d'apparition + pause
-    const totalTime =
-      waitBeforeAppear + // 👈 prend en compte le délai avant apparition
-      lignes.length * lineDelay +
-      Math.max(...lignes.map(l => l.length)) * charDelay +
-      300;
-
-    setTimeout(resolve, totalTime + pause);
-  });
-}
-
-
-// Disparition description CMD inverse (ligne par ligne)
-function cacherDescription(index, speed = 20) {
-  const desc = descriptions[index];
-  if (!desc) return Promise.resolve();
-
-  const spans = Array.from(desc.querySelectorAll('span'));
-
-  return new Promise(resolve => {
-    // --- calcul des lignes ---
-    const lignes = [];
-    let currentTop = null;
-    let currentLine = [];
-
-    spans.forEach(span => {
-      const top = span.getBoundingClientRect().top;
-      if (currentTop === null) currentTop = top;
-
-      if (Math.abs(top - currentTop) < 1) {
-        currentLine.push(span);
-      } else {
-        lignes.push(currentLine);
-        currentLine = [span];
-        currentTop = top;
-      }
-    });
-    if (currentLine.length) lignes.push(currentLine);
-
-    // --- disparition CMD sur toutes les lignes en parallèle ---
-    const totalTimers = [];
-
-    lignes.forEach(ligne => {
-      const lastIndex = ligne.length - 1;
-      ligne.forEach((span, i) => {
-        const delay = (lastIndex - i) * speed;
-
-        const t1 = setTimeout(() => {
-          span.style.color = 'black';
-          span.style.backgroundColor = 'white';
-        }, delay);
-
-        const t2 = setTimeout(() => {
-          span.style.opacity = '0';
-          span.style.color = 'transparent';
-          span.style.backgroundColor = 'transparent';
-        }, delay + Math.max(Math.floor(speed * 0.6), 15));
-
-        totalTimers.push(t1, t2);
-      });
-    });
-
-    // --- résolution après le dernier span ---
-    const maxDelay = lignes.reduce((max, ligne) => Math.max(max, ligne.length * speed), 0) + 30;
-    setTimeout(() => {
-      desc.classList.remove('visible');
-      desc.classList.add('hidden');
-      resolve();
-    }, maxDelay);
-  });
-}
-
-
-function suivreDescenteTitres(activeIndex, spacing = 10) {
-  const desc = descriptions[activeIndex];
-  const titres = Array.from(blokys).slice(activeIndex + 1);
-
-  if (!desc || titres.length === 0) return;
-
-  const step = 9;      // pixels par saut
-  const interval = 90; // ms entre chaque saut
-
-  // Stocke la position actuelle de chaque titre
-  const positions = titres.map(b => parseInt(b.style.transform.replace('translateY(', '')) || 0);
-
-  const timer = setInterval(() => {
-    const descRect = desc.getBoundingClientRect();
-
-    let anyMoved = false;
-
-    titres.forEach((b, i) => {
-      const blokRect = b.getBoundingClientRect();
-
-      // hauteur cumulée des titres précédents
-      let offset = 0;
-      for (let j = 0; j < i; j++) {
-        const prevRect = titres[j].getBoundingClientRect();
-        offset += prevRect.height + 4; // 4px = espace entre titres
-      }
-
-      const targetTop = descRect.bottom + spacing + offset;
-      const needed = targetTop - blokRect.top;
-
-      if (needed > 0) {
-        anyMoved = true;
-        positions[i] += Math.min(step, needed);
-        b.style.transform = `translateY(${positions[i]}px)`;
-      }
-    });
-
-
-    if (!anyMoved) clearInterval(timer); // stop quand tous sont arrivés
-  }, interval);
-}
-
-// === Remontée ===
-function remonterTitres(activeIndex) {
-  return new Promise(resolve => {
-    const step = 17;       // nombre de pixels par “saccade” vers le haut
-    const delay = 150;     // temps entre chaque saccade en ms
-
-
-    const titres = Array.from(blokys).slice(activeIndex + 1);
-    let completed = 0;
-
-    titres.forEach(b => {
-      let pos = parseInt(b.style.transform.replace('translateY(', '')) || 0;
-
-      const timer = setInterval(() => {
-        pos -= step;
-        if (pos <= 0) {
-          pos = 0;
-          clearInterval(timer);
-          completed++;
-          if (completed === titres.length) resolve();
-        }
-        b.style.transform = `translateY(${pos}px)`;
-      }, delay);
-    });
-
-    if (titres.length === 0) resolve();
-  });
-}
-
-
-function descendreTitres(activeIndex) {
-  return new Promise(resolve => {
-    const step = 25;       
-    const delay = 400;     
-    let completed = 0;
-
-    const titres = Array.from(blokys).slice(activeIndex + 1);
-
-    titres.forEach((b, idx) => {
-      let pos = 0;
-
-      // Calcul dynamique : vérifier si la description précédente existe
-      const desc = descriptions[activeIndex];
-      let offset = 90; // valeur par défaut
-      if (desc && desc.classList.contains('visible')) {
-        const descRect = desc.getBoundingClientRect();
-        const blokRect = b.getBoundingClientRect();
-        offset = (descRect.bottom - blokRect.top) + 8; // 8px margin
-      }
-
-      const timer = setInterval(() => {
-        pos += step;
-        if (pos >= offset) {
-          pos = offset;
-          clearInterval(timer);
-          completed++;
-          if (completed === titres.length) resolve();
-        }
-        b.style.transform = `translateY(${pos}px)`;
-      }, delay);
-    });
-
-    if (titres.length === 0) resolve();
-  });
-}
-
-
-// === Fonction qui lie Titre ↔ Description avec phases de repos ===
-async function lierTitreEtDescription(i, token) {
-  const blok = blokys[i];
-  const spans = Array.from(blok.querySelectorAll("span"));
-  const speed = 30;
-
-  nextYear(i);
-
-  // 🛑 STOP si annulé
-  if (token !== animationToken) return;
-
-  await phaseRepos();
-
-  if (token !== animationToken) return;
-
-  spans.forEach(span => {
-    span.style.transition = '';
-    span.style.color = '#808080';
-    span.style.backgroundColor = 'transparent';
-    span.style.opacity = '1';
-  });
-
-  spans.forEach((span, index) => {
-
-    setTimeout(() => {
-      if (token !== animationToken) return;
-      span.style.color = '#ff0000ff';
-      span.style.backgroundColor = '#ff0000ff';
-      span.style.opacity = '1';
-    }, index * speed);
-
-    setTimeout(() => {
-      if (token !== animationToken) return;
-      span.style.color = '#ff0000ff';
-      span.style.backgroundColor = 'transparent';
-    }, index * speed + Math.max(Math.floor(speed * 0.8), 20));
-  });
-
-  const totalCMD = spans.length * speed + 80;
-
-  await new Promise(resolve => setTimeout(resolve, totalCMD));
-
-  if (token !== animationToken) return;
-
-  await montrerDescription(i);
-
-  if (token !== animationToken) return;
-
-  await cacherDescription(i);
-
-  if (token !== animationToken) return;
-
-  // 🔥 LA PARTIE QUI POSAIT PROBLÈME
-  removeActiveColor(blok, 20, "#ff0000ff");
-
-  if (token !== animationToken) return;
-
-  await remonterTitres(i);
-}
-
-function getActiveIndex() {
-  return descriptions.findIndex(d => d.classList.contains('visible'));
-}
-
-
-
-
-// === Animation principale en boucle ===
-let boucleCase3 = true;  // mettre à false pour arrêter la boucle
-
-let currentIndex = 0;
-let isManuallyTriggered = false;
-
-
-let animationToken = 0;
-
-
-async function startAnimationSequence() {
-  const myToken = ++animationToken; // 👈 nouveau cycle
-
-  while (boucleCase3 && myToken === animationToken) {
-
-    for (let i = currentIndex; i < blokys.length; i++) {
-
-      if (!boucleCase3 || myToken !== animationToken) return;
-
-      currentIndex = i;
-      await lierTitreEtDescription(i, myToken);
-
-      // 🔴 check après chaque étape importante
-      if (myToken !== animationToken) return;
-    }
-
-    currentIndex = 0;
-
-    await new Promise(resolve => setTimeout(resolve, 3000));
-
-    if (myToken !== animationToken) return;
-  }
-}
-
-
-blokys.forEach((blok, i) => {
-  blok.style.cursor = "pointer";
-
-  blok.addEventListener("click", async () => {
-
-    const activeIndex = getActiveIndex();
-
-    // ✅ 1. IGNORER complètement si déjà actif
-    if (i === activeIndex) return;
-
-    // 🔥 2. kill instant tous les cycles
-    boucleCase3 = false;
-    animationToken++;
-
-    // 3. disparition description active
-    await hideActiveDescriptionCMD();
-
-    // 4. reset couleur ancien actif
-    if (activeIndex !== -1) {
-      removeActiveColor(blokys[activeIndex], 20, "#ff0000ff");
-    }
-
-    // 5. remontée
-    if (activeIndex !== -1) {
-      await remonterTitres(activeIndex);
-    }
-
-    // 6. nouveau point de départ
-    currentIndex = i;
-
-    // 7. relancer proprement
-    boucleCase3 = true;
-    startAnimationSequence();
-  });
-});
-
-// === Anti-blink sur titres ===
-blokys.forEach(blok => {
-  // sur le blok principal
-  blok.addEventListener('mouseenter', hideCursor);
-  blok.addEventListener('mouseleave', delayedShowCursor);
-
-  // sur tous les spans enfants pour être sûr que le hover fonctionne
-  blok.querySelectorAll('span').forEach(span => {
-    span.addEventListener('mouseenter', hideCursor);
-    span.addEventListener('mouseleave', delayedShowCursor);
-  });
-});
-
-
-// === Effets Hover / Leave sur titres (.bloky)
-blokys.forEach((blok, index) => {
-
-  // --- hover (mouseenter) ---
-  blok.addEventListener('mouseenter', () => {
-
-    // ❌ IGNORER si CE titre est actif (description visible)
-    if (descriptions[index]?.classList.contains('visible')) return;
-
-    prepareCMDEffect(blok);
-    const spans = Array.from(blok.querySelectorAll('span'));
-    let timeouts = [];
-
-    spans.forEach((span, i) => {
-      const t1 = setTimeout(() => {
-        span.style.color = '#ff0000ff';
-        span.style.backgroundColor = '#ff0000ff';
-        span.style.opacity = '1';
-      }, i * 15);
-
-      const t2 = setTimeout(() => {
-        span.style.color = '#000000';
-        span.style.backgroundColor = '#ff0000ff';
-      }, i * 15 + 10);
-
-      const t3 = setTimeout(() => {
-        span.style.color = '#000000';
-      }, i * 15 + 20);
-
-      timeouts.push(t1, t2, t3);
-    });
-
-    blok.hoverTimeouts = timeouts;
-  });
-
-  // --- leave (mouseleave) ---
-  blok.addEventListener('mouseleave', () => {
-
-    // ❌ IGNORER si CE titre est actif
-    if (descriptions[index]?.classList.contains('visible')) return;
-
-    const spans = Array.from(blok.querySelectorAll('span'));
-
-    if (blok.hoverTimeouts) {
-      blok.hoverTimeouts.forEach(t => clearTimeout(t));
-      blok.hoverTimeouts = [];
-    }
-
-    const last = spans.length - 1;
-
-    spans.forEach((span, i) => {
-      const delay = (last - i) * 15;
-
-      setTimeout(() => {
-        span.style.color = '#ff0000ff';
-        span.style.backgroundColor = '#ff0000ff';
-      }, delay);
-
-      setTimeout(() => {
-        span.style.color = '#808080';
-        span.style.backgroundColor = 'transparent';
-      }, delay + 10);
-    });
-  });
-
-});
 
 
 
@@ -4791,25 +3742,6 @@ blokys.forEach((blok, index) => {
 
 showAllBlokCMD();
 startAnimationSequence();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 insertProfileText();

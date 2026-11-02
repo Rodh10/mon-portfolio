@@ -137,7 +137,7 @@ html, body {
   opacity: 1;
   z-index: 10;
   pointer-events: auto;
-  width: 40%;
+  width: 70%;
   cursor: pointer;
 }
 
@@ -152,6 +152,7 @@ html, body {
 @media (max-width: 900px) {
   .conteneur {
     font-size: 0.7rem;
+
   }
 }
 
@@ -159,7 +160,7 @@ html, body {
 @media (max-width: 600px) {
   .conteneur {
     font-size: 0.65rem;
-    left: 30%;
+    left: 20%;
     top: 50%;
   }
 }
@@ -189,7 +190,7 @@ html, body {
   .zone-descriptions {
     font-size: 0.8rem;
     top: 1.5%;
-    width: 50%;
+    width: 150%;
   }
 }
 
@@ -204,7 +205,6 @@ html, body {
 /* Mobile */
 @media (max-width: 600px) {
   .zone-descriptions {
-    width: 100%;
     font-size: 0.65rem;
     top: 1.5%;
   }
@@ -213,7 +213,6 @@ html, body {
 /* Mobile */
 @media (max-width: 500px) {
   .zone-descriptions {
-    width: 100%;
     font-size: 0.65rem;
     top: 1.2%;
   }
@@ -287,7 +286,7 @@ html, body {
 @media (max-width: 600px) {
   .year {
     font-size: 2.5rem;
-    left: 30%;
+    left: 20%;
     top: 45%;
   }
 }
@@ -429,7 +428,7 @@ html, body {
 @media (max-width: 600px) {
 
   .para {
-    margin-top: -130%;
+    margin-top: -155%;
     position: relative;
     opacity: 1;
     z-index: 5;
