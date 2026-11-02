@@ -2582,7 +2582,7 @@ function createParticles(imageData) {
                     (
                         x /
                         (columns)
-                    ) * 2 + 0.12 ;
+                    ) * 2 - 1.3 ;
 
 
                 const py =

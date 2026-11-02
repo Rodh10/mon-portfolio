@@ -199,6 +199,7 @@ html, body {
   .zone-descriptions {
     font-size: 0.7rem;
     top: 1.5%;
+    width: 100%;
   }
 }
 
@@ -428,7 +429,7 @@ html, body {
 @media (max-width: 900px) {
 
   .para {
-    margin-top: -155%;
+    margin-top: -125%;
     position: relative;
     opacity: 1;
     z-index: 15;
