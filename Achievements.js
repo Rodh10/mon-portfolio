@@ -62,9 +62,6 @@ function delayedShowCursor() {
 
 // --------- ÉLÉMENTS QUI DÉSACTIVENT LE CURSEUR ---------
 const nav = document.querySelector('.navigation');
-const resume = document.getElementById('resume');
-const socialLinks = document.querySelectorAll('#icon .icon-link');
-const diteBonjour = document.getElementById('ditebonjour');
 
 if (nav) {
   nav.addEventListener('mouseenter', hideCursor);
@@ -74,158 +71,6 @@ if (nav) {
 
 
 
-
-
-const leaveEffectTimersLinks = new WeakMap();
-
-function appearLinks() {
-  const links = document.querySelectorAll('.icon-link');
-
-  links.forEach((el, index) => {
-    const text = el.textContent;
-    el.textContent = '';
-
-    // Création des spans
-    const letters = text.split('');
-    letters.forEach(letter => {
-      const span = document.createElement('span');
-      span.textContent = letter;
-      el.appendChild(span);
-    });
-
-    let timeouts = [];
-    el.isAppeared = true;
-
-    function playCmdEffect(delayStart = 0, colorNormal = '#000000', colorAfter = '#808080') {
-      timeouts.forEach(t => clearTimeout(t));
-      timeouts = [];
-
-      const spans = el.querySelectorAll('span');
-      spans.forEach((span, i) => {
-        const timeout1 = setTimeout(() => {
-          span.style.color = colorNormal;
-          span.style.backgroundColor = 'white';
-        }, delayStart + i * 30);
-        timeouts.push(timeout1);
-
-        const timeout2 = setTimeout(() => {
-          span.style.color = colorAfter;
-          span.style.backgroundColor = 'transparent';
-        }, delayStart + i * 30 + 10);
-        timeouts.push(timeout2);
-      });
-    }
-
-    // Apparition initiale pour tous les liens
-    playCmdEffect(300);
-    el.style.pointerEvents = 'auto';
-
-    // Hover
-    el.addEventListener('mouseenter', () => {
-      playCmdEffect(0, '#000000', '#b8b8b8');
-    });
-
-    // Leave
-    el.addEventListener('mouseleave', () => {
-      timeouts.forEach(t => clearTimeout(t));
-      timeouts = [];
-
-      const spans = el.querySelectorAll('span');
-      const lastIndex = spans.length - 1;
-
-      spans.forEach((span, i) => {
-        const delay = (lastIndex - i) * 30;
-
-        const timeout1 = setTimeout(() => {
-          span.style.color = '#000000';
-          span.style.backgroundColor = '#808080';
-        }, delay);
-        timeouts.push(timeout1);
-
-        const timeout2 = setTimeout(() => {
-          span.style.color = '#808080';
-          span.style.backgroundColor = 'transparent';
-        }, delay + 20);
-        timeouts.push(timeout2);
-      });
-    });
-
-    // Dans ta fonction qui gère l'apparition des liens
-    el.addEventListener('click', (e) => {
-      e.preventDefault(); // Empêche ouverture immédiate
-      const linkUrl = el.getAttribute('href');
-
-      const spans = el.querySelectorAll('span');
-
-      spans.forEach((span, i) => {
-        setTimeout(() => {
-          span.style.backgroundColor = 'white'; // Fond blanc visible
-          span.style.color = '#000000'; // Noir pendant le balayage
-        }, i * 40);
-
-        setTimeout(() => {
-          span.style.backgroundColor = 'transparent'; // Enlève le fond
-          span.style.color = '#ffffffff'; // Reste noir après
-        }, i * 40 + 20);
-      });
-
-      // Durée totale avant ouverture du lien
-      const totalTime = spans.length * 40 + 200;
-      setTimeout(() => {
-        window.location.href = linkUrl;
-      }, totalTime);
-    });
-
-  });
-}
-
-function leaveEffectLinks() {
-  const links = document.querySelectorAll('.icon-link');
-  if (!links.length) return;
-
-  links.forEach(el => {
-    if (!el.isAppeared) return;
-
-    const timers = leaveEffectTimersLinks.get(el) || [];
-    timers.forEach(t => clearTimeout(t));
-    leaveEffectTimersLinks.set(el, []);
-
-    const spans = el.querySelectorAll('span');
-    if (!spans.length) return;
-
-    spans.forEach(span => {
-      span.style.color = '#808080';
-      span.style.backgroundColor = 'transparent';
-      span.style.opacity = '1';
-    });
-
-    const lastIndex = spans.length - 1;
-    spans.forEach((span, i) => {
-      const delay = (lastIndex - i) * 30;
-
-      const t1 = setTimeout(() => {
-        span.style.color = '#000000';
-        span.style.backgroundColor = 'white';
-        span.style.opacity = '1';
-      }, delay);
-      leaveEffectTimersLinks.get(el).push(t1);
-
-      const t2 = setTimeout(() => {
-        span.style.opacity = '0';
-        span.style.color = '#000000';
-        span.style.backgroundColor = 'transparent';
-      }, delay + 20);
-      leaveEffectTimersLinks.get(el).push(t2);
-    });
-
-    const totalTime = (lastIndex + 1) * 30 + 20;
-    setTimeout(() => {
-      el.style.pointerEvents = 'none';
-    }, totalTime);
-
-    el.isAppeared = false;
-  });
-}
 
 
 
@@ -1577,15 +1422,8 @@ blokys.forEach((blok, index) => {
 
 
 
-
-
-
-
-
-
 showAllBlokCMD();
 startAnimationSequence();
-appearLinks();
 
 
 
