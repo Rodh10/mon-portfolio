@@ -454,7 +454,7 @@ html, body {
 @media (max-width: 600px) {
 
   .para {
-    margin-top: -165%;
+    margin-top: -170%;
     position: relative;
     opacity: 1;
     z-index: 15;
