@@ -1517,6 +1517,71 @@ function insertProfileText() {
 }
 
 
+/* ==========================
+   DESCENTE / REMONTÉE SACCADÉE DES TITRES
+   ========================== */
+
+let positionTitres = 0;
+
+function deplacerTousLesTitres(position = 100) {
+
+    return new Promise(resolve => {
+
+        const step = 9;       // pixels par saut
+        const delay = 90;     // intervalle entre chaque saut
+
+        const timer = setInterval(() => {
+
+            positionTitres += step;
+
+            if (positionTitres >= position) {
+                positionTitres = position;
+                clearInterval(timer);
+                resolve();
+            }
+
+            blokys.forEach(blok => {
+                blok.style.transition = 'none';
+                blok.style.transform = `translateY(${positionTitres}px)`;
+            });
+
+        }, delay);
+
+    });
+}
+
+
+function restaurerTousLesTitres() {
+
+    return new Promise(resolve => {
+
+        const step = 17;      // pixels par saut
+        const delay = 150;    // intervalle entre chaque saut
+
+        const timer = setInterval(() => {
+
+            positionTitres -= step;
+
+            if (positionTitres <= 0) {
+                positionTitres = 0;
+                clearInterval(timer);
+                resolve();
+            }
+
+            blokys.forEach(blok => {
+                blok.style.transition = 'none';
+                blok.style.transform = `translateY(${positionTitres}px)`;
+            });
+
+        }, delay);
+
+    });
+}
+
+
+
+
+
 
 function initMobileParagraphs() {
 
@@ -1742,7 +1807,7 @@ function initMobileParagraphs() {
 
         // Arrêter le cycle des titres
         await arreterCycleTitres();
-
+        await deplacerTousLesTitres(100);
         // Afficher les paragraphes supplémentaires
         await showExpertiseParagraphs();
 
@@ -1770,11 +1835,12 @@ function initMobileParagraphs() {
 
         animationRunning = true;
 
+        // Faire disparaître la deuxième flèche
+        disappearCMDArrow(seeLess);
         // Faire disparaître les paragraphes supplémentaires
         await hideExpertiseParagraphs();
 
-        // Faire disparaître la deuxième flèche
-        disappearCMDArrow(seeLess);
+
 
         seeLess.style.display = 'none';
 
@@ -1783,7 +1849,7 @@ function initMobileParagraphs() {
         appearCMDArrow(seeMore);
 
         isExpanded = false;
-
+        await restaurerTousLesTitres();
         // Réinitialiser les titres et descriptions
         currentIndex = 0;
         cycleArrete = false;
