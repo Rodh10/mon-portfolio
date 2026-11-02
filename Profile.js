@@ -1043,7 +1043,8 @@ function descendreTitres(activeIndex) {
 
 
 // === Fonction qui lie Titre ↔ Description avec phases de repos ===
-async function lierTitreEtDescription(i, token) {
+async function lierTitreEtDescription(i, token, skipAppearance = false) {
+
   const blok = blokys[i];
   const spans = Array.from(blok.querySelectorAll("span"));
   const speed = 30;
@@ -1086,11 +1087,16 @@ async function lierTitreEtDescription(i, token) {
 
   if (token !== animationToken) return;
 
-  await montrerDescription(i);
+  if (!skipAppearance) {
+    await montrerDescription(i);
 
-  if (token !== animationToken) return;
+    if (token !== animationToken) return;
 
-  await cacherDescription(i);
+    await cacherDescription(i);
+  } else {
+    // Garder la description sans rejouer son apparition
+    await cacherDescription(i);
+  }
 
   if (token !== animationToken) return;
 
@@ -1166,8 +1172,10 @@ let isManuallyTriggered = false;
 let animationToken = 0;
 
 
-async function startAnimationSequence() {
-  const myToken = ++animationToken; // 👈 nouveau cycle
+async function startAnimationSequence(skipFirstAppearance = false) {
+
+  const myToken = ++animationToken;
+  let skipNext = skipFirstAppearance;
 
   while (boucleCase3 && myToken === animationToken) {
 
@@ -1176,9 +1184,11 @@ async function startAnimationSequence() {
       if (!boucleCase3 || myToken !== animationToken) return;
 
       currentIndex = i;
-      await lierTitreEtDescription(i, myToken);
 
-      // 🔴 check après chaque étape importante
+      await lierTitreEtDescription(i, myToken, skipNext);
+
+      skipNext = false;
+
       if (myToken !== animationToken) return;
     }
 
@@ -1189,7 +1199,6 @@ async function startAnimationSequence() {
     if (myToken !== animationToken) return;
   }
 }
-
 
 blokys.forEach((blok, i) => {
   blok.style.cursor = "pointer";
@@ -1516,19 +1525,19 @@ function insertProfileText() {
         focusLines.join("<br>");
 }
 
-
 /* ==========================
-   DESCENTE / REMONTÉE SACCADÉE DES TITRES
+   DESCENTE / REMONTÉE SACCADÉE
+   TITRES + YEAR
    ========================== */
 
 let positionTitres = 0;
 
-function deplacerTousLesTitres(position = 100) {
+function deplacerTousLesTitres(position = 130) {
 
     return new Promise(resolve => {
 
-        const step = 9;       // pixels par saut
-        const delay = 90;     // intervalle entre chaque saut
+        const step = 9;
+        const delay = 90;
 
         const timer = setInterval(() => {
 
@@ -1540,10 +1549,17 @@ function deplacerTousLesTitres(position = 100) {
                 resolve();
             }
 
+            // Déplacer tous les titres
             blokys.forEach(blok => {
                 blok.style.transition = 'none';
                 blok.style.transform = `translateY(${positionTitres}px)`;
             });
+
+            // Déplacer également l'année
+            if (yearElement) {
+                yearElement.style.transition = 'none';
+                yearElement.style.transform = `translateY(${positionTitres}px)`;
+            }
 
         }, delay);
 
@@ -1555,8 +1571,8 @@ function restaurerTousLesTitres() {
 
     return new Promise(resolve => {
 
-        const step = 17;      // pixels par saut
-        const delay = 150;    // intervalle entre chaque saut
+        const step = 17;
+        const delay = 150;
 
         const timer = setInterval(() => {
 
@@ -1568,16 +1584,22 @@ function restaurerTousLesTitres() {
                 resolve();
             }
 
+            // Remonter tous les titres
             blokys.forEach(blok => {
                 blok.style.transition = 'none';
                 blok.style.transform = `translateY(${positionTitres}px)`;
             });
 
+            // Remonter également l'année
+            if (yearElement) {
+                yearElement.style.transition = 'none';
+                yearElement.style.transform = `translateY(${positionTitres}px)`;
+            }
+
         }, delay);
 
     });
 }
-
 
 
 
@@ -1805,14 +1827,15 @@ function initMobileParagraphs() {
 
         animationRunning = true;
 
+        // Faire disparaître la première flèche
+        disappearCMDArrow(seeMore);
         // Arrêter le cycle des titres
         await arreterCycleTitres();
-        await deplacerTousLesTitres(100);
+        await deplacerTousLesTitres(130);
         // Afficher les paragraphes supplémentaires
         await showExpertiseParagraphs();
 
-        // Faire disparaître la première flèche
-        disappearCMDArrow(seeMore);
+
 
         seeMore.style.display = 'none';
 
@@ -1855,8 +1878,8 @@ function initMobileParagraphs() {
         cycleArrete = false;
         boucleCase3 = true;
 
-        // Relancer le cycle des animations
-        startAnimationSequence();
+        // Relancer le cycle sans rejouer la première apparition
+        startAnimationSequence(true);
 
         animationRunning = false;
 
