@@ -429,7 +429,7 @@ html, body {
 @media (max-width: 900px) {
 
   .para {
-    margin-top: -125%;
+    margin-top: -135%;
     position: relative;
     opacity: 1;
     z-index: 15;
@@ -454,7 +454,7 @@ html, body {
 @media (max-width: 600px) {
 
   .para {
-    margin-top: -155%;
+    margin-top: -165%;
     position: relative;
     opacity: 1;
     z-index: 15;
