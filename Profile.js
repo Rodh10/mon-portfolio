@@ -4789,15 +4789,8 @@ blokys.forEach((blok, index) => {
 
 
 
-
-
-
-
-
-
 showAllBlokCMD();
 startAnimationSequence();
-
 
 
 
