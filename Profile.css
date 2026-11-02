@@ -425,6 +425,31 @@ html, body {
 
 
 /* Mobile */
+@media (max-width: 900px) {
+
+  .para {
+    margin-top: -155%;
+    position: relative;
+    opacity: 1;
+    z-index: 15;
+    color: transparent;
+    width: 70%;
+    font-size: 0.5rem;
+    display: block;
+  }
+
+  .para .i {
+    font-size: 2rem;
+  }
+  .para .do {
+    font-size: 2rem;
+  }
+
+
+}
+
+
+/* Mobile */
 @media (max-width: 600px) {
 
   .para {
