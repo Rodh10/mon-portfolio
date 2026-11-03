@@ -101,8 +101,8 @@ body {
 
 .dashboard {
   position: relative;
-  width: 640px;
-  height: 420px;
+  width: 700px;
+  height: 480px;
   cursor: pointer;
 }
 
@@ -118,8 +118,8 @@ body {
 
   gap: 20px;
 
-  width: 640px;
-  height: 420px;
+  width: 700px;
+  height: 480px;
 
   visibility: hidden;
   pointer-events: none;

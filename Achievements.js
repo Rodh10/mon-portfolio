@@ -1125,18 +1125,26 @@ function changeDesktopSection() {
     BOUCLE MOBILE + SWIPE
 ========================== */
 
+/* ==========================
+    BOUCLE MOBILE + SWIPE
+    AFFICHAGE PAR GROUPES DE 2
+========================== */
+
 function startMobileLoop() {
 
     if (window.innerWidth > 600) {
         return;
     }
 
+    const mobileBoxes = Array.from(boxes);
 
-    const mobileBoxes =
-        Array.from(boxes);
+    const IMAGES_PER_GROUP = 2;
 
+    const totalGroups = Math.ceil(
+        mobileBoxes.length / IMAGES_PER_GROUP
+    );
 
-    let currentIndex = 0;
+    let currentGroup = 0;
 
     let isTransitioning = false;
     let isLeaving = false;
@@ -1150,21 +1158,15 @@ function startMobileLoop() {
 
     const swipeThreshold = 50;
 
-
     /* ==========================
         TIMERS
     ========================== */
 
     let disappearanceTimeout = null;
-
     let autoChangeTimeout = null;
-
     let reactionTimer = null;
-
     let reactionMoveTimer = null;
-
     let autoReactionTimeout = null;
-
 
     /* ==========================
         NETTOYAGE DES TIMERS
@@ -1173,62 +1175,45 @@ function startMobileLoop() {
     function clearMobileTimers() {
 
         if (disappearanceTimeout !== null) {
-
-            clearTimeout(
-                disappearanceTimeout
-            );
-
+            clearTimeout(disappearanceTimeout);
             disappearanceTimeout = null;
-
         }
-
 
         if (autoChangeTimeout !== null) {
-
-            clearTimeout(
-                autoChangeTimeout
-            );
-
+            clearTimeout(autoChangeTimeout);
             autoChangeTimeout = null;
-
         }
-
 
         if (autoReactionTimeout !== null) {
-
-            clearTimeout(
-                autoReactionTimeout
-            );
-
+            clearTimeout(autoReactionTimeout);
             autoReactionTimeout = null;
-
         }
-
 
         if (reactionTimer !== null) {
-
-            clearInterval(
-                reactionTimer
-            );
-
+            clearInterval(reactionTimer);
             reactionTimer = null;
-
         }
-
 
         if (reactionMoveTimer !== null) {
-
-            clearInterval(
-                reactionMoveTimer
-            );
-
+            clearInterval(reactionMoveTimer);
             reactionMoveTimer = null;
-
         }
-
     }
 
+    /* ==========================
+        RÉCUPÉRER LES DEUX BOXES
+    ========================== */
 
+    function getCurrentBoxes() {
+
+        const startIndex =
+            currentGroup * IMAGES_PER_GROUP;
+
+        return mobileBoxes.slice(
+            startIndex,
+            startIndex + IMAGES_PER_GROUP
+        );
+    }
 
     /* ==========================
         QUITTER LA PAGE
@@ -1240,234 +1225,135 @@ function startMobileLoop() {
             return Promise.resolve();
         }
 
-
         isLeaving = true;
-
-
-        /* ==========================
-            NETTOYER LES TIMERS
-        ========================== */
 
         clearMobileTimers();
 
+        const currentBoxes = getCurrentBoxes();
 
-        /* ==========================
-            IMAGE ACTUELLE
-        ========================== */
+        currentBoxes.forEach((box) => {
 
-        const currentBox =
-            mobileBoxes[currentIndex];
+            const canvas =
+                box.querySelector('.particle-canvas');
 
+            if (!canvas?.userData?.squares) return;
 
-        const currentCanvas =
-            currentBox.querySelector(
-                '.particle-canvas'
-            );
+            const squares = canvas.userData.squares;
 
+            squares.forEach((square) => {
+                square.userData.autoBorder = false;
+                square.userData.autoWhite = false;
+            });
 
-        const currentSquares =
-            currentCanvas.userData.squares;
-
-
-        /* ==========================
-            DÉSACTIVER LES EFFETS
-        ========================== */
-
-        currentSquares.forEach((square) => {
-
-            square.userData.autoBorder = false;
-
-            square.userData.autoWhite = false;
+            startDisappearance(squares);
 
         });
-
-
-        /* ==========================
-            DISPARITION
-        ========================== */
-
-        startDisappearance(
-            currentSquares
-        );
-
-
-        /* ==========================
-            ATTENDRE LA FIN
-        ========================== */
 
         return new Promise((resolve) => {
-
-            setTimeout(() => {
-
-                resolve();
-
-            }, 1500);
-
+            setTimeout(resolve, 1500);
         });
-
     }
 
-
-    window.leaveMobilePage =
-        leaveMobilePage;
-
+    window.leaveMobilePage = leaveMobilePage;
 
     /* ==========================
-        CHANGER D'IMAGE
+        CHANGER DE GROUPE
     ========================== */
 
     function changeImage(direction) {
 
-        if (isTransitioning) {
-            return;
-        }
-
+        if (isTransitioning || isLeaving) return;
 
         isTransitioning = true;
 
-
-        /* ==========================
-            NETTOYER ANCIENS TIMERS
-        ========================== */
-
         clearMobileTimers();
 
+        const currentBoxes = getCurrentBoxes();
 
-        /* ==========================
-            IMAGE ACTUELLE
-        ========================== */
+        /* DISPARITION DES DEUX IMAGES */
 
-        const currentBox =
-            mobileBoxes[currentIndex];
+        currentBoxes.forEach((box) => {
 
+            const canvas =
+                box.querySelector('.particle-canvas');
 
-        const currentCanvas =
-            currentBox.querySelector(
-                '.particle-canvas'
-            );
+            if (!canvas?.userData?.squares) return;
 
+            const squares = canvas.userData.squares;
 
-        const currentSquares =
-            currentCanvas.userData.squares;
+            squares.forEach((square) => {
+                square.userData.autoBorder = false;
+                square.userData.autoWhite = false;
+            });
 
-
-        /* ==========================
-            DÉSACTIVER RÉACTION
-        ========================== */
-
-        currentSquares.forEach((square) => {
-
-            square.userData.autoBorder = false;
-
-            square.userData.autoWhite = false;
+            startDisappearance(squares);
 
         });
 
+        /* ATTENDRE LA DISPARITION */
 
-        /* ==========================
-            DISPARITION
-        ========================== */
+        disappearanceTimeout = setTimeout(() => {
 
-        startDisappearance(
-            currentSquares
-        );
+            disappearanceTimeout = null;
 
+            currentGroup =
+                (
+                    currentGroup +
+                    direction +
+                    totalGroups
+                ) % totalGroups;
 
-        /* ==========================
-            ATTENDRE LA DISPARITION
-        ========================== */
+            showNextBox();
 
-        disappearanceTimeout =
-            setTimeout(() => {
-
-                disappearanceTimeout = null;
-
-
-                /* ==========================
-                    NOUVEL INDEX
-                ========================== */
-
-                currentIndex =
-                    (
-                        currentIndex +
-                        direction +
-                        mobileBoxes.length
-                    ) %
-                    mobileBoxes.length;
-
-
-                /* ==========================
-                    NOUVELLE IMAGE ACTIVE
-                ========================== */
-
-                showNextBox();
-
-
-            }, 1500);
-
+        }, 1500);
     }
 
-
     /* ==========================
-        AFFICHER IMAGE ACTIVE
+        AFFICHER LES DEUX IMAGES
     ========================== */
 
     function showNextBox() {
 
-        /* ==========================
-            NETTOYER LES ANCIENS TIMERS
-        ========================== */
-
         clearMobileTimers();
 
-
-        /* ==========================
-            CACHER TOUTES LES BOXES
-        ========================== */
+        /* CACHER TOUTES LES BOXES */
 
         mobileBoxes.forEach((box) => {
-
             box.style.display = 'none';
+        });
+
+        /* RÉCUPÉRER LE GROUPE ACTUEL */
+
+        const currentBoxes = getCurrentBoxes();
+
+        currentBoxes.forEach((box, index) => {
+
+            box.style.display = '';
+            box.style.visibility = 'visible';
+
+            box.style.position = 'relative';
+
+            // Première image en haut,
+            // deuxième image juste en dessous.
+            box.style.gridColumn = '1';
+            box.style.gridRow = String(index + 1);
+
+            box.style.pointerEvents = 'auto';
+
+            const canvas =
+                box.querySelector('.particle-canvas');
+
+            if (!canvas?.userData?.squares) return;
+
+            const squares = canvas.userData.squares;
+
+            /* APPARITION */
+
+            startAppearance(squares);
 
         });
 
-
-        /* ==========================
-            BOX ACTUELLE
-        ========================== */
-
-        const box =
-            mobileBoxes[currentIndex];
-
-
-        box.style.display = '';
-
-
-        const canvas =
-            box.querySelector(
-                '.particle-canvas'
-            );
-
-
-        const squares =
-            canvas.userData.squares;
-
-
-        /* ==========================
-            IMAGE MAINTENANT ACTIVE
-        ========================== */
-
         isTransitioning = false;
-
-
-        /* ==========================
-            APPARITION
-        ========================== */
-
-        startAppearance(
-            squares
-        );
-
 
         /* ==========================
             RÉACTION AUTOMATIQUE
@@ -1475,198 +1361,88 @@ function startMobileLoop() {
 
         let autoReactionActive = false;
 
-        let autoReactionX = 0;
-        let autoReactionY = 0;
+        const reactionStates = currentBoxes.map(() => ({
+            x: 0,
+            y: 0
+        }));
 
+        /* DÉPLACEMENT AUTOMATIQUE */
 
-        /* ==========================
-            DÉPLACEMENT AUTOMATIQUE
-        ========================== */
+        reactionTimer = setInterval(() => {
 
-        reactionTimer =
-            setInterval(() => {
+            if (!autoReactionActive) return;
 
-                if (!autoReactionActive) {
-                    return;
-                }
+            currentBoxes.forEach((box, index) => {
 
+                const canvas =
+                    box.querySelector('.particle-canvas');
+
+                if (!canvas?.userData?.squares) return;
+
+                const state = reactionStates[index];
 
                 updateAutoReaction(
-                    squares,
+                    canvas.userData.squares,
                     2 / columns,
                     2 / rows,
-                    autoReactionX,
-                    autoReactionY
+                    state.x,
+                    state.y
                 );
 
-            }, 16);
+            });
 
+        }, 16);
 
-        /* ==========================
-            ACTIVER LA RÉACTION
-        ========================== */
+        /* ACTIVATION APRÈS 3 SECONDES */
 
-        autoReactionTimeout =
-            setTimeout(() => {
+        autoReactionTimeout = setTimeout(() => {
 
-                autoReactionTimeout = null;
+            autoReactionTimeout = null;
 
+            if (isTransitioning || isLeaving) return;
 
-                if (isTransitioning) {
-                    return;
-                }
+            autoReactionActive = true;
 
+            reactionStates.forEach((state) => {
 
-                autoReactionActive = true;
+                state.x = -0.8 + Math.random() * 1.6;
+                state.y = -0.8 + Math.random() * 1.6;
 
+            });
 
-                /* ==========================
-                    POSITION ALÉATOIRE
-                ========================== */
+        }, 3000);
 
-                autoReactionX =
-                    -0.8 +
-                    Math.random() * 1.6;
+        /* CHANGEMENT DE POSITION */
 
-                autoReactionY =
-                    -0.8 +
-                    Math.random() * 1.6;
+        reactionMoveTimer = setInterval(() => {
 
+            if (!autoReactionActive) return;
 
-            }, 3000);
+            reactionStates.forEach((state) => {
 
+                state.x = -0.8 + Math.random() * 1.6;
+                state.y = -0.8 + Math.random() * 1.6;
 
-        /* ==========================
-            CHANGER DE POSITION
-        ========================== */
+            });
 
-        reactionMoveTimer =
-            setInterval(() => {
-
-                if (!autoReactionActive) {
-                    return;
-                }
-
-
-                autoReactionX =
-                    -0.8 +
-                    Math.random() * 1.6;
-
-                autoReactionY =
-                    -0.8 +
-                    Math.random() * 1.6;
-
-            }, 2500);
-
+        }, 2500);
 
         /* ==========================
             CHANGEMENT AUTOMATIQUE
-            APRÈS 20 SEC
+            APRÈS 20 SECONDES
         ========================== */
 
-        autoChangeTimeout =
-            setTimeout(() => {
+        autoChangeTimeout = setTimeout(() => {
 
-                autoChangeTimeout = null;
+            autoChangeTimeout = null;
 
+            if (isTransitioning || isLeaving) return;
 
-                if (isTransitioning) {
-                    return;
-                }
+            changeImage(1);
 
-
-                isTransitioning = true;
-
-
-                /* ==========================
-                    ARRÊTER RÉACTION
-                ========================== */
-
-                clearInterval(
-                    reactionTimer
-                );
-
-                reactionTimer = null;
-
-
-                clearInterval(
-                    reactionMoveTimer
-                );
-
-                reactionMoveTimer = null;
-
-
-                if (autoReactionTimeout !== null) {
-
-                    clearTimeout(
-                        autoReactionTimeout
-                    );
-
-                    autoReactionTimeout = null;
-
-                }
-
-
-                autoReactionActive = false;
-
-
-                /* ==========================
-                    DÉSACTIVER EFFETS AUTO
-                ========================== */
-
-                squares.forEach((square) => {
-
-                    square.userData.autoBorder = false;
-
-                    square.userData.autoWhite = false;
-
-                });
-
-
-                /* ==========================
-                    DISPARITION
-                ========================== */
-
-                startDisappearance(
-                    squares
-                );
-
-
-                /* ==========================
-                    ATTENDRE LA DISPARITION
-                ========================== */
-
-                disappearanceTimeout =
-                    setTimeout(() => {
-
-                        disappearanceTimeout = null;
-
-
-                        /* ==========================
-                            ORDRE NATUREL
-                        ========================== */
-
-                        currentIndex =
-                            (
-                                currentIndex + 1
-                            ) %
-                            mobileBoxes.length;
-
-
-                        /* ==========================
-                            NOUVELLE IMAGE ACTIVE
-                        ========================== */
-
-                        showNextBox();
-
-
-                    }, 1500);
-
-
-            }, 20000);
+        }, 20000);
 
     }
-
 
     /* ==========================
         SWIPE START
@@ -1674,16 +1450,10 @@ function startMobileLoop() {
 
     function handleTouchStart(event) {
 
-        if (isTransitioning) {
-            return;
-        }
+        if (isTransitioning || isLeaving) return;
 
-
-        touchStartX =
-            event.touches[0].clientX;
-
+        touchStartX = event.touches[0].clientX;
     }
-
 
     /* ==========================
         SWIPE END
@@ -1691,59 +1461,20 @@ function startMobileLoop() {
 
     function handleTouchEnd(event) {
 
-        if (isTransitioning) {
-            return;
-        }
+        if (isTransitioning || isLeaving) return;
 
+        touchEndX = event.changedTouches[0].clientX;
 
-        touchEndX =
-            event.changedTouches[0].clientX;
+        const distance = touchEndX - touchStartX;
 
-
-        const distance =
-            touchEndX -
-            touchStartX;
-
-
-        /* ==========================
-            PAS ASSEZ LONG
-        ========================== */
-
-        if (
-            Math.abs(distance) <
-            swipeThreshold
-        ) {
-
-            return;
-
-        }
-
-
-        /* ==========================
-            GAUCHE → DROITE
-            IMAGE PRÉCÉDENTE
-        ========================== */
+        if (Math.abs(distance) < swipeThreshold) return;
 
         if (distance > 0) {
-
             changeImage(-1);
-
-        }
-
-
-        /* ==========================
-            DROITE → GAUCHE
-            IMAGE SUIVANTE
-        ========================== */
-
-        else {
-
+        } else {
             changeImage(1);
-
         }
-
     }
-
 
     /* ==========================
         ÉCOUTE DU SWIPE
@@ -1754,30 +1485,25 @@ function startMobileLoop() {
         box.addEventListener(
             'touchstart',
             handleTouchStart,
-            {
-                passive: true
-            }
+            { passive: true }
         );
-
 
         box.addEventListener(
             'touchend',
             handleTouchEnd,
-            {
-                passive: true
-            }
+            { passive: true }
         );
 
     });
 
-
     /* ==========================
-        PREMIÈRE IMAGE
+        PREMIER GROUPE
     ========================== */
 
     showNextBox();
 
 }
+
 
 
 /* ==========================
