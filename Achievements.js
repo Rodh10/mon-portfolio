@@ -555,7 +555,7 @@ const sourceImages =
         imageContainer.querySelectorAll('img')
     );
 
-const IMAGES_PER_SECTION = 6;
+const IMAGES_PER_SECTION = 8;
 
 let sections = [];
 let boxes = [];
