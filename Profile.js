@@ -2381,18 +2381,11 @@ function createImageCanvas() {
     const canvas =
         document.createElement("canvas");
 
-
     const ctx =
         canvas.getContext("2d");
 
-
-    canvas.width =
-        columns;
-
-
-    canvas.height =
-        rows;
-
+    canvas.width = columns * 20;
+    canvas.height = rows * 10;
 
     return {
         canvas,
@@ -2405,68 +2398,64 @@ function createImageCanvas() {
    REDIMENSIONNER L'IMAGE
    ========================================================= */
 
+
+/* =========================================================
+   POSITION DU PORTRAIT — DESKTOP / MOBILE
+   ========================================================= */
+
+const portraitPositions = {
+
+    desktop: {
+        x: 500,
+        y: 20
+    },
+
+    mobile: {
+        x: 15,
+        y: -12
+    }
+
+};
+
+
+/* =========================================================
+   REDIMENSIONNER L'IMAGE
+   ========================================================= */
+
 function drawImageToCanvas(
     image,
     ctx
 ) {
 
-    const imageRatio =
-        image.width /
-        image.height;
-
-
-    let imageWidth =
-        rows *
-        imageRatio;
-
-
-    /* =====================================================
-       RECADRAGE
-       ===================================================== */
-
     const sourceY =
         image.height / 3;
-
 
     const sourceHeight =
         image.height / 5;
 
-
     const croppedRatio =
-        image.width /
-        sourceHeight;
+        image.width / sourceHeight;
 
-
-    imageWidth =
-        rows *
-        croppedRatio *
-        0.2;
-
-
-    let imageX = 0;
-    let imageY = 95;
+    const imageWidth =
+        rows * croppedRatio * 0.2;
 
 
     /* =====================================================
-       POSITION
+       CHOISIR LA POSITION
        ===================================================== */
 
-    if (window.innerWidth <= 600) {
+    const isMobile =
+        window.innerWidth <= 600;
 
-        imageX = 15;
-        imageY = 0;
+    const position =
+        isMobile
+            ? portraitPositions.mobile
+            : portraitPositions.desktop;
 
-    } else if (
-        window.innerWidth >= 768 &&
-        window.innerWidth <= 1200 &&
-        window.innerHeight >= 1000
-    ) {
 
-        imageX = 20;
-        imageY = 80;
-
-    }
-
+    /* =====================================================
+       DESSINER L'IMAGE
+       ===================================================== */
 
     ctx.drawImage(
 
@@ -2477,14 +2466,15 @@ function drawImageToCanvas(
         image.width,
         sourceHeight,
 
-        imageX,
-        imageY,
+        position.x,
+        position.y,
         imageWidth,
         rows * 0.2
 
     );
 
 }
+
 
 /* =========================================================
    LIRE LES PIXELS
@@ -2493,17 +2483,13 @@ function drawImageToCanvas(
 function getImageData(ctx) {
 
     return ctx.getImageData(
-
         0,
         0,
-
-        columns,
-        rows
-
+        columns * 2,
+        rows * 2
     );
 
 }
-
 
 /* =========================================================
    CRÉER LES PARTICULES
@@ -2574,23 +2560,30 @@ function createParticles(imageData) {
                 }
 
 
-                const scale =
-                    0.78;
+                const isMobile = window.innerWidth <= 600;
 
+                const settings = isMobile
+                    ? {
+                        // MOBILE
+                        scale: 0.75,
+                        offsetX: 1.3,
+                        offsetY: 1.3
+                    }
+                    : {
+                        // DESKTOP
+                        scale: 0.78,
+                        offsetX: 1.2,
+                        offsetY: 0.002
+                    };
+
+                const scale = settings.scale;
 
                 const px =
-                    (
-                        x /
-                        (columns)
-                    ) * 2 - 1.3 ;
-
+                    (x / columns) * 2 - settings.offsetX;
 
                 const py =
-                    (
-                        y /
-                        (rows - 1)
-                    ) * 2 -
-                    0.88;
+                    (y / (rows - 1)) * 1.1 - settings.offsetY;
+
 
 
                 particles.push(
